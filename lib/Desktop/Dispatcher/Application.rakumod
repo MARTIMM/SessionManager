@@ -330,7 +330,7 @@ method !set-theme ( ) {
 method !set-groups-in-grid ( ) {
   my Int $group-count = 0;
   for $!dispatch-config<action-groups>.keys.sort -> $kg {
-note $!dispatch-config<action-groups>{$kg}.keys.gist;
+#note $!dispatch-config<action-groups>{$kg}.keys.gist;
 
     my Int $set-count = 0;
     my Grid $set-grid .= new;
@@ -343,7 +343,7 @@ note $!dispatch-config<action-groups>{$kg}.keys.gist;
 
         my Str $icon = $!dispatch-config<action-groups>{$kg}{$ks}<icon> //
                        %?RESOURCES<config-icon.jpg>.Str;
-note "'$icon'";
+#note "'$icon'";
 
         .set-image( Image.new(
             :pixbuf(Pixbuf.new(
@@ -442,9 +442,9 @@ method shutdown ( ) {
 }
 
 #-------------------------------------------------------------------------------
-method execute-actions ( Hash :$action-config ) {
+method execute-actions ( Hash :$action-config --> Bool ) {
   my Array $cmd-list = self.get-all-actions($action-config);
-  note self.dispatch($cmd-list);
+  self.dispatch($cmd-list);
 }
 
 #-------------------------------------------------------------------------------
