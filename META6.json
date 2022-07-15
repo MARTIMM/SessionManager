@@ -1,0 +1,21 @@
+{
+  "name": "Dispatcher",
+  "description": "Dispatcher tool",
+  "tags": [ "freedesktop", "desktop", "kde", "gnome", "tool" ],
+  "version": "0.2.0",
+  "authors": [ "Marcel Timmerman" ],
+  "license": "Artistic-2.0",
+  "depends": [ "QA" ],
+  "perl": "6",
+  "provides": {
+    "Desktop::Dispatcher::Application":
+        "lib/Desktop/Dispatcher/Application.rakumod"
+  },
+
+  "resources": [
+    "config-icon.jpg",
+    "dispatcher-menu.ui"
+  ],
+
+  "source-url": "git://github.com/MARTIMM/dispatcher.git"
+}
