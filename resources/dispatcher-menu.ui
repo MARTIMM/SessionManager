@@ -4,23 +4,6 @@
 -->
 <interface>
   <menu id="menubar">
-    <!--
-    <section>
-      <item>
-        <attribute name="label" translatable="yes">Incendio</attribute>
-        <attribute name="action">app.incendio</attribute>
-      </item>
-    </section>
-    <section>
-      <attribute name="label" translatable="yes">Defensive Charms</attribute>
-      <item>
-        <attribute name="label" translatable="yes">Expelliarmus</attribute>
-        <attribute name="action">app.expelliarmus</attribute>
-        <attribute name="icon">/usr/share/my-app/poof!.png</attribute>
-      </item>
-    </section>
-    -->
-
     <submenu>
       <attribute name="label">Dispatch</attribute>
       <section>
@@ -43,19 +26,16 @@
           <attribute name='action'>app.new-group</attribute>
         </item>
       </section>
-    </submenu>
 
-    <submenu>
-      <attribute name="label">Test Switch</attribute>
       <section>
-        <attribute name="label">Test Dispatch</attribute>
+        <attribute name="label">Dispatch Test Mode</attribute>
         <item>
-          <attribute name="label">Testing On</attribute>
+          <attribute name="label">Show Action Commands</attribute>
           <attribute name='action'>app.test-dispatch</attribute>
           <attribute name='target'>test-on</attribute>
         </item>
         <item>
-          <attribute name="label">Testing Off</attribute>
+          <attribute name="label">Execute Action Commands</attribute>
           <attribute name='action'>app.test-dispatch</attribute>
           <attribute name='target'>test-off</attribute>
         </item>
@@ -64,13 +44,6 @@
 
     <submenu>
       <attribute name="label">Help</attribute>
-      <!--section>
-        <item>
-          <attribute name="label">Index</attribute>
-          <attribute name='action'>app.show-index</attribute>
-        </item>
-      </section-->
-
       <section>
         <item>
           <attribute name="label">About</attribute>
