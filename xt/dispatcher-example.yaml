@@ -1,0 +1,180 @@
+# ==============================================================================
+theme:
+  title: Environment starter
+#  wallpaper:
+#  groups-grid-color: 255, 250, 250, 0.3
+#  menu-wallpaper:
+
+  width: 430
+  height: 520
+  iconsize: 64
+  desktop-theme: oxygen:light
+#  icon-file:
+  frame-text-fg: pink;
+  frame-text-bg: 'rgba(10, 10, 10, 0.8)'
+
+# ==============================================================================
+config:
+  dispatch-testing: true
+
+# ==============================================================================
+action-groups:
+  # ============================================================================
+  'Gnome Gtk 3':
+    'files and stuff':
+      title: files and stuff
+#      icon:
+
+      actions:
+
+        shell:
+          command: |
+            konsole --workdir /home/marcel/Languages/Raku/Projects/gnome-gtk3
+#            konsole /home/marcel/Languages/Raku/Projects/gnome-gdk3;
+
+        files1:
+          command: |
+            dolphin
+              /home/marcel/Languages/Raku/Projects/gnome-gtk3
+              /home/marcel/Languages/Raku/Projects/gnome-gdk3
+              /home/marcel/Languages/Raku/Projects/gnome-t3
+
+        files2:
+          command: |
+            dolphin
+              /home/marcel/Languages/Raku/Projects/gnome-gio
+              /home/marcel/Languages/Raku/Projects/gnome-glib
+              /home/marcel/Languages/Raku/Projects/gnome-gobject
+              /home/marcel/Languages/Raku/Projects/gnome-native
+
+        files3:
+          command: |
+            dolphin
+              /home/marcel/Software/Packages/Sources/Gnome
+              '/home/Data/Books to study'
+
+    develop:
+      title: Develop
+#      icon:
+      actions:
+        edit:
+          command: |
+            atom
+              /home/marcel/Languages/Raku/Projects/gnome-gtk3
+              /home/marcel/Languages/Raku/Projects/gnome-gdk3
+              /home/marcel/Languages/Raku/Projects/gnome-gio
+              /home/marcel/Languages/Raku/Projects/gnome-glib
+              /home/marcel/Languages/Raku/Projects/gnome-gobject
+              /home/marcel/Languages/Raku/Projects/gnome-native
+              /home/marcel/Languages/Raku/Projects/gnome-t3
+
+  # ============================================================================
+  'Gnome Gtk 4':
+    'files and stuff':
+      title: files and stuff
+#      icon:
+      actions:
+
+        shell:
+          command: |
+            konsole --workdir /home/marcel/Languages/Raku/Projects/gnome-gtk4
+
+        files1:
+          command: |
+            dolphin
+              /home/marcel/Languages/Raku/Projects/gnome-gtk4
+              /home/marcel/Languages/Raku/Projects/gnome-gdk4
+
+        files2:
+          command: |
+            dolphin
+              /home/marcel/Languages/Raku/Projects/gnome-gio
+              /home/marcel/Languages/Raku/Projects/gnome-glib
+              /home/marcel/Languages/Raku/Projects/gnome-gobject
+              /home/marcel/Languages/Raku/Projects/gnome-native
+
+        files3:
+          command: dolphin /home/marcel/Software/Packages/Sources/Gnome
+
+    develop:
+      title: Develop
+#      icon:
+      actions:
+        edit:
+          command: |
+            atom
+              /home/marcel/Languages/Raku/Projects/gnome-gtk4
+              /home/marcel/Languages/Raku/Projects/gnome-gdk4
+              /home/marcel/Languages/Raku/Projects/gnome-gio
+              /home/marcel/Languages/Raku/Projects/gnome-glib
+              /home/marcel/Languages/Raku/Projects/gnome-gobject
+              /home/marcel/Languages/Raku/Projects/gnome-native
+
+  # ============================================================================
+  'Desktop Tools':
+    set1:
+      title: "desktop setup"
+#      icon:
+
+      actions:
+
+        shell:
+          command: |
+            konsole
+              --workdir /home/marcel/Languages/Raku/Projects/Tools/Desktop;
+
+        edit:
+          command: atom /home/marcel/Languages/Raku/Projects/Tools/Desktop
+
+        files:
+          command: |
+            dolphin
+              /home/marcel/Languages/Raku/Projects/Tools/Desktop
+              /home/marcel/Languages/Raku/Projects/Tools
+              /home/marcel/.config/io.github.martimm.dispatcher
+
+  # ============================================================================
+  Music:
+    files:
+      title: "files and stuff"
+#      icon:
+
+      actions:
+
+        shell:
+          command: |
+            konsole ---workdir /home/marcel/Muziek
+#            konsole --new-tab --profile p3 --workdir /home/marcel/Muziek;
+#            konsole --new-tab --profile p4 --workdir /home/marcel/Muziek/Lessen
+
+        files1:
+          command: |
+            dolphin
+              /home/marcel/Muziek
+              '/home/marcel/Muziek/Theorie en techniek/Akkoorden'
+              /home/Data/Muziek
+
+        files2:
+          command: |
+            dolphin
+              /home/marcel/Muziek/Lessen
+              '/home/marcel/Muziek/Lessen/Koor Hans van Beelen/'
+              '/home/marcel/Muziek/Lessen/Zangles Jolanda/'
+
+  # ============================================================================
+  mongoDB:
+    set5:
+#      icon:
+      actions:
+        s0:
+          command: echo c
+
+#desktop:
+#workdir:
+#description:
+
+#environment:
+
+#out
+#in
+#err

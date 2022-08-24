@@ -68,6 +68,8 @@ has Hash $!dispatch-config;
 
 has Gnome::Gtk3::Grid $!groups-grid;
 
+has Bool $!dispatch-testing;
+
 #-------------------------------------------------------------------------------
 # Initialize my application to be a Gnome::Gtk3::Application. The app will
 # handle the commandline options of which a few are handled locally and others
@@ -82,6 +84,8 @@ submethod new ( |c ) {
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
+  $!dispatch-testing = True;
+
   # Register all necessary signals
   self.register-signal( self, 'app-activate', 'activate');
   self.register-signal( self, 'local-options', 'handle-local-options');
@@ -95,7 +99,7 @@ submethod BUILD ( ) {
 
 #-------------------------------------------------------------------------------
 method local-options (
-  N-GObject $no-vd, Desktop::Dispatcher::Application :_widget($app) --> Int
+  N-GObject $no-vd --> Int
 ) {
   # By default, continue to proces remote options and/or activation of
   # primary instance
@@ -115,7 +119,7 @@ method local-options (
 
 #-------------------------------------------------------------------------------
 method remote-options (
-  N-GObject $no-cl, Desktop::Dispatcher::Application :_widget($app) --> Int
+  N-GObject $no-cl --> Int
 ) {
   # Assume success
   my Int $exit-code = 0;
@@ -247,13 +251,20 @@ method dispatch ( Array:D $cmd-list --> Bool ) {
 
   if !$cmd-list {
     note "Due to errors, actions are not executed";
+    return False;
+  }
+
+  if $!dispatch-testing {
+    note "\nTest mode is turned on; show commands only";
   }
 
   else {
-    for @$cmd-list -> $cmd {
-      note "execute: '$cmd'";
-      my Proc $proc = shell "$cmd &";
-    }
+    note "\nTest mode is turned off; next commands are executed";
+  }
+
+  for @$cmd-list -> $cmd {
+    note "execute: '$cmd'";
+    my Proc $proc = shell "$cmd &" unless $!dispatch-testing;
   }
 
   ?$cmd-list
@@ -314,19 +325,6 @@ method !link-menu-action ( Str :$action, Str :$method is copy, Str :$state ) {
 }
 
 #-------------------------------------------------------------------------------
-method !set-theme ( ) {
-#  if ? $!config<button><theme> {
-#    my Str ( $name, $variant) = $!config<button><theme>.split(':');
-#    my Gnome::Gtk3::CssProvider $css-provider .= new( :named($name), :$variant);
-    my CssProvider $css-provider .= new( :name<Adwaita>, :variant<light>);
-    my StyleContext $context .= new;
-    $context.add-provider-for-screen(
-      Screen.new, $css-provider, GTK_STYLE_PROVIDER_PRIORITY_USER
-    );
-#  }
-}
-
-#-------------------------------------------------------------------------------
 method !set-groups-in-grid ( ) {
   my Int $group-count = 0;
   for $!dispatch-config<action-groups>.keys.sort -> $kg {
@@ -344,14 +342,20 @@ method !set-groups-in-grid ( ) {
         my Str $icon = $!dispatch-config<action-groups>{$kg}{$ks}<icon> //
                        %?RESOURCES<config-icon.jpg>.Str;
 #note "'$icon'";
-
-        .set-image( Image.new(
-            :pixbuf(Pixbuf.new(
-                :file($icon), :width(64), :height(64), :preserve_aspect_ratio
-              )
-            )
-          )
+        my Int() $icon-size = $!dispatch-config<theme><iconsize> // 64;
+        my Pixbuf $pixbuf .= new(
+          :file($icon), :width($icon-size),
+          :height($icon-size), :preserve_aspect_ratio
         );
+
+        my Gnome::Glib::Error $e = $pixbuf.last-error;
+        if $e.is-valid {
+          note "Image load error: ", $e.message;
+        }
+
+        else {
+          .set-image(Image.new(:$pixbuf));
+        }
 
         .register-signal(
           self, 'execute-actions', 'clicked',
@@ -362,7 +366,7 @@ method !set-groups-in-grid ( ) {
       $set-grid.attach( $sbutton, $set-count++, 0, 1, 1);
     }
 
-    with my Frame $frame .= new(:label($kg)) {
+    with my Frame $frame .= new(:label("  $kg  ")) {
       .add($set-grid);
       .set-label-align( 0.05, 0.5);
     }
@@ -374,12 +378,108 @@ method !set-groups-in-grid ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method !init-app-window ( N-GObject() $no-swin ) {
+
+  my Str $desktop-theme =
+    $!dispatch-config<theme><desktop-theme> // 'Adwaita:dark';
+  my Str ( $name, $variant) = $desktop-theme.split(':');
+  my StyleContext() $context .= new;
+  my CssProvider() $css-provider .= new( :$name, :$variant);
+  $context.add-provider-for-screen(
+    Screen.new, $css-provider, GTK_STYLE_PROVIDER_PRIORITY_USER
+  );
+  $css-provider.clear-object;
+
+  # set the class name of the grid managing groups
+  $context = $!groups-grid.get-style-context;
+  $context.add-class('groups-grid');
+
+  with $!app-window .= new(:application(self)) {
+    .add($no-swin);
+
+    $context = .get-style-context;
+    $context.add-class('dispatcher-window');
+    $context.clear-object;
+
+    my Str $wallpaper =
+      $!dispatch-config<theme><wallpaper> // %?RESOURCES<steel-floor.jpg>.Str;
+    my Str $menu-wallpaper =
+      $!dispatch-config<theme><menu-wallpaper> // %?RESOURCES<brushed-light.jpg>.Str;
+    my Str $groups-grid-color =
+      $!dispatch-config<theme><groups-grid-color> // '255, 255, 255, 0';
+    my Str $frame-tfg = $!dispatch-config<theme><frame-text-fg> // 'white';
+    my Str $frame-tbg =
+      $!dispatch-config<theme><frame-text-bg> // 'transparent';
+    my Str $css = [~]
+        '.dispatcher-window {', "\n",
+        '  background: url("', $wallpaper, '") center / cover repeat;', "\n",
+        "}\n\n",
+
+        '.groups-grid {', "\n",
+        '  background-color: rgba( ', $groups-grid-color, ");\n",
+        "} \n\n",
+
+        'frame > label {', "\n",
+        "  color: $frame-tfg;\n",
+        "  background-color: $frame-tbg;",
+        "  font-weight: bold;\n",
+        "  border-radius: 8px;\n",
+        "}\n\n",
+
+        'menubar {', "\n",
+        '  background: url("', $menu-wallpaper, '") center / cover repeat;', "\n",
+        "}\n";
+#note "\ncss\n$css";
+
+    $css-provider .= new;
+    $css-provider.load-from-data($css);
+    #$context .= new;
+    $context.add-provider-for-screen(
+      Screen.new, $css-provider, GTK_STYLE_PROVIDER_PRIORITY_USER
+    );
+    $css-provider.clear-object;
+
+
+    my Int() $w = $!dispatch-config<theme><width> // 500;
+    my Int() $h = $!dispatch-config<theme><height> // $w;
+    .set-size-request( $w, $h);
+
+    my Str $title = $!dispatch-config<theme><title> // 'Dispatcher';
+    .set-title($title);
+
+    my Str $icon = $!dispatch-config<theme><icon-file> //
+                   %?RESOURCES<config-icon.jpg>.Str;
+    my Pixbuf $win-icon .= new(
+      :file($icon), :width(32), :height(32), :preserve_aspect_ratio
+    );
+    my Gnome::Glib::Error $e = $win-icon.last-error;
+    if $e.is-valid {
+      die "Error icon file: $e.message()";
+    }
+
+    else {
+      .set-icon($win-icon);
+    }
+
+    .register-signal( self, 'exit-program', 'destroy');
+    .show-all;
+  }
+}
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #-- [callback handlers] --------------------------------------------------------
 # Called after registration of the application
 method startup ( ) {
   # Read the default configuration.
   my QA::Types $qa-types .= instance;
   $!dispatch-config = $qa-types.qa-load( 'dispatcher', :userdata);
+  unless ?$!dispatch-config {
+    note "dispatch configuration not found";
+    $!dispatch-config = %();
+  }
+
+  $!dispatch-testing = $!dispatch-config<config><dispatch-testing> // True;
 }
 
 #-------------------------------------------------------------------------------
@@ -388,10 +488,7 @@ method startup ( ) {
 # And when this process is also the primary instance, it's only called once
 # because we don't need to create two gui's. This is completely automatically
 # done.
-method app-activate ( Desktop::Dispatcher::Application :_widget($app) ) {
-
-  # Set the theme
-  self!set-theme;
+method app-activate ( ) {
 
   # Load gui description of menu and set menubar
   my Gnome::Gtk3::Builder $builder .= new(
@@ -419,15 +516,9 @@ method app-activate ( Desktop::Dispatcher::Application :_widget($app) ) {
   }
 
 
-  # Init application window and give this object (a Gnome::Gtk3::Application)
-  # as its argument.
-  with $!app-window .= new(:application(self)) {
-    .add($swin);
-    .set-size-request( 400, 200);
-    .set-title('Dispatcher');
-    .register-signal( self, 'exit-program', 'destroy');
-    .show-all;
-  }
+  # Set the theme and initialize application window and give this object (a
+  # Gnome::Gtk3::Application) as its argument.
+  self!init-app-window($swin);
 }
 
 #-------------------------------------------------------------------------------
@@ -468,24 +559,21 @@ method app-quit ( N-GObject $n-parameter ) {
 
 #-------------------------------------------------------------------------------
 # Test Dispatch > Testing On/Off
-method select-compression (
-  N-GObject $n-value,
-  Gnome::Gio::SimpleAction :_widget($file-compress-action) is copy,
-  N-GObject :_native-object($no)
+method test-dispatch (
+  Gnome::Glib::Variant() $value,
+  Gnome::Gio::SimpleAction() :_native-object($test-mode-action),
 ) {
-  note 'valid action: ', $file-compress-action.is-valid;
-  note 'valid no: ', $no.gist;
+#note 'valid action: ', $test-mode-action.is-valid;
+#note 'valid no: ', $no.gist;
 
-  $file-compress-action .= new(:native-object($no))
-    unless $file-compress-action.is-valid;
+#note "Select 'test' from 'configure' menu";
+#note $test-mode-action.get-name;
+  my Str $test-state = $value.print();
+#note "Set to $test-state";
+  $!dispatch-testing = $test-state eq 'test-on' ?? True !! False;
 
-#  note "Select 'Compressed' from 'File' menu";
-#    note $file-compress-action.get-name;
-  my Gnome::Glib::Variant $v .= new(:native-object($n-value));
-  note "Set to $v.print()" if $v.is-valid;
-
-  $file-compress-action.set-state(
-    Gnome::Glib::Variant.new(:parse("$v.print()"))
+  $test-mode-action.set-state(
+    Gnome::Glib::Variant.new(:parse($value.print))
   );
 }
 
