@@ -2,7 +2,7 @@
   "name": "Dispatcher",
   "description": "Dispatcher tool",
   "tags": [ "freedesktop", "desktop", "kde", "gnome", "tool" ],
-  "version": "0.2.0",
+  "version": "0.3.2",
   "authors": [ "Marcel Timmerman" ],
   "license": "Artistic-2.0",
   "depends": [ "QA" ],
@@ -13,8 +13,11 @@
   },
 
   "resources": [
+    "brushed-dark.jpg",
+    "brushed-light.jpg",
     "config-icon.jpg",
-    "dispatcher-menu.ui"
+    "dispatcher-menu.ui",
+    "steel-floor.jpg"
   ],
 
   "source-url": "git://github.com/MARTIMM/dispatcher.git"
