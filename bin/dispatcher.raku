@@ -21,15 +21,15 @@ my Array $*remote-options = [<group=s actions=s stop>];
 # Default dirs;
 #   $*HOME/.config/io.github.martimm.dispatcher/Data.d
 #   $*HOME/.config/io.github.martimm.dispatcher/Sets.d
-#   $*HOME/.config/io.github.martimm.dispatcher/Sheets.d
+#   $*HOME/.config/io.github.martimm.dispatcher/Qsts.d
 my QA::Types $qa-types;
 given $qa-types {
   .data-file-type(QAYAML);
   .cfgloc-userdata($*HOME ~ "/.config/$*application-id/Data.d");
-  .cfgloc-sheet($*HOME ~ "/.config/$*application-id/Sheets.d");
+  .cfgloc-sheet($*HOME ~ "/.config/$*application-id/Qsts.d");
   .cfgloc-set($*HOME ~ "/.config/$*application-id/Sets.d");
 
-#note 'dirs: ', .list-dirs.join("\n");
+note "dirs: \n  ", .list-dirs.join("\n  ");
 }
 
 my Desktop::Dispatcher::Application $dispatcher .= new;
