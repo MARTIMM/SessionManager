@@ -25,18 +25,11 @@ my Array $*remote-options = [<group=s actions=s stop>];
 my QA::Types $qa-types;
 given $qa-types {
   .data-file-type(QAYAML);
-  .cfgloc-userdata($*HOME ~ "/.config/$*application-id/Data.d");
-  .cfgloc-sheet($*HOME ~ "/.config/$*application-id/Qsts.d");
-  .cfgloc-set($*HOME ~ "/.config/$*application-id/Sets.d");
-
-note "dirs: \n  ", .list-dirs.join("\n  ");
+  .set-root-path("$*HOME/.config/io.github.martimm.dispatcher");
 }
 
 my Desktop::Dispatcher::Application $dispatcher .= new;
 exit($dispatcher.run);
-
-
-
 
 =finish
 
