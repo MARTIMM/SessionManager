@@ -1,3 +1,7 @@
+* 2024-07-22 0.4.0
+  * Drop use of the QA modules
+  * Use the new api of Gnome::Gtk4
+
 * 2022-08-24 0.3.2
   * QA changes
 

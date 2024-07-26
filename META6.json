@@ -1,16 +1,23 @@
 {
-  "name": "Dispatcher",
+  "name": "Desktop::Dispatcher",
   "description": "Dispatcher tool",
-  "tags": [ "freedesktop", "desktop", "kde", "gnome", "tool" ],
-  "version": "0.3.2",
+
   "authors": [ "Marcel Timmerman" ],
+  "author": "Marcel Timmerman",
+  "auth": "cpan:MARTIMM",
+
+  "version": "0.4.0",
+  "tags": [ "desktop", "kde", "gnome", "tool" ],
+  
   "license": "Artistic-2.0",
-  "depends": [ "QA" ],
-  "perl": "6",
+  "raku-version": "6.d",
+
   "provides": {
     "Desktop::Dispatcher::Application":
-        "lib/Desktop/Dispatcher/Application.rakumod"
+      "lib/Desktop/Dispatcher/Application.rakumod"
   },
+
+  "depends": [ "Gnome::Gtk4:api<2>","YAMLish", "Getopt::Long" ],
 
   "resources": [
     "brushed-dark.jpg",
