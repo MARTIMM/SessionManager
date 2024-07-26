@@ -1,8 +1,12 @@
-use v6;
+#!/usr/bin/env -S rakudo -Ilib
+
+use v6.d;
 
 #use lib '/home/marcel/Languages/Raku/Projects/question-answer/lib';
 #use QA::Gui::SheetSimpleWindow;
-use QA::Types;
+#use QA::Types;
+
+%*ENV<IGNORE_GNOME_DEPRECATION_MESSAGES> = 1;
 
 use Desktop::Dispatcher::Application;
 
@@ -10,26 +14,29 @@ use Desktop::Dispatcher::Application;
 # Initialize global variables
 
 # Create the application id
-my Str $*application-id = 'io.github.martimm.' ~ $*PROGRAM.basename;
-$*application-id ~~ s/ \. <-[.]>* $//;
+#my Str $*application-id = 'io.github.martimm.' ~ $*PROGRAM.basename;
+#$*application-id ~~ s/ \. <-[.]>* $//;
 
 my Str $*dispatcher-version = '0.2.0';
 my Array $*local-options = [<version>];
-my Array $*remote-options = [<group=s actions=s stop>];
+#my Array $*remote-options = [<group=s actions=s stop>];
+my Array $*remote-options = [<config=s>,];
 
-# Modify paths to config data and questionaires
+my Bool $*dispatch-testing = True;
+
+# Modify paths to config data and questionnaires
 # Default dirs;
 #   $*HOME/.config/io.github.martimm.dispatcher/Data.d
 #   $*HOME/.config/io.github.martimm.dispatcher/Sets.d
 #   $*HOME/.config/io.github.martimm.dispatcher/Qsts.d
-my QA::Types $qa-types;
-given $qa-types {
-  .data-file-type(QAYAML);
-  .set-root-path("$*HOME/.config/io.github.martimm.dispatcher");
-}
+#my QA::Types $qa-types;
+#given $qa-types {
+#  .data-file-type(QAYAML);
+#  .set-root-path("$*HOME/.config/io.github.martimm.dispatcher");
+#}
 
 my Desktop::Dispatcher::Application $dispatcher .= new;
-exit($dispatcher.run);
+exit($dispatcher.go-ahead);
 
 =finish
 
