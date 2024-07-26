@@ -1,5 +1,3 @@
-[toc]
-
 # Dispatcher Application
 
 ## Introduction
@@ -20,9 +18,7 @@ The program should not show an application menu. Those kind of programs are alre
 
 ## What should it do?
 
-The purpose of this program is that it can quickly setup or change an environment for something like a programming or music writing task.
-
-In the case of a programming task; start a console with several tabs open to working directories, start an editor, start a filemanager with tabs opened to directories, start a reader with some language documentation, etcetera.
+The purpose of this program is that it can quickly setup or change an environment for something like a programming or music writing task. For example in the case of a programming task; start a console with several tabs open to working directories, start an editor, start a filemanager with tabs opened to directories you need, start a reader with some language documentation, etcetera.
 
 Optionally the action can show a checkbutton for each program which can be (de)selected to dis-/enable the start of a program depending on what is needed at that moment. *this is something for later.*
 
@@ -48,7 +44,7 @@ A description follows what this program should show and do.
       theme.yaml                        Theme description
       dispatch.yaml                     The config to use with dispatch info
     Sheets.d/
-      dispatch.yaml                     The questionaire to describe an action
+      dispatch.yaml                     The questionnaire to describe an action
   ```
   * The configuration files are all in a YAML formatted file.
 
@@ -65,10 +61,12 @@ A description follows what this program should show and do.
     * Save configuration
     * Select a different configuration file
     * Configure dispatch action
+
   * Action
     * Create
     * Modify
     * Delete
+
   * Action Map
     * Create
     * Modify
@@ -102,3 +100,69 @@ A description follows what this program should show and do.
 ### Modify actions
 * Display of action config
 * Add more menu entries
+
+### Application workings
+
+#### Startup options
+* Option pointing to an alternative configuration file. The default configuration file is stored at `$XDG_CONFIG` or at the config root `~/.config/`.
+  * Several other files may exist such as a theme description. This can be defined in the configuration file. When absent, the current desktop theme is used.
+  ```
+  ~/.config/io.github.martimm.dispatcher/
+    Data.d/
+      theme.yaml                        Theme description
+      dispatch.yaml                     The config to use with dispatch info
+    Sheets.d/
+      dispatch.yaml                     The questionnaire to describe an action
+  ```
+  * The configuration files are all in a YAML formatted file.
+
+* Option to start an action directly. This option is repeatable.
+
+#### User interface
+* Menu bar on top
+  * Exit          (Save config)
+  * Quit          (No save of config)
+  * Help
+  * About
+
+  * Configuration
+    * Save configuration
+    * Select a different configuration file
+    * Configure dispatch action
+  * Action
+    * Create
+    * Modify
+    * Delete
+  * Action Map
+    * Create
+    * Modify
+    * Delete
+
+* A treeview of actions
+
+* A configuration page when action is created or changed
+
+
+### Build phases
+
+#### Start with non-gui application.
+* [x] install options
+* [x] create config files
+* [x] test run to start an action
+
+#### Make application sceleton
+* [x] hook up options
+* [x] test run to start main dispatcher
+* [x] test run to start an action from secondary dispatcher
+
+#### Show menu
+* [x] Add simple menu entries
+
+#### Show actions
+* [x] Display of actions
+* [x] Activation of actions
+* [ ] Add more menu entries
+
+#### Modify actions
+* [ ] Display of action config
+* [ ] Add more menu entries
