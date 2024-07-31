@@ -48,11 +48,13 @@ method setup-sessions ( --> Gnome::Gtk4::ScrolledWindow ) {
 
     my Str $session-title = $!config.get-session-title($session-name);
     with my Gnome::Gtk4::Frame $session-frame .= new-frame($session-title) {
-      $!config.set-css( $session-frame.get-style-context, 'session-frame');
+      $!config.set-css( .get-style-context, 'session-frame');
       .set-margin-top(0);
       .set-margin-bottom(0);
       .set-margin-start(0);
       .set-margin-end(0);
+      my Gnome::Gtk4::Label() $label = .get-label-widget;
+      $!config.set-css( $label.get-style-context, 'session-frame-label');
     }
 
     my Gnome::Gtk4::Box $session-buttons .= new-box(GTK_ORIENTATION_HORIZONTAL);
@@ -126,15 +128,15 @@ method setup-sessions ( --> Gnome::Gtk4::ScrolledWindow ) {
   # Button padding, borders, picture width: $max-cols * (10 + 10 + $iw)
   # Space between columns: 20 * ($max-cols - 1)
   # Left and right of a row: 2 * 30
-  # Unknown (yet) extra to get in all view: 10
-  my Int $width = $max-cols * (10 + 10 + $iw)
-                  + 20 * ($max-cols - 1) + 2 * 30 + 10;
+  # Unknown (yet) extra to get in all view: nbr columns * 2
+  my Int $width = $max-cols * (10 + 10 + $iw + 2)
+                  + 20 * ($max-cols - 1) + 2 * 30;
 
   # Height of the picture: $ih
   # Borders around picture and button padding: 10 + 10
   # Top space guess (30) and bottom space (30): 60
-  # Unknown (yet) extra to get in all view: 20 
-  my Int $height = $row * ($ih + 60 + 10 + 10) + 20;
+  # Unknown (yet) extra to get in all view: nbr rows * 12
+  my Int $height = $row * ($ih + 60 + 10 + 18);
 
 note "$?LINE new size: $width, $height";
   $container.set-size-request( $width, $height);
