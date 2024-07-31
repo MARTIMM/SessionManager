@@ -14,10 +14,25 @@
   background-size: 100%;
 }
 
+.session-toolbar {
+  background-image: url('/home/marcel/.config/io.github.martimm.dispatcher/Images/brushed-dark.jpg');
+  background-repeat: no-repeat;
+  background-size: 100%;
+
+  padding: 5px;
+  margin: 0px;
+}
+
+
 .session-frame-label {
   color: rgb(71, 0, 71);
   font-weight: bold;
-  font-size: normal;
+  font-size: 12pt;
+}
+
+.session-toolbar-button {
+  background-image: none;
+  background-color: transparent;
 }
 
 .session-button {
