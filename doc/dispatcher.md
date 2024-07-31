@@ -31,6 +31,26 @@ DBus will play a part by sending commands to the activated parts. This function 
 There is a configuration section to create the configuration file. *this is something for later, first read from configurations made by hand.*
 
 
+### Application workings
+
+#### Startup options
+* [x] Option pointing to a root directory of the configuration.
+
+
+
+<!--
+
+# add mimetype: ~/.local/share/mime/packages/application-x-dispatcher.xml
+# run update-mime-database ~/.local/share/mime
+# make a config this program can read: test.dispatcher
+# associate '.dispatcher' with this program using properties
+# click on the icon and voila the dispatcher starts.
+
+# edit /home/marcel/.config/plasma-workspace/env/path.sh (not when installed)
+# use desktop files directly with %u or directly with config filled in
+
+
+
 ## Application workings
 
 A description follows what this program should show and do.
@@ -104,7 +124,8 @@ A description follows what this program should show and do.
 ### Application workings
 
 #### Startup options
-* Option pointing to an alternative configuration file. The default configuration file is stored at `$XDG_CONFIG` or at the config root `~/.config/`.
+* [x] Option pointing to a root directory of the configuration.
+
   * Several other files may exist such as a theme description. This can be defined in the configuration file. When absent, the current desktop theme is used.
   ```
   ~/.config/io.github.martimm.dispatcher/
@@ -166,3 +187,4 @@ A description follows what this program should show and do.
 #### Modify actions
 * [ ] Display of action config
 * [ ] Add more menu entries
+-->
