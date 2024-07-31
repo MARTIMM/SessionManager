@@ -1,0 +1,18 @@
+[Desktop Entry]
+Comment[en_US]=
+Comment=
+Exec=/home/marcel/Languages/Raku/Projects/Tools/Dispatcher/bin/dispatcher.raku %u
+GenericName[en_US]=
+GenericName=
+MimeType=application/x-dispatcher;
+Name[en_US]=dispatcher.raku
+Name=dispatcher.raku
+NoDisplay=true
+Path=
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
