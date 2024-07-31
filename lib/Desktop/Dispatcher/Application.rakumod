@@ -6,7 +6,7 @@ use NativeCall;
 use Desktop::Dispatcher::Config;
 use Desktop::Dispatcher::Actions;
 
-use YAMLish;
+#use YAMLish;
 use Getopt::Long;
 
 use Gnome::Gtk4::CssProvider:api<2>;
