@@ -106,6 +106,11 @@ method get-session-title ( Str $name --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
+method get-session-icon ( Str $name --> Str ) {
+  $!dispatch-config<sessions>{$name}<icon> // '[-]'
+}
+
+#-------------------------------------------------------------------------------
 # Use: for $x.get-session-action($n) -> $action { }
 method get-session-action( Str $name --> Seq ) {
   gather for @($!dispatch-config<sessions>{$name}<actions>) -> $action {

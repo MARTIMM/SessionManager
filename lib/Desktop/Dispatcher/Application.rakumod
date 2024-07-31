@@ -179,9 +179,12 @@ method setup-window ( ) {
 
   with $!app-window .= new-applicationwindow($!application) {
     my Desktop::Dispatcher::Actions $actions .= new(:$!config);
-    my Gnome::Gtk4::ScrolledWindow $swin = $actions.setup-sessions;
 
-    .set-child($swin);
+#    my Gnome::Gtk4::ScrolledWindow $swin = $actions.setup-sessions;
+#    .set-child($swin);
+
+    my Gnome::Gtk4::Box $sessions-box = $actions.setup-sessions;
+    .set-child($sessions-box);
     .set-title($!config.get-window-title);
 
     .show;
