@@ -40,6 +40,8 @@ submethod BUILD ( Str :$!config-directory is copy ) {
   # Copy style sheet to data directory and load into program
   my Str $css-file = DATA_DIR ~ '/dispatcher.css';
   %?RESOURCES<dispatcher.css>.copy($css-file);
+  $css-file = DATA_DIR ~ '/dispatcher-changes.css';
+  %?RESOURCES<dispatcher-changes.css>.copy($css-file);
 #note "$?LINE $css-file";
 
   $!css-provider .= new-cssprovider;

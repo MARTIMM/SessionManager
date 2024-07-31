@@ -1,0 +1,43 @@
+@import url("/home/marcel/.config/io.github.martimm.dispatcher/dispatcher.css");
+
+/*--[Changes]-----------------------------------------------------------------*/
+/*
+.container-grid {
+  border-image-width: 0px;
+  border-image-source: none;
+}
+*/
+
+.session-frame {
+  background-image: url('/home/marcel/.config/io.github.martimm.dispatcher/Images/brushed-copper.jpg');
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+.session-frame-label {
+  color: rgb(71, 0, 71);
+  font-weight: bold;
+  font-size: normal;
+}
+
+.session-button {
+  /*
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  
+  background-image: none;
+  background: transparent;
+  */
+
+  border-top: 5px solid rgb(254, 174, 246);
+  border-left: 5px solid rgb(254, 174, 246);
+  border-right: 5px solid rgb(147, 3, 119);
+  border-bottom: 5px solid rgb(147, 3, 119);
+  border-radius: 20px;
+
+  padding: 5px;
+  margin: 0px;
+}
+
