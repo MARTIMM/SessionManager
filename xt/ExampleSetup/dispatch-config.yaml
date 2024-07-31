@@ -1,0 +1,101 @@
+# ==============================================================================
+theme:
+  title: Environment starter
+
+  window-size: [ 1000, 700]
+  icon-size: [ 200, 200]
+
+# ==============================================================================
+config:
+  dispatch-testing: true
+  variables:
+    home: /home/marcel
+    projects: $home/Languages/Raku/Projects
+
+    puzzle-project: $projects/PuzzleTable
+    puzzle-config: $home/.config/io.github.martimm.dispatcher
+    mongodb: $projects/raku-mongodb-driver
+    api1: $projects/gnome-ap1
+    api2: $projects/gnome-ap2
+
+# ==============================================================================
+sessions:
+  # ============================================================================
+  PuzzleTable:
+    title: Developing the puzzle table program
+
+    actions:
+      - t: Start konsole terminal
+        c: konsole --workdir $puzzle-project --profile 'rakudo gnome'
+        i: Images/p0064a.png
+
+      - t: Start file manager
+        c: dolphin $puzzle-project $puzzle-config
+
+      - t: Start editor
+        c: code $puzzle-project
+
+      - t: Start git user interface
+        p: $puzzle-project
+        c: git gui
+
+      - t: Run the puzzle table program
+        p: $puzzle-project
+        c: bin/puzzle-table
+
+  # ============================================================================
+  MongoDB:
+    title: MongoDB database driver development
+
+    actions:
+      - t: Start konsole terminal
+        c: konsole --workdir $mongodb --profile 'rakudo MongoDB'
+        i: Images/p0064a.png
+
+      - t: Start file manager
+        c: dolphin $mongodb
+
+      - t: Start editor
+        c: code $mongodb
+
+      - t: Start git user interface
+        p: $mongodb
+        c: git gui
+
+  # ============================================================================
+  Api2:
+    title: Gnome Api 2 development
+
+    actions:
+      - t: Start konsole terminal
+        c: konsole --workdir $api2 --profile 'rakudo gnome'
+        i: Images/p0064a.png
+
+      - t: Start file manager
+        c: dolphin $api2
+
+      - t: Start editor
+        c: code $api2
+
+      - t: Start git user interface
+        p: $api2
+        c: git gui
+
+  # ============================================================================
+  Api1:
+    title: Gnome Api 1 development
+
+    actions:
+      - t: Start konsole terminal
+        c: konsole --workdir $api1 --profile 'rakudo gnome'
+        i: Images/p0064a.png
+
+      - t: Start file manager
+        c: dolphin $api1
+
+      - t: Start editor
+        c: code $api1
+
+#      - t: Start git user interface
+#        p: $mongodb
+#        c: git gui
