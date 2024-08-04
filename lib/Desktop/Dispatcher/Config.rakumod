@@ -31,7 +31,7 @@ submethod BUILD ( Str :$!config-directory is copy ) {
   my Str $png-file;
   for <
     diamond-steel-floor.jpg brushed-light.jpg brushed-dark.jpg
-    config-icon.jpg brushed-copper.jpg mozaic.jpg
+    config-icon.jpg brushed-copper.jpg mozaic.jpg dispatch-icon.png
   > -> $i {
     $png-file = [~] DATA_DIR, '/Images/', $i;
     %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
@@ -42,7 +42,6 @@ submethod BUILD ( Str :$!config-directory is copy ) {
   %?RESOURCES<dispatcher.css>.copy($css-file);
   $css-file = DATA_DIR ~ '/dispatcher-changes.css';
   %?RESOURCES<dispatcher-changes.css>.copy($css-file);
-#note "$?LINE $css-file";
 
   $!css-provider .= new-cssprovider;
   $!css-provider.load-from-path($css-file);
@@ -56,8 +55,7 @@ method load-config ( ) {
     "$!config-directory/dispatch-config.yaml".IO.slurp
   );
 
-#note "$?LINE load, $!dispatch-config.gist()";
-  die "dispatch configuration not found" unless ?$!dispatch-config;
+ die "dispatch configuration not found" unless ?$!dispatch-config;
 
   $*dispatch-testing = $!dispatch-config<config><dispatch-testing> // True;
 }
