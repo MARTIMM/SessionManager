@@ -6,12 +6,10 @@ use NativeCall;
 use Desktop::Dispatcher::Config;
 
 use Gnome::Gtk4::Box:api<2>;
-use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Picture:api<2>;
 use Gnome::Gtk4::Frame:api<2>;
-use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 
 use Gnome::N::N-Object:api<2>;
@@ -20,15 +18,14 @@ use Gnome::N::N-Object:api<2>;
 unit class Desktop::Dispatcher::Actions:auth<github:MARTIMM>;
 
 has Desktop::Dispatcher::Config $!config;
+has Bool $!init-config;
 
 #-------------------------------------------------------------------------------
-submethod BUILD (
-  Desktop::Dispatcher::Config:D :$!config,
-) {
+submethod BUILD ( Desktop::Dispatcher::Config:D :$!config ) {
+  $!init-config = True;
 }
 
 #-------------------------------------------------------------------------------
-#method setup-sessions ( --> Gnome::Gtk4::ScrolledWindow ) {
 method setup-sessions ( --> Gnome::Gtk4::Box ) {
 
   with my Gnome::Gtk4::Box $sessions .= new-box(GTK_ORIENTATION_VERTICAL) {
@@ -37,123 +34,16 @@ method setup-sessions ( --> Gnome::Gtk4::Box ) {
     .set-margin-start(0);
     .set-margin-end(0);
 
-    .append(self.make-toolbar);
+    .append(self.make-toolbar($sessions));
     $!config.set-css( .get-style-context, 'sessions');
   }
 
-#  my Gnome::Gtk4::ScrolledWindow $container .= new-scrolledwindow;
-#  $container.set-child($sessions);
-  
-#`{{
-  my Int $row = 0;
-  my Int $max-cols = 0;
-
-  for $!config.get-sessions -> $session-name {
-
-    my Str $session-title = $!config.get-session-title($session-name);
-    with my Gnome::Gtk4::Frame $session-frame .= new-frame($session-title) {
-      $!config.set-css( .get-style-context, 'session-frame');
-      .set-margin-top(0);
-      .set-margin-bottom(0);
-      .set-margin-start(0);
-      .set-margin-end(0);
-      my Gnome::Gtk4::Label() $label = .get-label-widget;
-      $!config.set-css( $label.get-style-context, 'session-frame-label');
-    }
-
-    my Gnome::Gtk4::Box $session-buttons .= new-box(GTK_ORIENTATION_HORIZONTAL);
-    $session-frame.set-child($session-buttons);
-
-    with $session-buttons {
-      .set-spacing(20);
-      .set-margin-top(0);
-      .set-margin-bottom(30);
-      .set-margin-start(30);
-      .set-margin-end(30);
-
-      my Int $cols = 0;
-      for $!config.get-session-action($session-name) -> $action {
-        my Str $picture-file = DATA_DIR ~ '/Images/config-icon.jpg';
-        my Hash $action-data = %(:$session-name);
-
-        # Get tooltip text
-        if ? $action<t> {
-          $action-data<tooltip> = $action<t>;
-        }
-
-        # Set path to work directory
-        if ? $action<p> {
-          $action-data<work-dir> = self.substitute-vars($action<p>);
-        }
-
-        # Set environment
-        if ? $action<e> {
-          $action-data<env> = $action<e>;
-        }
-
-        # Script to run before command can run
-        if ? $action<s> {
-          $action-data<script> = self.substitute-vars($action<s>);
-        }
-
-        # Set command to run
-        if ? $action<c> {
-          $action-data<cmd> = self.substitute-vars($action<c>);
-        }
-
-        # Set icon on the button
-        if ? $action<i> {
-          $picture-file = self.substitute-vars($action<i>);
-          $picture-file = [~] $!config.config-directory, '/', $picture-file
-            unless $picture-file.index('/') == 0;
-        }
-
-        if ! $action-data<tooltip> and ? $action-data<cmd> {
-          my Str $tooltip = $action-data<cmd>;
-          $tooltip ~~ s/ \s .* $//;
-          $action-data<tooltip> = $tooltip;
-        }
-
-        my Gnome::Gtk4::Button $button =
-          self.action-button( $picture-file, $action-data, $session-buttons);
-        .append($button);
-        $cols++;
-      }
-
-      $max-cols = max( $max-cols, $cols);
-    }
-
-    $sessions.append($session-frame);
-    $row++;
-  }
-
-  my Int ( $iw, $ih) = $!config.get-icon-size;
-  
-  # Button padding, borders, picture width: $max-cols * (10 + 10 + $iw)
-  # Space between columns: 20 * ($max-cols - 1)
-  # Left and right of a row: 2 * 30
-  # Unknown (yet) extra to get in all view: nbr columns * 2
-  my Int $width = $max-cols * (10 + 10 + $iw + 2)
-                  + 20 * ($max-cols - 1) + 2 * 30;
-
-  # Height of the picture: $ih
-  # Borders around picture and button padding: 10 + 10
-  # Top space guess (30) and bottom space (30): 60
-  # Unknown (yet) extra to get in all view: nbr rows * 24
-  my Int $height = $row * ($ih + 60 + 10 + 24);
-
-note "$?LINE new size: $width, $height";
-#  $container.set-size-request( $width, $height);
-#  $container
-}}
-
-#  $sessions.set-size-request( $width, $height);
   $sessions
 }
 
 #-------------------------------------------------------------------------------
-method make-toolbar ( --> Gnome::Gtk4::Box ) {
-  with  my Gnome::Gtk4::Box $toolbar .= new-box(GTK_ORIENTATION_HORIZONTAL) {
+method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
+  with my Gnome::Gtk4::Box $toolbar .= new-box(GTK_ORIENTATION_HORIZONTAL) {
     $!config.set-css( .get-style-context, 'session-toolbar');
     .set-spacing(10);
   }
@@ -177,9 +67,11 @@ method make-toolbar ( --> Gnome::Gtk4::Box ) {
       .set-child($picture);
       .set-tooltip-text($session-title);
       $!config.set-css( .get-style-context, 'session-toolbar-button');
-      .register-signal( self, 'session-actions', 'clicked', :$session-name)
+      .register-signal(
+        self, 'session-actions', 'clicked', :$session-name, :$sessions
+      );
     }
-    
+
     $toolbar.append($button);
   }
 
@@ -187,16 +79,29 @@ method make-toolbar ( --> Gnome::Gtk4::Box ) {
 }
 
 #-------------------------------------------------------------------------------
-method session-actions ( Str :$session-name ) {
+method session-actions ( Str :$session-name, Gnome::Gtk4::Box :$sessions ) {
+  state Gnome::Gtk4::Frame $session-frame;
+
   my Str $session-title = $!config.get-session-title($session-name);
-  with my Gnome::Gtk4::Frame $session-frame .= new-frame($session-title) {
-    $!config.set-css( .get-style-context, 'session-frame');
-    .set-margin-top(0);
-    .set-margin-bottom(0);
-    .set-margin-start(0);
-    .set-margin-end(0);
-    my Gnome::Gtk4::Label() $label = .get-label-widget;
-    $!config.set-css( $label.get-style-context, 'session-frame-label');
+  if $!init-config {
+    $session-frame.clear-object if ?$session-frame;
+    with $session-frame .= new-frame($session-title) {
+      $!config.set-css( .get-style-context, 'session-frame');
+      .set-margin-top(0);
+      .set-margin-bottom(0);
+      .set-margin-start(0);
+      .set-margin-end(0);
+      my Gnome::Gtk4::Label() $label = .get-label-widget;
+      $!config.set-css( $label.get-style-context, 'session-frame-label');
+    }
+
+    $sessions.append($session-frame);
+    $!init-config = False;
+  }
+
+  else {
+    my Gnome::Gtk4::Label() $label = $session-frame.get-label-widget;
+    $label.set-text($session-title);
   }
 
   my Gnome::Gtk4::Box $session-buttons .= new-box(GTK_ORIENTATION_HORIZONTAL);
@@ -215,7 +120,7 @@ method session-actions ( Str :$session-name ) {
 
       # Get tooltip text
       if ? $action<t> {
-        $action-data<tooltip> = $action<t>;
+        $action-data<tooltip> = self.substitute-vars($action<t>);
       }
 
       # Set path to work directory
@@ -225,7 +130,7 @@ method session-actions ( Str :$session-name ) {
 
       # Set environment
       if ? $action<e> {
-        $action-data<env> = $action<e>;
+        $action-data<env> = self.substitute-vars($action<e>);
       }
 
       # Script to run before command can run
