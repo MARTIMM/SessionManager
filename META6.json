@@ -13,8 +13,9 @@
   "raku-version": "6.d",
 
   "provides": {
-    "Desktop::Dispatcher::Application":
-      "lib/Desktop/Dispatcher/Application.rakumod"
+    "Desktop::Dispatcher::Application": "lib/Desktop/Dispatcher/Application.rakumod",
+    "Desktop::Dispatcher::Actions": "lib/Desktop/Dispatcher/Actions.rakumod",
+    "Desktop::Dispatcher::Config": "lib/Desktop/Dispatcher/Config.rakumod"
   },
 
   "depends": [ "Gnome::Gtk4:api<2>","YAMLish", "Getopt::Long" ],
@@ -23,8 +24,12 @@
     "brushed-dark.jpg",
     "brushed-light.jpg",
     "config-icon.jpg",
-    "dispatcher-menu.ui",
-    "steel-floor.jpg"
+    "diamond-steel-floor.jpg",
+    "brushed-copper.jpg",
+    "dispatch-icon.png",
+    "dispatcher.css",
+    "dispatcher-changes.css",
+    "mozaic.jpg"
   ],
 
   "source-url": "git://github.com/MARTIMM/dispatcher.git"
