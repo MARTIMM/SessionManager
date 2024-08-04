@@ -5,7 +5,7 @@ Exec=dispatcher.raku --config='/home/marcel/MyDesktop/DispatcherData'
 GenericName[en_US]=
 GenericName=
 Icon=/home/marcel/MyDesktop/DispatcherData/Images/p0064a.png
-MimeType=application/x-dispatcher;
+MimeType=application/x-dispatcher
 Name[en_US]=dispatcher.raku
 Name=dispatcher.raku
 NoDisplay=true
