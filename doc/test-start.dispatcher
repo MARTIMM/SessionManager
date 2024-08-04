@@ -1,3 +1,0 @@
-comment: dispatch
-exec: bin/dispatcher.raku --config=/home/marcel/Pictures/Puzzles/.Old-old/Tests/DispatchData
-path: /home/marcel/Languages/Raku/Projects/Tools/Dispatcher

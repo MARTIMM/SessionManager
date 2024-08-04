@@ -1,0 +1,3 @@
+comment: dispatch
+exec: bin/dispatcher.raku --config=/home/marcel/Sessions-Starter
+path: /home/marcel/Languages/Raku/Projects/Tools/Dispatcher
