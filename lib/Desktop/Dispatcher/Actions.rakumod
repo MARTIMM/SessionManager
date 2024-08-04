@@ -48,14 +48,34 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
     .set-spacing(10);
   }
 
+  for $!config.get-toolbar-action -> Hash $action {
+    my Hash $action-data = self.process-action(:$action);
+    $action-data<tooltip> = "Run\n$action-data<tooltip>";
+
+    with my Gnome::Gtk4::Picture $picture .= new-picture {
+      .set-filename($action-data<picture-file>);
+      .set-size-request($!config.get-icon-size);
+
+      .set-margin-top(0);
+      .set-margin-bottom(0);
+      .set-margin-start(0);
+      .set-margin-end(0);
+    }
+
+    my Gnome::Gtk4::Button $button = self.action-button($action-data);
+
+    $toolbar.append($button);
+  }
+
   for $!config.get-sessions -> $session-name {
-    my Str $session-title = $!config.get-session-title($session-name);
+    my Str $session-title =
+       "Session\n" ~ $!config.get-session-title($session-name);
     my Str $picture-file =
       self.substitute-vars($!config.get-session-icon($session-name));
 
     with my Gnome::Gtk4::Picture $picture .= new-picture {
       .set-filename($picture-file);
-      .set-size-request( 100, 100);
+      .set-size-request($!config.get-icon-size);
 
       .set-margin-top(0);
       .set-margin-bottom(0);
@@ -115,61 +135,71 @@ method session-actions ( Str :$session-name, Gnome::Gtk4::Box :$sessions ) {
     .set-margin-end(30);
 
     for $!config.get-session-action($session-name) -> $action {
-      my Str $picture-file = DATA_DIR ~ '/Images/config-icon.jpg';
-      my Hash $action-data = %(:$session-name);
-
-      # Get tooltip text
-      if ? $action<t> {
-        $action-data<tooltip> = self.substitute-vars($action<t>);
-      }
-
-      # Set path to work directory
-      if ? $action<p> {
-        $action-data<work-dir> = self.substitute-vars($action<p>);
-      }
-
-      # Set environment
-      if ? $action<e> {
-        $action-data<env> = self.substitute-vars($action<e>);
-      }
-
-      # Script to run before command can run
-      if ? $action<s> {
-        $action-data<script> = self.substitute-vars($action<s>);
-      }
-
-      # Set command to run
-      if ? $action<c> {
-        $action-data<cmd> = self.substitute-vars($action<c>);
-      }
-
-      # Set icon on the button
-      if ? $action<i> {
-        $picture-file = self.substitute-vars($action<i>);
-        $picture-file = [~] $!config.config-directory, '/', $picture-file
-          unless $picture-file.index('/') == 0;
-      }
-
-      if ! $action-data<tooltip> and ? $action-data<cmd> {
-        my Str $tooltip = $action-data<cmd>;
-        $tooltip ~~ s/ \s .* $//;
-        $action-data<tooltip> = $tooltip;
-      }
-
-      my Gnome::Gtk4::Button $button =
-        self.action-button( $picture-file, $action-data, $session-buttons);
+      my Hash $action-data = self.process-action( :$session-name, :$action);
+      my Gnome::Gtk4::Button $button = self.action-button($action-data);
       .append($button);
     }
   }
 }
 
 #-------------------------------------------------------------------------------
-method action-button (
-  Str $picture-file, Hash $action-data, Gnome::Gtk4::Box $session-buttons
-  --> Gnome::Gtk4::Button
+method process-action (
+   Str :$session-name = '_TOOLBAR_', Hash :$action
+   --> Hash
 ) {
+#  my Str $picture-file = DATA_DIR ~ '/Images/config-icon.jpg';
+  my Hash $action-data = %(
+    :$session-name, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
+  );
+
+
+  # Get tooltip text
+  if ? $action<t> {
+    $action-data<tooltip> = self.substitute-vars($action<t>);
+  }
+
+  # Set path to work directory
+  if ? $action<p> {
+    $action-data<work-dir> = self.substitute-vars($action<p>);
+  }
+
+  # Set environment
+  if ? $action<e> {
+    $action-data<env> = self.substitute-vars($action<e>);
+  }
+
+  # Script to run before command can run
+  if ? $action<s> {
+    $action-data<script> = self.substitute-vars($action<s>);
+  }
+
+  # Set command to run
+  if ? $action<c> {
+    $action-data<cmd> = self.substitute-vars($action<c>);
+  }
+
+  # Set icon on the button
+  if ? $action<i> {
+    my Str $picture-file = self.substitute-vars($action<i>);
+    $action-data<picture-file> = $picture-file;
+    $action-data<picture-file> =
+      [~] $!config.config-directory, '/', $picture-file
+      unless $picture-file.index('/') == 0;
+  }
+
+  if ! $action-data<tooltip> and ? $action-data<cmd> {
+    my Str $tooltip = $action-data<cmd>;
+    $tooltip ~~ s/ \s .* $//;
+    $action-data<tooltip> = $tooltip;
+  }
+
+  $action-data
+}
+
+#-------------------------------------------------------------------------------
+method action-button ( Hash $action-data --> Gnome::Gtk4::Button ) {
   with my Gnome::Gtk4::Picture $picture .= new-picture {
-    .set-filename($picture-file);
+    .set-filename($action-data<picture-file>);
     .set-size-request($!config.get-icon-size);
   }
 

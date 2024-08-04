@@ -110,8 +110,12 @@ method get-session-icon ( Str $name --> Str ) {
 
 #-------------------------------------------------------------------------------
 # Use: for $x.get-session-action($n) -> $action { }
-method get-session-action( Str $name --> Seq ) {
-  gather for @($!dispatch-config<sessions>{$name}<actions>) -> $action {
-    take $action;
-  }
+method get-session-action( Str $name --> List ) {
+  @($!dispatch-config<sessions>{$name}<actions>)
+}
+
+#-------------------------------------------------------------------------------
+# Use: for $x.get-session-action($n) -> $action { }
+method get-toolbar-action( --> List ) {
+  $!dispatch-config<toolbar>:exists ?? @($!dispatch-config<toolbar>) !! ()
 }
