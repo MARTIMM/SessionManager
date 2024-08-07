@@ -152,7 +152,6 @@ method process-action (
     :$session-name, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
   );
 
-
   # Get tooltip text
   if ? $action<t> {
     $action-data<tooltip> = self.substitute-vars($action<t>);
@@ -225,10 +224,12 @@ method run-action ( Hash :$action-data ) {
   }
 
   $cmd = '';
-  $cmd ~= [~] 'cd ', $action-data<work-dir>, ';' if ? $action-data<work-dir>;
+  $cmd ~= [~] "cd '$action-data<work-dir>';" if ? $action-data<work-dir>;
   $cmd ~= $action-data<cmd> if ? $action-data<cmd>;
 
   $cmd ~~ s:g/ \s ** 2..* / /;
+
+#note "$?LINE $cmd";
 
   shell $cmd ~ ' &';
 
