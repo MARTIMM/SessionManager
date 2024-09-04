@@ -2,14 +2,14 @@
 [Desktop Entry]
 Comment[en_US]=
 Comment=
-Exec=/home/marcel/Languages/Raku/Projects/Tools/Dispatcher/bin/dispatcher.raku %u
+Exec=/home/marcel/Languages/Raku/Projects/Tools/Dispatcher/bin/dispatcher.raku --config='%u'
 GenericName[en_US]=
 GenericName=
 MimeType=application/x-dispatcher;
 Name[en_US]=dispatcher.raku
 Name=dispatcher.raku
 NoDisplay=true
-Path=
+Path=/home/marcel/Languages/Raku/Projects/Tools/Dispatcher
 PrefersNonDefaultGPU=false
 StartupNotify=true
 Terminal=false
