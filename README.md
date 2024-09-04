@@ -79,3 +79,5 @@ This project is tested with Rakudo built on MoarVM implementing Perl v6.d.
 <a href="https://www.flaticon.com/free-icons/github" title="github icons">Github icons created by Freepik - Flaticon</a>
 
 <a target="_blank" href="https://icons8.com/icon/9OGIyU8hrxW5/visual-studio-code-2019">visual studio code</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+
+<a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by Freepik - Flaticon</a>
