@@ -101,6 +101,10 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   my Array $args = $cl.get-arguments;
   my Capture $o = get-options-from( $args[1..*-1], |$*remote-options);
 
+  if $o<v>:exists or $o<verbose>:exists {
+    $*verbose = True;
+  }
+
   my Str $config-directory;
   if ?$o<config> {
     $config-directory = $o.<config> // Str;

@@ -152,29 +152,40 @@ method process-action (
     :$session-name, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
   );
 
+#  $*verbose = ? $action<v>;
+  note "\nSession data for $session-name" if $*verbose;
+
   # Get tooltip text
   if ? $action<t> {
     $action-data<tooltip> = self.substitute-vars($action<t>);
+    note "Set tooltip to\n  ", $action-data<tooltip>.split("\n").join("\n  ")
+      if $*verbose;
   }
 
   # Set path to work directory
   if ? $action<p> {
     $action-data<work-dir> = self.substitute-vars($action<p>);
+    note "Set workdir to $action-data<work-dir>" if $*verbose;
   }
 
   # Set environment
   if ? $action<e> {
     $action-data<env> = self.substitute-vars($action<e>);
+    note "Set environment to $action-data<env>" if $*verbose;
   }
 
   # Script to run before command can run
   if ? $action<s> {
     $action-data<script> = self.substitute-vars($action<s>);
+    note "Set script to\n  ", $action-data<script>.split("\n").join("\n  ")
+      if $*verbose;
   }
 
   # Set command to run
   if ? $action<c> {
     $action-data<cmd> = self.substitute-vars($action<c>);
+    note "Set command to\n  ", $action-data<cmd>.split("\n").join("\n  ")
+      if $*verbose;
   }
 
   # Set icon on the button
@@ -184,11 +195,15 @@ method process-action (
     $action-data<picture-file> =
       [~] $!config.config-directory, '/', $picture-file
       unless $picture-file.index('/') == 0;
+
+    note "Set icon to $action-data<picture-file>" if $*verbose;
   }
 
   if ! $action-data<tooltip> and ? $action-data<cmd> {
     my Str $tooltip = $action-data<cmd>;
     $tooltip ~~ s/ \s .* $//;
+    note "Set tooltip to\n  ", $tooltip.split("\n").join("\n  ")
+      if $*verbose;
     $action-data<tooltip> = $tooltip;
   }
 
@@ -228,10 +243,11 @@ method run-action ( Hash :$action-data ) {
   $cmd ~= $action-data<cmd> if ? $action-data<cmd>;
 
   $cmd ~~ s:g/ \s ** 2..* / /;
+  $cmd ~= ' &';
 
-#note "$?LINE $cmd";
+  note "Run command $cmd" if $*verbose;
 
-  shell $cmd ~ ' &';
+  shell $cmd;
 
   if ?$k and ?$v {
     %*ENV{$k}:delete;

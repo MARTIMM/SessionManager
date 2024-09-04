@@ -11,7 +11,8 @@ use Desktop::Dispatcher::Application;
 
 my Str $*dispatcher-version = '0.2.0';
 my Array $*local-options = [<version>];
-my Array $*remote-options = [<config=s>,];
+my Array $*remote-options = [ |<config=s v verbose> ];
+my Bool $*verbose = False;
 
 my Bool $*dispatch-testing = True;
 
