@@ -6,7 +6,7 @@
   "author": "Marcel Timmerman",
   "auth": "cpan:MARTIMM",
 
-  "version": "0.4.0",
+  "version": "0.4.1",
   "tags": [ "desktop", "kde", "gnome", "tool" ],
   
   "license": "Artistic-2.0",
@@ -18,7 +18,10 @@
     "Desktop::Dispatcher::Config": "lib/Desktop/Dispatcher/Config.rakumod"
   },
 
-  "depends": [ "Gnome::Gtk4:api<2>","YAMLish", "Getopt::Long" ],
+  "depends": [
+    "Gnome::Gtk4:api<2>","YAMLish", "Getopt::Long", "Digest::SHA256::Native",
+    "Archive::Libarchive:", "Archive::Libarchive::Constants"
+  ],
 
   "resources": [
     "brushed-dark.jpg",
