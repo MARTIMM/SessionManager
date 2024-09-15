@@ -14,15 +14,19 @@ use Gnome::Gtk4::T-enums:api<2>;
 
 use Gnome::N::N-Object:api<2>;
 
+use Digest::SHA256::Native;
+
 #-------------------------------------------------------------------------------
 unit class Desktop::Dispatcher::Actions:auth<github:MARTIMM>;
 
 has Desktop::Dispatcher::Config $!config;
 has Bool $!init-config;
+has Str $!shell; 
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Desktop::Dispatcher::Config:D :$!config ) {
   $!init-config = True;
+  $!shell = $!config.get-shell;
 }
 
 #-------------------------------------------------------------------------------
@@ -124,20 +128,32 @@ method session-actions ( Str :$session-name, Gnome::Gtk4::Box :$sessions ) {
     $label.set-text($session-title);
   }
 
-  my Gnome::Gtk4::Box $session-buttons .= new-box(GTK_ORIENTATION_HORIZONTAL);
-  $session-frame.set-child($session-buttons);
+  my Gnome::Gtk4::Box $session-levels .= new-box(
+    GTK_ORIENTATION_VERTICAL
+  );
+  $session-frame.set-child($session-levels);
 
-  with $session-buttons {
-    .set-spacing(20);
-    .set-margin-top(0);
-    .set-margin-bottom(30);
-    .set-margin-start(30);
-    .set-margin-end(30);
+  loop ( my UInt $level = 0; $level < 5; $level++ ) {
+    last unless $!config.has-actions-level( $session-name, :$level);
 
-    for $!config.get-session-action($session-name) -> $action {
-      my Hash $action-data = self.process-action( :$session-name, :$action);
-      my Gnome::Gtk4::Button $button = self.action-button($action-data);
-      .append($button);
+    my Gnome::Gtk4::Box $session-buttons .= new-box(
+      GTK_ORIENTATION_HORIZONTAL
+    );
+
+    $session-levels.append($session-buttons);
+
+    with $session-buttons {
+      .set-spacing(20);
+      .set-margin-top(0);
+      .set-margin-bottom(30);
+      .set-margin-start(30);
+      .set-margin-end(30);
+
+      for $!config.get-session-actions( $session-name, :$level) -> $action {
+        my Hash $action-data = self.process-action( :$session-name, :$action);
+        my Gnome::Gtk4::Button $button = self.action-button($action-data);
+        .append($button);
+      }
     }
   }
 }
@@ -239,15 +255,19 @@ method run-action ( Hash :$action-data ) {
   }
 
   $cmd = '';
-  $cmd ~= [~] "cd '$action-data<work-dir>';" if ? $action-data<work-dir>;
+  $cmd ~= [~] "cd '$action-data<work-dir>'\n" if ? $action-data<work-dir>;
   $cmd ~= $action-data<cmd> if ? $action-data<cmd>;
+  my Str $script-name;
+  $script-name = '/tmp/' ~ sha256-hex($cmd) ~ ".shell-script";
+  $script-name.IO.spurt($cmd);
 
-  $cmd ~~ s:g/ \s ** 2..* / /;
-  $cmd ~= ' &';
+#  $cmd ~~ s:g/ \s ** 2..* / /;
+#  $cmd ~= ' &';
 
-  note "Run command $cmd" if $*verbose;
+  note "Run script $!shell, $script-name" if $*verbose;
 
-  shell $cmd;
+  my Proc $p = shell "$!shell -xv $script-name > /tmp/script.log &";
+note "$?LINE done script";
 
   if ?$k and ?$v {
     %*ENV{$k}:delete;

@@ -109,13 +109,25 @@ method get-session-icon ( Str $name --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
-# Use: for $x.get-session-action($n) -> $action { }
-method get-session-action( Str $name --> List ) {
-  @($!dispatch-config<sessions>{$name}<actions>)
+method get-session-actions( Str $name, Int :$level = 0 --> List ) {
+  @($!dispatch-config<sessions>{$name}{
+    'actions' ~ ($level <= 0 ?? '' !! $level.Str)
+  })
 }
 
 #-------------------------------------------------------------------------------
-# Use: for $x.get-session-action($n) -> $action { }
+method has-actions-level( Str $name, Int :$level = 0 --> Bool ) {
+  $!dispatch-config<sessions>{$name}{
+    'actions' ~ ($level <= 0 ?? '' !! $level.Str)
+  }:exists
+}
+
+#-------------------------------------------------------------------------------
 method get-toolbar-action( --> List ) {
   $!dispatch-config<toolbar>:exists ?? @($!dispatch-config<toolbar>) !! ()
+}
+
+#-------------------------------------------------------------------------------
+method get-shell( --> Str ) {
+  $!dispatch-config<shell>:exists ?? $!dispatch-config<shell> !! '/usr/bin/bash'
 }
