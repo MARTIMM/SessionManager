@@ -11,6 +11,13 @@ use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Picture:api<2>;
 use Gnome::Gtk4::Frame:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
+use Gnome::Gtk4::Overlay:api<2>;
+use Gnome::Gtk4::PopoverMenu:api<2>;
+
+use Gnome::GdkPixbuf::Pixbuf:api<2>;
+
+use Gnome::Glib::N-Error:api<2>;
+use Gnome::Glib::T-error:api<2>;
 
 use Gnome::N::N-Object:api<2>;
 
@@ -52,6 +59,7 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
     .set-spacing(10);
   }
 
+  # First a series of direct action buttons
   for $!config.get-toolbar-action -> Hash $action {
     my Hash $action-data = self.process-action(:$action);
     $action-data<tooltip> = "Run\n$action-data<tooltip>";
@@ -66,11 +74,12 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
       .set-margin-end(0);
     }
 
-    my Gnome::Gtk4::Button $button = self.action-button($action-data);
+    my Gnome::Gtk4::Overlay $overlay = self.action-button($action-data);
 
-    $toolbar.append($button);
+    $toolbar.append($overlay);
   }
 
+  # Then a series of session buttons
   for $!config.get-sessions -> $session-name {
     my Str $session-title =
        "Session\n" ~ $!config.get-session-title($session-name);
@@ -151,8 +160,8 @@ method session-actions ( Str :$session-name, Gnome::Gtk4::Box :$sessions ) {
 
       for $!config.get-session-actions( $session-name, :$level) -> $action {
         my Hash $action-data = self.process-action( :$session-name, :$action);
-        my Gnome::Gtk4::Button $button = self.action-button($action-data);
-        .append($button);
+        my Gnome::Gtk4::Overlay $overlay = self.action-button($action-data);
+        .append($overlay);
       }
     }
   }
@@ -215,6 +224,18 @@ method process-action (
     note "Set icon to $action-data<picture-file>" if $*verbose;
   }
 
+  # Set overlay icon over the button
+  if ? $action<o> {
+    my Str $picture-file = self.substitute-vars($action<o>);
+    $action-data<overlay-picture-file> = $picture-file;
+    $action-data<overlay-picture-file> =
+      [~] $!config.config-directory, '/', $picture-file
+      unless $picture-file.index('/') == 0;
+
+    note "Set overlay picture to $action-data<overlay-picture-file>"
+      if $*verbose;
+  }
+
   if ! $action-data<tooltip> and ? $action-data<cmd> {
     my Str $tooltip = $action-data<cmd>;
     $tooltip ~~ s/ \s .* $//;
@@ -227,8 +248,12 @@ method process-action (
 }
 
 #-------------------------------------------------------------------------------
-method action-button ( Hash $action-data --> Gnome::Gtk4::Button ) {
-  with my Gnome::Gtk4::Picture $picture .= new-picture {
+method action-button ( Hash $action-data --> Gnome::Gtk4::Overlay ) {
+  my Gnome::Gtk4::Overlay $overlay .= new-overlay;
+  my Gnome::Gtk4::Picture $overlay-pic;
+  my Gnome::Gtk4::Picture $picture;
+
+  with $picture .= new-picture {
     .set-filename($action-data<picture-file>);
     .set-size-request($!config.get-icon-size);
   }
@@ -240,7 +265,38 @@ method action-button ( Hash $action-data --> Gnome::Gtk4::Button ) {
     .register-signal( self, 'run-action', 'clicked', :$action-data);
   }
 
-  $button
+  $overlay.set-child($button);
+
+  if $action-data<overlay-picture-file>:exists {
+    # Need to use a box or resize the picture, otherwise it will
+    # use up all of the overlay area if the picture is large.
+    my $err = CArray[N-Error].new(N-Error);
+    my Int ( $w, $h) = ($!config.get-icon-size.List X/ 3)>>.Int;
+#note "$?LINE $w, $h";
+    my Gnome::GdkPixbuf::Pixbuf $gdkpixbuf .= new-from-file-at-size(
+      $action-data<overlay-picture-file>, $w, $h, $err
+    );
+
+    with $overlay-pic .= new-for-pixbuf($gdkpixbuf) {
+      $overlay.add-overlay($overlay-pic);
+      .set-margin-top(0);
+      .set-margin-bottom(0);
+      .set-margin-start(0);
+      .set-margin-end(0);
+
+      .set-hexpand-set(False);
+      .set-vexpand-set(False);
+      .set-halign(GTK_ALIGN_END);
+      .set-valign(GTK_ALIGN_END);
+
+      $!config.set-css( .get-style-context, 'overlay-pic');
+    }
+
+#note "$?LINE $overlay-pic.get-width(), $overlay-pic.get-height()";
+#note "$?LINE $overlay.get-width(), $overlay.get-height()";
+  }
+
+  $overlay
 }
 
 #-------------------------------------------------------------------------------

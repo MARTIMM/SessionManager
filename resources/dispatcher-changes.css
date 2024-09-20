@@ -56,3 +56,16 @@
   margin: 0px;
 }
 
+.overlay-pic {
+
+  border-top: 5px solid rgb(254, 174, 246);
+  border-left: 5px solid rgb(254, 174, 246);
+  border-right: 5px solid rgb(147, 3, 119);
+  border-bottom: 5px solid rgb(147, 3, 119);
+  border-radius: 10px;
+
+  padding: 0px;
+  margin: 0px;
+}
+
+
