@@ -177,7 +177,6 @@ method process-action (
     :$session-name, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
   );
 
-#  $*verbose = ? $action<v>;
   note "\nSession data for $session-name" if $*verbose;
 
   # Get tooltip text
@@ -234,6 +233,10 @@ method process-action (
 
     note "Set overlay picture to $action-data<overlay-picture-file>"
       if $*verbose;
+  }
+
+  if ? $action<v> {
+    $!config.set-temp-variables($action<v>);
   }
 
   if ! $action-data<tooltip> and ? $action-data<cmd> {
@@ -311,16 +314,17 @@ method run-action ( Hash :$action-data ) {
   }
 
   $cmd = '';
-  $cmd ~= [~] "cd '$action-data<work-dir>'\n" if ? $action-data<work-dir>;
+  $cmd ~= "cd '$action-data<work-dir>'\n" if ? $action-data<work-dir>;
   $cmd ~= $action-data<cmd> if ? $action-data<cmd>;
+  $cmd = self.substitute-vars( $cmd, :v($!config.get-temp-variables));
+
   my Str $script-name;
   $script-name = '/tmp/' ~ sha256-hex($cmd) ~ ".shell-script";
   $script-name.IO.spurt($cmd);
 
 #  $cmd ~~ s:g/ \s ** 2..* / /;
 #  $cmd ~= ' &';
-
-  note "Run script $!shell, $script-name" if $*verbose;
+  note "\nRun script $!shell, $script-name" if $*verbose;
 
   my Proc $p = shell "$!shell -xv $script-name > /tmp/script.log &";
 note "$?LINE done script";
@@ -331,6 +335,36 @@ note "$?LINE done script";
 }
 
 #-------------------------------------------------------------------------------
+method substitute-vars ( Str $t, Hash :$v --> Str ) {
+if ?$v {
+note "$?LINE $v.gist()";
+note $t;
+}
+  my Hash $variables = $v // $!config.get-variables;
+  my Str $text = $t;
+
+  while $text ~~ m/ '$' $<variable-name> = [<alpha> | <[0..9]> | '-']+ / {
+    my Str $name = $/<variable-name>.Str;
+    if $variables{$name}:exists {
+      $text ~~ s:g/ '$' $name /$variables{$name}/;
+    }
+
+    else {
+      note "No substitution yet or variable \$$name";
+      $text ~~ s:g/ '$' $name /___$name/;
+    }
+  }
+
+  $text ~~ s:g/ '___' ([<alpha> | <[0..9]> | '-']+) /\$$0/;
+if ?$v {
+note "$?LINE $text";
+}
+
+  $text
+}
+
+=finish
+#-------------------------------------------------------------------------------
 method substitute-vars ( Str $text is copy --> Str ) {
   my Hash $variables = $!config.get-variables;
   while $text ~~ m/ '$' $<variable-name> = [<alpha> | <[0..9]> | '-']+ / {
@@ -340,9 +374,13 @@ method substitute-vars ( Str $text is copy --> Str ) {
     }
 
     else {
-      die "No substitution for variable \$$name";
+      note "No substitution fyet or variable \$$name";
+      $text ~~ s:g/ '$' $name /___$name}/;
     }
   }
+
+  $text ~~ s:g/ '___' (<[A..Za..z0..9_-]>+) /\$$[0]/;
+note "$?LINE $text";
 
   $text
 }

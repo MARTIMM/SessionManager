@@ -99,6 +99,18 @@ method get-variables ( --> Hash ) {
 }
 
 #-------------------------------------------------------------------------------
+method get-temp-variables ( --> Hash ) {
+#note "$?LINE get-vars";
+  $!dispatch-config<config><temp-variables> // %();
+}
+
+#-------------------------------------------------------------------------------
+method set-temp-variables ( Hash $vars ) {
+#note "$?LINE get-vars";
+  $!dispatch-config<config><temp-variables> = $vars;
+}
+
+#-------------------------------------------------------------------------------
 method get-session-title ( Str $name --> Str ) {
   $!dispatch-config<sessions>{$name}<title> // '[-]'
 }
