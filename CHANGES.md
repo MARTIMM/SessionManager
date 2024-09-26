@@ -1,3 +1,8 @@
+
+* 2024-09-26 0.4.3
+  * Resize window after changing sessions
+  * Images also found automatically
+
 * 2024-09-24 0.4.2
   * Extension to inject variables per action and save them in the config. The variables get substituted just before execution. This is useful when other actions may depend on these variables. An example I cam across when I test the mongodb server. The command handling this has several options to select the type of server and version. So variables can be set and a server started while other actions run tests with the information set previously. This saves us a lot of test actions when the same tests must be done for different type of servers and versions.
 
