@@ -18,6 +18,7 @@ constant DATA_DIR is export = [~] $*HOME, '/.config/', APP_ID;
 has Str $.config-directory;
 has Hash $!dispatch-config;
 has Gnome::Gtk4::CssProvider $!css-provider;
+#has Hash $!image-map;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str :$!config-directory is copy ) {
@@ -117,29 +118,29 @@ method get-session-title ( Str $name --> Str ) {
 
 #-------------------------------------------------------------------------------
 method get-session-icon ( Str $name --> Str ) {
-  $!dispatch-config<sessions>{$name}<icon> // '[-]'
+  $!dispatch-config<sessions>{$name}<icon> // "$*images/$name/0.png";
 }
 
 #-------------------------------------------------------------------------------
-method get-session-actions( Str $name, Int :$level = 0 --> List ) {
+method get-session-actions ( Str $name, Int :$level = 0 --> List ) {
   @($!dispatch-config<sessions>{$name}{
     'actions' ~ ($level <= 0 ?? '' !! $level.Str)
   })
 }
 
 #-------------------------------------------------------------------------------
-method has-actions-level( Str $name, Int :$level = 0 --> Bool ) {
+method has-actions-level ( Str $name, Int :$level = 0 --> Bool ) {
   $!dispatch-config<sessions>{$name}{
     'actions' ~ ($level <= 0 ?? '' !! $level.Str)
   }:exists
 }
 
 #-------------------------------------------------------------------------------
-method get-toolbar-action( --> List ) {
+method get-toolbar-actions ( --> List ) {
   $!dispatch-config<toolbar>:exists ?? @($!dispatch-config<toolbar>) !! ()
 }
 
 #-------------------------------------------------------------------------------
-method get-shell( --> Str ) {
+method get-shell ( --> Str ) {
   $!dispatch-config<shell>:exists ?? $!dispatch-config<shell> !! '/usr/bin/bash'
 }

@@ -5,6 +5,7 @@ use NativeCall;
 
 use Desktop::Dispatcher::Config;
 
+use Gnome::Gtk4::ApplicationWindow:api<2>;
 use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::Label:api<2>;
@@ -29,9 +30,13 @@ unit class Desktop::Dispatcher::Actions:auth<github:MARTIMM>;
 has Desktop::Dispatcher::Config $!config;
 has Bool $!init-config;
 has Str $!shell; 
+has Gnome::Gtk4::ApplicationWindow $!app-window;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Desktop::Dispatcher::Config:D :$!config ) {
+submethod BUILD (
+  Desktop::Dispatcher::Config:D :$!config,
+  Gnome::Gtk4::ApplicationWindow :$!app-window
+) {
   $!init-config = True;
   $!shell = $!config.get-shell;
 }
@@ -60,8 +65,9 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
   }
 
   # First a series of direct action buttons
-  for $!config.get-toolbar-action -> Hash $action {
-    my Hash $action-data = self.process-action(:$action);
+  my $count = 0;
+  for $!config.get-toolbar-actions -> Hash $action {
+    my Hash $action-data = self.process-action( :$action, :level(0), :$count);
     $action-data<tooltip> = "Run\n$action-data<tooltip>";
 
     with my Gnome::Gtk4::Picture $picture .= new-picture {
@@ -76,7 +82,30 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
 
     my Gnome::Gtk4::Overlay $overlay = self.action-button($action-data);
 
+    if $action-data<overlay-picture-file>:exists and
+      $action-data<overlay-picture-file>.IO.r
+    {
+      # Need to use a box or resize the picture, otherwise it will
+      # use up all of the overlay area if the picture is large.
+      my $err = CArray[N-Error].new(N-Error);
+      my Int ( $w, $h) = ($!config.get-icon-size.List X/ 3)>>.Int;
+      my Gnome::GdkPixbuf::Pixbuf $gdkpixbuf .= new-from-file-at-size(
+        $action-data<overlay-picture-file>, $w, $h, $err
+      );
+
+      my Gnome::Gtk4::Picture $overlay-pic;
+      with $overlay-pic .= new-for-pixbuf($gdkpixbuf) {
+        $overlay.add-overlay($overlay-pic);
+        .set-halign(GTK_ALIGN_END);
+        .set-valign(GTK_ALIGN_END);
+
+        $!config.set-css( .get-style-context, 'overlay-pic');
+      }
+    }
+
     $toolbar.append($overlay);
+
+    $count++;
   }
 
   # Then a series of session buttons
@@ -87,7 +116,7 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
       self.substitute-vars($!config.get-session-icon($session-name));
 
     with my Gnome::Gtk4::Picture $picture .= new-picture {
-      .set-filename($picture-file);
+      .set-filename(self.set-picture-path($picture-file));
       .set-size-request($!config.get-icon-size);
 
       .set-margin-top(0);
@@ -142,6 +171,7 @@ method session-actions ( Str :$session-name, Gnome::Gtk4::Box :$sessions ) {
   );
   $session-frame.set-child($session-levels);
 
+  $!app-window.set-default-size($!config.get-window-size);
   loop ( my UInt $level = 0; $level < 5; $level++ ) {
     last unless $!config.has-actions-level( $session-name, :$level);
 
@@ -158,10 +188,14 @@ method session-actions ( Str :$session-name, Gnome::Gtk4::Box :$sessions ) {
       .set-margin-start(30);
       .set-margin-end(30);
 
+      my UInt $count = 0;
       for $!config.get-session-actions( $session-name, :$level) -> $action {
-        my Hash $action-data = self.process-action( :$session-name, :$action);
+        my Hash $action-data =
+           self.process-action( :$session-name, :$action, :$level, :$count);
         my Gnome::Gtk4::Overlay $overlay = self.action-button($action-data);
         .append($overlay);
+
+        $count++;
       }
     }
   }
@@ -169,12 +203,11 @@ method session-actions ( Str :$session-name, Gnome::Gtk4::Box :$sessions ) {
 
 #-------------------------------------------------------------------------------
 method process-action (
-   Str :$session-name = '_TOOLBAR_', Hash :$action
+   Str :$session-name = 'toolbar', Hash :$action, UInt :$level, UInt :$count
    --> Hash
 ) {
-#  my Str $picture-file = DATA_DIR ~ '/Images/config-icon.jpg';
   my Hash $action-data = %(
-    :$session-name, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
+    :$session-name, :$level, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
   );
 
   note "\nSession data for $session-name" if $*verbose;
@@ -212,27 +245,31 @@ method process-action (
       if $*verbose;
   }
 
-  # Set icon on the button
+  # Set icon on the button. If not specified, try a different path
+  my Str $picture-file;
   if ? $action<i> {
-    my Str $picture-file = self.substitute-vars($action<i>);
-    $action-data<picture-file> = $picture-file;
-    $action-data<picture-file> =
-      [~] $!config.config-directory, '/', $picture-file
-      unless $picture-file.index('/') == 0;
+    $picture-file = self.substitute-vars($action<i>);
+  }
 
-    note "Set icon to $action-data<picture-file>" if $*verbose;
+  else {
+    $picture-file = "$*images/$session-name/$level$count.png";
+  }
+
+  if ? $picture-file {
+    $action-data<picture-file> = self.set-picture-path($picture-file);
   }
 
   # Set overlay icon over the button
   if ? $action<o> {
-    my Str $picture-file = self.substitute-vars($action<o>);
-    $action-data<overlay-picture-file> = $picture-file;
-    $action-data<overlay-picture-file> =
-      [~] $!config.config-directory, '/', $picture-file
-      unless $picture-file.index('/') == 0;
+    $picture-file = self.substitute-vars($action<o>);
+  }
 
-    note "Set overlay picture to $action-data<overlay-picture-file>"
-      if $*verbose;
+  else {
+    $picture-file = "$*images/$session-name/o$level$count.png";
+  }
+
+  if ? $picture-file {
+    $action-data<overlay-picture-file> = self.set-picture-path($picture-file);
   }
 
   if ? $action<v> {
@@ -248,6 +285,18 @@ method process-action (
   }
 
   $action-data
+}
+
+#-------------------------------------------------------------------------------
+method set-picture-path ( Str $picture-file = '' --> Str ) {
+  my Str $path = $picture-file;
+  $path =
+    [~] $!config.config-directory, '/', $picture-file
+    unless $picture-file.index('/') == 0;
+
+  note "Set icon to $path" if $*verbose;
+
+  $path
 }
 
 #-------------------------------------------------------------------------------
@@ -270,33 +319,25 @@ method action-button ( Hash $action-data --> Gnome::Gtk4::Overlay ) {
 
   $overlay.set-child($button);
 
-  if $action-data<overlay-picture-file>:exists {
+  if $action-data<overlay-picture-file>:exists and
+    $action-data<overlay-picture-file>.IO.r
+  {
     # Need to use a box or resize the picture, otherwise it will
     # use up all of the overlay area if the picture is large.
     my $err = CArray[N-Error].new(N-Error);
     my Int ( $w, $h) = ($!config.get-icon-size.List X/ 3)>>.Int;
-#note "$?LINE $w, $h";
+
     my Gnome::GdkPixbuf::Pixbuf $gdkpixbuf .= new-from-file-at-size(
       $action-data<overlay-picture-file>, $w, $h, $err
     );
 
     with $overlay-pic .= new-for-pixbuf($gdkpixbuf) {
       $overlay.add-overlay($overlay-pic);
-      .set-margin-top(0);
-      .set-margin-bottom(0);
-      .set-margin-start(0);
-      .set-margin-end(0);
-
-      .set-hexpand-set(False);
-      .set-vexpand-set(False);
       .set-halign(GTK_ALIGN_END);
       .set-valign(GTK_ALIGN_END);
 
       $!config.set-css( .get-style-context, 'overlay-pic');
     }
-
-#note "$?LINE $overlay-pic.get-width(), $overlay-pic.get-height()";
-#note "$?LINE $overlay.get-width(), $overlay.get-height()";
   }
 
   $overlay
@@ -321,25 +362,18 @@ method run-action ( Hash :$action-data ) {
   my Str $script-name;
   $script-name = '/tmp/' ~ sha256-hex($cmd) ~ ".shell-script";
   $script-name.IO.spurt($cmd);
-
-#  $cmd ~~ s:g/ \s ** 2..* / /;
-#  $cmd ~= ' &';
   note "\nRun script $!shell, $script-name" if $*verbose;
 
-  my Proc $p = shell "$!shell -xv $script-name > /tmp/script.log &";
-note "$?LINE done script";
+  my Proc $p = shell(
+    "$!shell {$*verbose ?? '-xv ' !! ''}$script-name > /tmp/script.log &"
+  );
 
-  if ?$k and ?$v {
-    %*ENV{$k}:delete;
-  }
+  %*ENV{$k}:delete if ?$k and ?$v;
 }
 
 #-------------------------------------------------------------------------------
 method substitute-vars ( Str $t, Hash :$v --> Str ) {
-if ?$v {
-note "$?LINE $v.gist()";
-note $t;
-}
+
   my Hash $variables = $v // $!config.get-variables;
   my Str $text = $t;
 
@@ -362,26 +396,3 @@ note "$?LINE $text";
 
   $text
 }
-
-=finish
-#-------------------------------------------------------------------------------
-method substitute-vars ( Str $text is copy --> Str ) {
-  my Hash $variables = $!config.get-variables;
-  while $text ~~ m/ '$' $<variable-name> = [<alpha> | <[0..9]> | '-']+ / {
-    my Str $name = $/<variable-name>.Str;
-    if $variables{$name}:exists {
-      $text ~~ s:g/ '$' $name /$variables{$name}/;
-    }
-
-    else {
-      note "No substitution fyet or variable \$$name";
-      $text ~~ s:g/ '$' $name /___$name}/;
-    }
-  }
-
-  $text ~~ s:g/ '___' (<[A..Za..z0..9_-]>+) /\$$[0]/;
-note "$?LINE $text";
-
-  $text
-}
-

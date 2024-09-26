@@ -45,7 +45,7 @@ submethod BUILD ( ) {
   $!application.register-signal( self, 'local-options', 'handle-local-options');
   $!application.register-signal( self, 'remote-options', 'command-line');
   $!application.register-signal( self, 'startup', 'startup');
-  $!application.register-signal( self, 'shutdown', 'shutdown');
+#  $!application.register-signal( self, 'shutdown', 'shutdown');
 
   # Save when an interrupt arrives
   signal(SIGINT).tap( {
@@ -106,12 +106,16 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   }
 
   my Str $config-directory;
-  if ?$o<config> {
+  if ? $o<config> {
     $config-directory = $o.<config> // Str;
   }
 
   $!config .= new(:$config-directory);
   #$!config.load-config;
+
+  if ? $o<image-map> {
+    $!config.set-image-map($o<image-map>);
+  }
 
   if $cl.get-is-remote {
     self.setup-window;
@@ -154,14 +158,8 @@ method setup-window ( ) {
     $!app-window.clear-object;
   }
 
-  # Place grid in a scrollable window so we can move it up and down
-#  my Gnome::Gtk4::ScrolledWindow $swin .= new-scrolledwindow;
-
   with $!app-window .= new-applicationwindow($!application) {
-    my Desktop::Dispatcher::Actions $actions .= new(:$!config);
-
-#    my Gnome::Gtk4::ScrolledWindow $swin = $actions.setup-sessions;
-#    .set-child($swin);
+    my Desktop::Dispatcher::Actions $actions .= new( :$!config, :$!app-window);
 
     my Gnome::Gtk4::Box $sessions-box = $actions.setup-sessions;
     .set-child($sessions-box);
@@ -177,6 +175,7 @@ method exit-program ( ) {
   self.quit;
 }
 
+=finish
 #-------------------------------------------------------------------------------
 method shutdown ( ) {
   # save changed config?
