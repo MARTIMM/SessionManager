@@ -390,9 +390,6 @@ method substitute-vars ( Str $t, Hash :$v --> Str ) {
   }
 
   $text ~~ s:g/ '___' ([<alpha> | <[0..9]> | '-']+) /\$$0/;
-if ?$v {
-note "$?LINE $text";
-}
 
   $text
 }
