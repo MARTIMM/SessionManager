@@ -116,7 +116,7 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
       self.substitute-vars($!config.get-session-icon($session-name));
 
     with my Gnome::Gtk4::Picture $picture .= new-picture {
-      .set-filename(self.set-picture-path($picture-file));
+      .set-filename($!config.set-path($picture-file));
       .set-size-request($!config.get-icon-size);
 
       .set-margin-top(0);
@@ -256,7 +256,7 @@ method process-action (
   }
 
   if ? $picture-file {
-    $action-data<picture-file> = self.set-picture-path($picture-file);
+    $action-data<picture-file> = $!config.set-path($picture-file);
   }
 
   # Set overlay icon over the button
@@ -269,7 +269,7 @@ method process-action (
   }
 
   if ? $picture-file {
-    $action-data<overlay-picture-file> = self.set-picture-path($picture-file);
+    $action-data<overlay-picture-file> = $!config.set-path($picture-file);
   }
 
   if ? $action<v> {
@@ -285,18 +285,6 @@ method process-action (
   }
 
   $action-data
-}
-
-#-------------------------------------------------------------------------------
-method set-picture-path ( Str $picture-file = '' --> Str ) {
-  my Str $path = $picture-file;
-  $path =
-    [~] $!config.config-directory, '/', $picture-file
-    unless $picture-file.index('/') == 0;
-
-  note "Set icon to $path" if $*verbose;
-
-  $path
 }
 
 #-------------------------------------------------------------------------------
@@ -384,7 +372,7 @@ method substitute-vars ( Str $t, Hash :$v --> Str ) {
     }
 
     else {
-      note "No substitution yet or variable \$$name";
+      note "No substitution yet or variable \$$name" if $*verbose;
       $text ~~ s:g/ '$' $name /___$name/;
     }
   }
