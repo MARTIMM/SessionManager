@@ -113,9 +113,8 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   $!config .= new(:$config-directory);
   #$!config.load-config;
 
-  if ? $o<image-map> {
-    $!config.set-image-map($o<image-map>);
-  }
+  # Modify image map
+  $*images = $o<images> if ? $o<images>;
 
   if $cl.get-is-remote {
     self.setup-window;
