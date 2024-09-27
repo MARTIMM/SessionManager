@@ -105,17 +105,20 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
     $*verbose = True;
   }
 
+  # Modify image map. Default is at <config>/Images.
+  $*images = $o<images> if ? $o<images>;
+
+  # Modify parts map. Default is at <config>/Parts.
+  $*parts = $o<parts> if ? $o<parts>;
+
   my Str $config-directory;
   if ? $o<config> {
     $config-directory = $o.<config> // Str;
   }
 
   $!config .= new(:$config-directory);
-  #$!config.load-config;
 
-  # Modify image map
-  $*images = $o<images> if ? $o<images>;
-
+  # finish up
   if $cl.get-is-remote {
     self.setup-window;
   }

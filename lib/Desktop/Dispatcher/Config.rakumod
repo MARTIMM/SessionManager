@@ -56,9 +56,20 @@ method load-config ( ) {
     "$!config-directory/dispatch-config.yaml".IO.slurp
   );
 
- die "dispatch configuration not found" unless ?$!dispatch-config;
+  die "dispatch configuration not found" unless ?$!dispatch-config;
 
-  $*dispatch-testing = $!dispatch-config<config><dispatch-testing> // True;
+  # Check for exernal defined session parts
+  for $!dispatch-config<sessions>.keys -> $session {
+    if $!dispatch-config<sessions>{$session} ~~ Array {
+      my Str ( $file, $name ) = |$!dispatch-config<sessions>{$session};
+      $file = self.set-path("$*parts/$file");
+      my Hash $part-cfg = load-yaml($file.IO.slurp);
+      if $part-cfg<sessions>{$name}:exists {
+        $!dispatch-config<sessions>{$session} =
+          $part-cfg<sessions>{$name}:delete;
+      }
+    }
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -70,6 +81,17 @@ method set-css ( N-Object $context, Str:D $css-class ) {
     $!css-provider, GTK_STYLE_PROVIDER_PRIORITY_USER
   );
   $style-context.add-class($css-class);
+}
+
+#-------------------------------------------------------------------------------
+method set-path ( Str $file = '' --> Str ) {
+  my Str $path = ($file.index('/') // -1) == 0
+                  ?? $file
+                  !! [~] $!config-directory, '/', $file;
+
+  note "Set icon to $path" if $*verbose;
+
+  $path
 }
 
 #-------------------------------------------------------------------------------
