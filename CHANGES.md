@@ -1,4 +1,8 @@
 
+* 2024-09-27 0.4.4
+  * Session config can be split up in session parts, stored in the Parts directory.
+  * Parts and Images directories can be pointed at with an commandline option.
+
 * 2024-09-26 0.4.3
   * Resize window after changing sessions
   * Images also found automatically
