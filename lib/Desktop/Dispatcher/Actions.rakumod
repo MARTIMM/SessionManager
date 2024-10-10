@@ -81,7 +81,6 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
     }
 
     my Gnome::Gtk4::Overlay $overlay = self.action-button($action-data);
-
     if $action-data<overlay-picture-file>:exists and
       $action-data<overlay-picture-file>.IO.r
     {
@@ -104,7 +103,6 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
     }
 
     $toolbar.append($overlay);
-
     $count++;
   }
 
@@ -134,7 +132,33 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
       );
     }
 
-    $toolbar.append($button);
+    my Gnome::Gtk4::Overlay $overlay .= new-overlay;
+    $overlay.set-child($button);
+
+
+    my Str $overlay-icon = self.substitute-vars(
+      $!config.set-path($!config.get-session-overlay-icon($session-name))
+    );
+
+    if ? $overlay-icon.IO.r {
+
+      my $err = CArray[N-Error].new(N-Error);
+      my Int ( $w, $h) = ($!config.get-icon-size.List X/ 3)>>.Int;
+      my Gnome::GdkPixbuf::Pixbuf $gdkpixbuf .= new-from-file-at-size(
+        $overlay-icon, $w, $h, $err
+      );
+
+      my Gnome::Gtk4::Picture $overlay-pic;
+      with $overlay-pic .= new-for-pixbuf($gdkpixbuf) {
+        $overlay.add-overlay($overlay-pic);
+        .set-halign(GTK_ALIGN_END);
+        .set-valign(GTK_ALIGN_END);
+
+        $!config.set-css( .get-style-context, 'overlay-pic');
+      }
+    }
+
+    $toolbar.append($overlay);
   }
 
   $toolbar
@@ -273,7 +297,7 @@ method process-action (
   }
 
   if ? $action<v> {
-    $!config.set-temp-variables($action<v>);
+    $action-data<temp-variables> = $action<v>;
   }
 
   if ! $action-data<tooltip> and ? $action-data<cmd> {
@@ -333,6 +357,9 @@ method action-button ( Hash $action-data --> Gnome::Gtk4::Overlay ) {
 
 #-------------------------------------------------------------------------------
 method run-action ( Hash :$action-data ) {
+
+  $!config.set-temp-variables($action-data<temp-variables>)
+    if $action-data<temp-variables>:exists;
 
   my Str ( $k, $v, $cmd);
   if ? $action-data<env> {

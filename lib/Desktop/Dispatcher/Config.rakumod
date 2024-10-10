@@ -144,6 +144,11 @@ method get-session-icon ( Str $name --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
+method get-session-overlay-icon ( Str $name --> Str ) {
+  $!dispatch-config<sessions>{$name}<over> // "$*images/$name/o0.png";
+}
+
+#-------------------------------------------------------------------------------
 method get-session-actions ( Str $name, Int :$level = 0 --> List ) {
   @($!dispatch-config<sessions>{$name}{
     'actions' ~ ($level <= 0 ?? '' !! $level.Str)
