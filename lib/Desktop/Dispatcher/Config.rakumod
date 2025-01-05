@@ -61,7 +61,7 @@ method load-config ( ) {
   # Check for exernal defined session parts
   for $!dispatch-config<sessions>.keys -> $session {
     if $!dispatch-config<sessions>{$session} ~~ Array {
-      my Str ( $file, $name ) = |$!dispatch-config<sessions>{$session};
+      my Str ( $file, $name ) = | $!dispatch-config<sessions>{$session};
       $file = self.set-path("$*parts/$file");
       my Hash $part-cfg = load-yaml($file.IO.slurp);
       if $part-cfg<sessions>{$name}:exists {
@@ -130,7 +130,7 @@ method get-temp-variables ( --> Hash ) {
 #-------------------------------------------------------------------------------
 method set-temp-variables ( Hash $vars ) {
 #note "$?LINE get-vars";
-  $!dispatch-config<config><temp-variables> = $vars;
+  $!dispatch-config<config><temp-variables> = $vars
 }
 
 #-------------------------------------------------------------------------------
@@ -140,12 +140,13 @@ method get-session-title ( Str $name --> Str ) {
 
 #-------------------------------------------------------------------------------
 method get-session-icon ( Str $name --> Str ) {
-  $!dispatch-config<sessions>{$name}<icon> // "$*images/$name/0.png";
+  $!dispatch-config<sessions>{$name}<icon> // "$*images/$name/0.png"
 }
 
 #-------------------------------------------------------------------------------
 method get-session-overlay-icon ( Str $name --> Str ) {
-  $!dispatch-config<sessions>{$name}<over> // "$*images/$name/o0.png";
+#note "$?LINE $name ", $!dispatch-config<sessions>{$name}<over> // "$*images/$name/o0.png";
+  $!dispatch-config<sessions>{$name}<over> // "$*images/$name/o0.png"
 }
 
 #-------------------------------------------------------------------------------
