@@ -136,10 +136,11 @@ method make-toolbar ( Gnome::Gtk4::Box $sessions --> Gnome::Gtk4::Box ) {
     $overlay.set-child($button);
 
 
-    my Str $overlay-icon = self.substitute-vars(
-      $!config.set-path($!config.get-session-overlay-icon($session-name))
+    my Str $overlay-icon = $!config.set-path(
+      self.substitute-vars($!config.get-session-overlay-icon($session-name))
     );
 
+#note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :e;
     if ? $overlay-icon.IO.r {
 
       my $err = CArray[N-Error].new(N-Error);
@@ -246,13 +247,16 @@ method process-action (
   # Set path to work directory
   if ? $action<p> {
     $action-data<work-dir> = self.substitute-vars($action<p>);
-    note "Set workdir to $action-data<work-dir>" if $*verbose;
+#    note "Set workdir to $action-data<work-dir>" if $*verbose;
   }
 
   # Set environment
   if ? $action<e> {
-    $action-data<env> = self.substitute-vars($action<e>);
-    note "Set environment to $action-data<env>" if $*verbose;
+    $action-data<env> = [];
+    for @($action<e>) -> $a {
+      $action-data<env>.push: self.substitute-vars($a);
+    }
+#    note "Set environment to $action-data<env>" if $*verbose;
   }
 
   # Script to run before command can run
@@ -363,19 +367,24 @@ method run-action ( Hash :$action-data ) {
 
   my Str ( $k, $v, $cmd);
   if ? $action-data<env> {
-    for $action-data<env>.split(';') -> $es {
+    note "Set environment to; " if $*verbose;
+    for @($action-data<env>) -> $es {
       ( $k, $v ) = $es.split('=');
+      note "   $k = $v" if $*verbose;
       %*ENV{$k} = $v;
     }
   }
 
   $cmd = '';
-  $cmd ~= "cd '$action-data<work-dir>'\n" if ? $action-data<work-dir>;
+  if ? $action-data<work-dir> {
+    $cmd ~= "cd '$action-data<work-dir>'\n";
+    note "Set workdir to $action-data<work-dir>" if $*verbose;
+  }
   $cmd ~= $action-data<cmd> if ? $action-data<cmd>;
   $cmd = self.substitute-vars( $cmd, :v($!config.get-temp-variables));
 
   my Str $script-name;
-  $script-name = '/tmp/' ~ sha256-hex($cmd) ~ ".shell-script";
+  $script-name = '/tmp/' ~ sha256-hex($cmd) ~ '.shell-script';
   $script-name.IO.spurt($cmd);
   note "\nRun script $!shell, $script-name" if $*verbose;
 
@@ -392,12 +401,20 @@ method substitute-vars ( Str $t, Hash :$v --> Str ) {
   my Hash $variables = $v // $!config.get-variables;
   my Str $text = $t;
 
-  while $text ~~ m/ '$' $<variable-name> = [<alpha> | <[0..9]> | '-']+ / {
+  while $text ~~ m/ '$' $<variable-name> = [<alpha> | \d | '-']+ / {
     my Str $name = $/<variable-name>.Str;
+#note "$?LINE $text --- $name";
+    # Look in the variables Hash
     if $variables{$name}:exists {
       $text ~~ s:g/ '$' $name /$variables{$name}/;
     }
 
+    # Look in the environment
+    elsif %*ENV{$name}:exists {
+      $text ~~ s:g/ '$' $name /%*ENV{$name}/;
+    }
+
+    # Fail and block variable by substituting $ for __
     else {
       note "No substitution yet or variable \$$name" if $*verbose;
       $text ~~ s:g/ '$' $name /___$name/;
@@ -405,6 +422,9 @@ method substitute-vars ( Str $t, Hash :$v --> Str ) {
   }
 
   $text ~~ s:g/ '___' ([<alpha> | <[0..9]> | '-']+) /\$$0/;
+
+#note "$?LINE $text";
+#printf "\n";
 
   $text
 }
