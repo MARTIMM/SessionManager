@@ -14,6 +14,8 @@ my Array $*local-options = [<version>];
 my Array $*remote-options = [ |<config=s v verbose images=s parts=s> ];
 my Bool $*verbose = False;
 
+my $*dispatch-testing = False;
+
 my Str $*images = 'Images';
 my Str $*parts = 'Parts';
 
