@@ -24,15 +24,11 @@
   ],
 
   "resources": [
-    "brushed-dark.jpg",
-    "brushed-light.jpg",
+    "brushed-dark.jpg", "brushed-light.jpg",
+    "diamond-steel-floor.jpg", "brushed-copper.jpg",
     "config-icon.jpg",
-    "diamond-steel-floor.jpg",
-    "brushed-copper.jpg",
-    "dispatch-icon.png",
-    "dispatcher.css",
-    "dispatcher-changes.css",
-    "mozaic.jpg"
+    "dispatch-icon.png", "dispatcher.css", "dispatcher-changes.css",
+    "mozaic.jpg", "bookmark.png", "fastforward.png"
   ],
 
   "source-url": "git://github.com/MARTIMM/dispatcher.git"
