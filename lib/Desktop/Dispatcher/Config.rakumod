@@ -30,14 +30,24 @@ submethod BUILD ( Str :$!config-directory is copy ) {
   mkdir DATA_DIR ~ '/Images', 0o700 unless (DATA_DIR ~ '/Images').IO.e;
   
   my Str $png-file;
+# It is supposed to copy files to a controllable location See also issue #5746
+# at https://github.com/rakudo/rakudo/issues/5746.
+# But this can be done: %?RESOURCES<dispatcher.css>.IO.absolute()
+# !!!It is warned against doing this!!!
   for <
     diamond-steel-floor.jpg brushed-light.jpg brushed-dark.jpg
     config-icon.jpg brushed-copper.jpg mozaic.jpg dispatch-icon.png
+    bookmark.png fastforward.png
   > -> $i {
+
+  # Are used in the css file and must be accessable in a known path. Rest can
+  # be retrieved from the resources.
+#  for <
+#    brushed-dark.jpg brushed-copper.jpg
+#  > -> $i {
     $png-file = [~] DATA_DIR, '/Images/', $i;
     %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
   }
-
   # Copy style sheet to data directory and load into program
   my Str $css-file = DATA_DIR ~ '/dispatcher.css';
   %?RESOURCES<dispatcher.css>.copy($css-file);
@@ -136,6 +146,11 @@ method set-temp-variables ( Hash $vars ) {
 #-------------------------------------------------------------------------------
 method get-session-title ( Str $name --> Str ) {
   $!dispatch-config<sessions>{$name}<title> // '[-]'
+}
+
+#-------------------------------------------------------------------------------
+method run-all-actions ( Str $name --> Bool ) {
+  $!dispatch-config<sessions>{$name}<run-all-actions> // False
 }
 
 #-------------------------------------------------------------------------------
