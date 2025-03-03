@@ -21,7 +21,7 @@ In the case of a programming task;
   * start a filemanager with tabs opened to directories
   * start a reader with some language documentation, etcetera
 
-There is only one dispatcher instance running. All other instances started later will communicate with the main running program.
+There is only one dispatcher instance running. All other instances started later will communicate with the main running program. This might replace the current view with another depending on provided configuration.
 
 The default config directory will be at `~/.config/io.github.martimm.dispatcher` where also some program images and style files are stored.
 
@@ -74,10 +74,12 @@ This project is tested with Rakudo built on MoarVM implementing Perl v6.d.
 
 ## Attribution
 
-* A [stock.adobe.com config icon](https://stock.adobe.com/images/id/148661655?as_campaign=Flaticon&as_content=api&as_audience=srp&tduid=be971cf7dacd43f1e5e378060daf8732&as_channel=affiliate&as_campclass=redirect&as_source=arvato&asset_id=144547159)
+* [stock.adobe.com config icon](https://stock.adobe.com/images/id/148661655?as_campaign=Flaticon&as_content=api&as_audience=srp&tduid=be971cf7dacd43f1e5e378060daf8732&as_channel=affiliate&as_campclass=redirect&as_source=arvato&asset_id=144547159)
 
-<a href="https://www.flaticon.com/free-icons/github" title="github icons">Github icons created by Freepik - Flaticon</a>
+* <a href="https://www.flaticon.com/free-icons/github" title="github icons">Github icons created by Freepik - Flaticon</a>
 
-<a target="_blank" href="https://icons8.com/icon/9OGIyU8hrxW5/visual-studio-code-2019">visual studio code</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+* <a target="_blank" href="https://icons8.com/icon/9OGIyU8hrxW5/visual-studio-code-2019">visual studio code</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 
-<a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by Freepik - Flaticon</a>
+* <a href="https://www.flaticon.com/free-icons/folder" title="folder icons">Folder icons created by Freepik - Flaticon</a>
+
+* [Svg Repository](https://www.svgrepo.com).
