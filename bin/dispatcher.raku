@@ -2,14 +2,14 @@
 
 use v6.d;
 
-%*ENV<IGNORE_GNOME_DEPRECATION_MESSAGES> = 1;
+#%*ENV<IGNORE_GNOME_DEPRECATION_MESSAGES> = 1;
 
 use Desktop::Dispatcher::Application;
 
 #-------------------------------------------------------------------------------
 # Initialize global variables
 
-my Str $*dispatcher-version = '0.4.3';
+my Str $*dispatcher-version = '0.4.4';
 my Array $*local-options = [<version>];
 my Array $*remote-options = [ |<config=s v verbose images=s parts=s> ];
 my Bool $*verbose = False;
