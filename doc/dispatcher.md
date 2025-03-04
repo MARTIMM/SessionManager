@@ -20,21 +20,26 @@ The program should not show an application menu. Those kind of programs are alre
 
 The purpose of this program is that it can quickly setup or change an environment for something like a programming or music writing task. For example in the case of a programming task; start a console with several tabs open to working directories, start an editor, start a filemanager with tabs opened to directories you need, start a reader with some language documentation, etcetera.
 
-Optionally the action can show a checkbutton for each program which can be (de)selected to dis-/enable the start of a program depending on what is needed at that moment. *this is something for later?*
 
-The program must therefore show a dispatcher page showing a shallow tree. The actions are at the leafs of the tree and the parents of those actions function as a grouping for those actions. The difference compared to the application menu is that an action can do more than only start one application or script.
+The program must therefore show a dispatcher page showing a shallow tree. The actions are at the leafs of the tree and the parents of those actions function as a grouping for those actions. The difference compared to the application menu is that an action can start more applications or scripts at once.
 
-There is only one dispatcher instance running. All other instances started later will communicate with the main running program.
+There is only one dispatcher instance running. All other instances started later will communicate with the main running program. It is possible to swap configurations.
 
-DBus will play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera. *this is something for later?*
 
-There is a configuration section to create the configuration file. *this is something for later, first read from configurations made by hand.*
+## Additions for later
+
+Optionally the action can show a checkbutton for each program which can be (de)selected to dis-/en-able the start of a program depending on what is needed at that moment.
+
+DBus will play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera.
+
+There is a configuration section to create the configuration file.
 
 
 ### Application workings
 
 #### Startup options
-* [x] Option pointing to a root directory of the configuration.
+* [x] `--config` option pointing to a root directory of the configuration.
+* [x] `--parts` option pointing to a directory parts of a configuration can be found. The parts found here, can be hooked up in the configuration file.
 
 
 
