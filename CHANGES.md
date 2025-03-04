@@ -1,3 +1,5 @@
+* 2025-03-04 0.4.5
+  * button added to run all items in a session level
 
 * 2024-09-27 0.4.4
   * Session config can be split up in session parts, stored in the Parts directory.
