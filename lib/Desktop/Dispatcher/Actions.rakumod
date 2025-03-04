@@ -80,22 +80,24 @@ method make-toolbar ( Box $sessions --> Box ) {
     .set-spacing(10);
   }
 
-  # First a series of direct action buttons
+  # Prepare. First a series of direct action buttons
+  $!action-data<toolbar> = [];
   my $count = 0;
-#note "$?LINE ", $!config.get-toolbar-actions.gist;
+
   for $!config.get-toolbar-actions -> Hash $action {
     CONTROL { when CX::Warn {  note .gist; .resume; } }
     CATCH { default { .message.note; .backtrace.concise.note } }
 
-#note "$?LINE ", $action.gist;
-    #my Hash $action-data = 
-    self.process-action( :$action, :level(0), :$count);
 
-    $!action-data<toolbar><tooltip> =
-      "Run\n$!action-data<toolbar><tooltip>";
+    my Hash $action-data = self.process-action(
+      :session-name<toolbar>, :$action, :level(0), :$count
+    );
+note "\n\n$?LINE ", $!action-data.gist;
+
+    $action-data<tooltip> = "Run\n$action-data<tooltip>";
 
     with my Picture $picture .= new-picture {
-      .set-filename($!action-data<toolbar><picture-file>);
+      .set-filename($action-data<picture-file>);
       .set-size-request($!config.get-icon-size);
 
       .set-margin-top(0);
@@ -104,12 +106,12 @@ method make-toolbar ( Box $sessions --> Box ) {
       .set-margin-end(0);
     }
 
-    my Overlay $overlay = self.action-button( $!action-data, 'toolbar');
-    if $!action-data<toolbar><overlay-picture-file>:exists and
-      $!action-data<toolbar><overlay-picture-file>.IO.r
+    my Overlay $overlay = self.action-button($action-data);
+    if $action-data<overlay-picture-file>:exists and
+      $action-data<overlay-picture-file>.IO.r
     {
       with my Picture $overlay-pic .= new-for-paintable(
-        self.set-texture($!action-data<toolbar><overlay-picture-file>)
+        self.set-texture($action-data<overlay-picture-file>)
       ) {
         $overlay.add-overlay($overlay-pic);
         .set-halign(GTK_ALIGN_END);
@@ -223,12 +225,13 @@ method session-actions ( Str :$session-name, Box :$sessions ) {
       .set-margin-start(30);
       .set-margin-end(30);
 
+      # Clear first
+      $!action-data{$session-name} = [];
       my UInt $count = 0;
       for $!config.get-session-actions( $session-name, :$level) -> $action {
         my Hash $button-action =
           self.process-action( :$session-name, :$action, :$level, :$count);
-        my Overlay $overlay =
-          self.action-button( $button-action, $session-name);
+        my Overlay $overlay = self.action-button($button-action);
         .append($overlay);
 
         $count++;
@@ -271,18 +274,11 @@ method frame-label-widget ( Str $session-name --> Mu ) {
 }
 
 #-------------------------------------------------------------------------------
-method run-all-actions ( Str :$session-name --> Mu ) {
-note "run all entries of $session-name, ", $!action-data{$session-name}.gist;
-#  self.run-action(:$session-name);
-}
-
-#-------------------------------------------------------------------------------
 method process-action (
-   Str :$session-name = 'toolbar', Hash :$action, UInt :$level, UInt :$count
+   Str :$session-name, Hash :$action, UInt :$level, UInt :$count
    --> Hash
 ) {
-  #$!action-data{$session-name} = %() unless ? $!action-data{$session-name};
-  $!action-data{$session-name} = %(
+  my Hash $ad = %(
     :$session-name, :$level, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
   );
 
@@ -290,37 +286,37 @@ method process-action (
 
   # Get tooltip text
   if ? $action<t> {
-    $!action-data{$session-name}<tooltip> = self.substitute-vars($action<t>);
-    note "Set tooltip to\n  ", $!action-data{$session-name}<tooltip>.split("\n").join("\n  ")
+    $ad<tooltip> = self.substitute-vars($action<t>);
+    note "Set tooltip to\n  ", $ad<tooltip>.split("\n").join("\n  ")
       if $*verbose;
   }
 
   # Set path to work directory
   if ? $action<p> {
-    $!action-data{$session-name}<work-dir> = self.substitute-vars($action<p>);
-#    note "Set workdir to $!action-data<work-dir>" if $*verbose;
+    $ad<work-dir> = self.substitute-vars($action<p>);
+#    note "Set workdir to $ad<work-dir>" if $*verbose;
   }
 
   # Set environment
   if ? $action<e> {
-    $!action-data{$session-name}<env> = [];
+    $ad<env> = [];
     for @($action<e>) -> $a {
-      $!action-data{$session-name}<env>.push: self.substitute-vars($a);
+      $ad<env>.push: self.substitute-vars($a);
     }
-#    note "Set environment to $!action-data<env>" if $*verbose;
+#    note "Set environment to $ad<env>" if $*verbose;
   }
 
   # Script to run before command can run
   if ? $action<s> {
-    $!action-data{$session-name}<script> = self.substitute-vars($action<s>);
-    note "Set script to\n  ", $!action-data{$session-name}<script>.split("\n").join("\n  ")
+    $ad<script> = self.substitute-vars($action<s>);
+    note "Set script to\n  ", $ad<script>.split("\n").join("\n  ")
       if $*verbose;
   }
 
   # Set command to run
   if ? $action<c> {
-    $!action-data{$session-name}<cmd> = self.substitute-vars($action<c>);
-    note "Set command to\n  ", $!action-data{$session-name}<cmd>.split("\n").join("\n  ")
+    $ad<cmd> = self.substitute-vars($action<c>);
+    note "Set command to\n  ", $ad<cmd>.split("\n").join("\n  ")
       if $*verbose;
   }
 
@@ -335,7 +331,7 @@ method process-action (
   }
 
   if ? $picture-file {
-    $!action-data{$session-name}<picture-file> = $!config.set-path($picture-file);
+    $ad<picture-file> = $!config.set-path($picture-file);
   }
 
   # Set overlay icon over the button
@@ -348,32 +344,33 @@ method process-action (
   }
 
   if ? $picture-file {
-    $!action-data{$session-name}<overlay-picture-file> = $!config.set-path($picture-file);
+    $ad<overlay-picture-file> = $!config.set-path($picture-file);
   }
 
-  if ? $!action-data<v> {
-    $!action-data{$session-name}<temp-variables> = $action<v>;
+  if ? $action<v> {
+    $ad<temp-variables> = $action<v>;
   }
 
-  if ! $!action-data{$session-name}<tooltip> and ? $!action-data{$session-name}<cmd> {
-    my Str $tooltip = $!action-data{$session-name}<cmd>;
+  if ! $ad<tooltip> and ? $ad<cmd> {
+    my Str $tooltip = $ad<cmd>;
     $tooltip ~~ s/ \s .* $//;
     note "Set tooltip to\n  ", $tooltip.split("\n").join("\n  ")
       if $*verbose;
-    $!action-data{$session-name}<tooltip> = $tooltip;
+    $ad<tooltip> = $tooltip;
   }
 
-#  $session-name
-  $!action-data
+  $!action-data{$session-name}.push: %(|$ad);
+
+  $ad
 }
 
 #-------------------------------------------------------------------------------
-method action-button ( Hash $action-data, Str $session-name --> Overlay ) {
+method action-button ( Hash $action --> Overlay ) {
   my Overlay $overlay .= new-overlay;
   my Picture $overlay-pic;
   my Picture $picture;
 
-my Hash $action := $action-data{$session-name};
+#my Hash $action := $action-data{$session-name};
 #note "\n$?LINE action-button $session-name, {$action.gist}, $action<picture-file>, $action<tooltip>";
 
   with $picture .= new-picture {
@@ -443,6 +440,14 @@ method run-action ( Hash :$action ) {
   );
 
   %*ENV{$k}:delete if ?$k and ?$v;
+}
+
+#-------------------------------------------------------------------------------
+method run-all-actions ( Str :$session-name --> Mu ) {
+  for @($!action-data{$session-name}) -> $action {
+    note "Start $action<cmd>";
+    self.run-action(:$action);
+  }
 }
 
 #-------------------------------------------------------------------------------
