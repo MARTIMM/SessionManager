@@ -1,27 +1,23 @@
-# Dispatcher Application
+# Session Manager Application
 
 ## Introduction
 
-There is a previously made program called `start-app.raku` which made use of a configuration file describing the actions to perform. These actions are like starting a filemanager or console application.
+The purpose of this program is that it can quickly setup an environment for something like a programming or music writing task. For example in the case of a programming task;
+* start a console with several tabs open to working directories
+* start an editor
+* start a filemanager with tabs opened to directories you need
+* start a reader with some language documentation
+  etcetera.
 
-There were a few inconveniences like having to edit the config files by hand when situations change e.g. directory creations, renames or deletions which would give errors when a console was started with a non-existent directory as its work path.
+## What is implemented?
+* [x] When started, the program is able to show a list of shortcut buttons to start tasks right away. For example, start the browser or a mail program.
+* [x] The program must show a list of sessions next to the list of shortcut buttons.
+* [ ] List of shortcut buttons can grow or shrink like a bookmark list.
+* [x] When a session button is pressed, it shows additional buttons to start a task needed to setup the session.
+* [x] The additional buttons are grouped in action lists.
+* [ ] (DONE but need changes) A button can be added to start all actions in an actions group.
 
-The other problem was that there was a need to create a desktop file for every group of actions which had to be changed once in a while.
-
-So, we need something new!
-
-
-## What should it NOT do?
-
-The program should not show an application menu. Those kind of programs are already provided by the window managers in several forms. So that wheel will not be reinvented!
-
-
-## What should it do?
-
-The purpose of this program is that it can quickly setup or change an environment for something like a programming or music writing task. For example in the case of a programming task; start a console with several tabs open to working directories, start an editor, start a filemanager with tabs opened to directories you need, start a reader with some language documentation, etcetera.
-
-
-The program must therefore show a dispatcher page showing a shallow tree. The actions are at the leafs of the tree and the parents of those actions function as a grouping for those actions. The difference compared to the application menu is that an action can start more applications or scripts at once.
+ The actions are at the leafs of the tree and the parents of those actions function as a grouping for those actions. The difference compared to the application menu is that an action can start more applications or scripts at once.
 
 There is only one dispatcher instance running. All other instances started later will communicate with the main running program. It is possible to swap configurations.
 
