@@ -16,12 +16,15 @@ constant APP_ID is export = 'io.github.martimm.dispatcher';
 constant DATA_DIR is export = [~] $*HOME, '/.config/', APP_ID;
 
 has Str $.config-directory;
+has Hash $.action-refs;
+
 has Hash $!dispatch-config;
 has Gnome::Gtk4::CssProvider $!css-provider;
 #has Hash $!image-map;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str :$!config-directory is copy ) {
+  $!action-refs = %();
 
   $!config-directory = ?$!config-directory ?? $!config-directory !! DATA_DIR;
 
@@ -78,6 +81,23 @@ method load-config ( ) {
         $!dispatch-config<sessions>{$session} =
           $part-cfg<sessions>{$name}:delete;
       }
+    }
+  }
+
+note "$?LINE $!dispatch-config.keys()";
+  if $!dispatch-config<part-references>:exists {
+    my Hash $ref := $!dispatch-config<part-references>;
+    for $ref.kv -> $name, $file {
+note "$?LINE $name, $file";
+      $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
+    }
+  }
+
+  if $!dispatch-config<action-references>:exists {
+    for @($!dispatch-config<action-references>) -> $file {
+note "$?LINE $file";
+      $!action-refs.append: load-yaml($file.IO.slurp).pairs;
+note "$?LINE $!action-refs.gist()";
     }
   }
 }
@@ -165,17 +185,45 @@ method get-session-overlay-icon ( Str $name --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
-method get-session-actions ( Str $name, Int :$level = 0 --> List ) {
-  @($!dispatch-config<sessions>{$name}{
-    'actions' ~ ($level <= 0 ?? '' !! $level.Str)
-  })
+method get-session-actions ( Str $name, Int $level --> List ) {
+note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
+#  CONTROL { when CX::Warn {  note .gist; .resume; } }
+#  CATCH { default { .message.note; .backtrace.concise.note } }
+
+  my Hash $sessions := $!dispatch-config<sessions>{$name};
+
+  my List $l = ();
+  my $lvl = $level;
+  $lvl = '' if $level ≤ 0;
+
+ if $sessions{"actions$lvl"}:exists {
+    $l = $sessions{"actions$lvl"};
+  }
+
+  elsif $sessions{'group' ~ ($level + 1).Str}:exists {
+    $l = $sessions{'group' ~ ($level + 1).Str}<actions>;
+
+    # When 'group' is used, it is possible that an entry is just a string. If
+    # so, the string is a key in the $!action-refs hash to get the action
+    # hash from there.
+    loop ( my Int $i = 0; $i < $l.elems; $i++ ) {
+      if ( my $action = $l[$i] ) ~~ Str {
+        $l[$i] = $!action-refs{$action};
+      }
+    }
+  }
+
+  | $l
 }
 
 #-------------------------------------------------------------------------------
 method has-actions-level ( Str $name, Int :$level = 0 --> Bool ) {
-  $!dispatch-config<sessions>{$name}{
-    'actions' ~ ($level <= 0 ?? '' !! $level.Str)
-  }:exists
+
+  my Hash $sessions := $!dispatch-config<sessions>{$name};
+
+  ( $sessions{'actions' ~ ($level <= 0 ?? '' !! $level.Str)}:exists or
+    $sessions{'group' ~ ($level + 1).Str}<actions>:exists
+  )
 }
 
 #-------------------------------------------------------------------------------

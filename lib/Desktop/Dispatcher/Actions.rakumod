@@ -10,6 +10,7 @@ use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Picture:api<2>;
+use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Frame:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::Overlay:api<2>;
@@ -30,6 +31,7 @@ use Digest::SHA256::Native;
 unit class Desktop::Dispatcher::Actions:auth<github:MARTIMM>;
 
 constant Box = Gnome::Gtk4::Box;
+constant Grid = Gnome::Gtk4::Grid;
 constant ApplicationWindow = Gnome::Gtk4::ApplicationWindow;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Button = Gnome::Gtk4::Button;
@@ -57,15 +59,15 @@ submethod BUILD (
 }
 
 #-------------------------------------------------------------------------------
-method setup-sessions ( --> Box ) {
+method setup-sessions ( --> Grid ) {
 
-  with my Box $sessions .= new-box( GTK_ORIENTATION_VERTICAL, 1) {
+  with my Grid $sessions .= new-grid {
     .set-margin-top(0);
     .set-margin-bottom(0);
     .set-margin-start(0);
     .set-margin-end(0);
 
-    .append(self.make-toolbar($sessions));
+    .attach( self.make-toolbar($sessions), 0, 0, 1, 1);
     $!config.set-css( .get-style-context, 'sessions');
   }
 
@@ -73,26 +75,23 @@ method setup-sessions ( --> Box ) {
 }
 
 #-------------------------------------------------------------------------------
+# The top row of icons is the toolbar. 
 #method make-toolbar ( Box $sessions --> ScrolledWindow ) {
-method make-toolbar ( Box $sessions --> Box ) {
+method make-toolbar ( Grid $sessions --> Box ) {
   with my Box $toolbar .= new-box( GTK_ORIENTATION_HORIZONTAL, 1) {
     $!config.set-css( .get-style-context, 'session-toolbar');
     .set-spacing(10);
   }
 
-  # Prepare. First a series of direct action buttons
+  # Prepare. First a series of direct action buttons - shortcuts
   $!action-data<toolbar> = [];
   my $count = 0;
 
   for $!config.get-toolbar-actions -> Hash $action {
-    CONTROL { when CX::Warn {  note .gist; .resume; } }
-    CATCH { default { .message.note; .backtrace.concise.note } }
-
-
     my Hash $action-data = self.process-action(
       :session-name<toolbar>, :$action, :level(0), :$count
     );
-note "\n\n$?LINE ", $!action-data.gist;
+#note "\n\n$?LINE ", $!action-data.gist;
 
     $action-data<tooltip> = "Run\n$action-data<tooltip>";
 
@@ -188,30 +187,31 @@ note "\n\n$?LINE ", $!action-data.gist;
 }
 
 #-------------------------------------------------------------------------------
-method session-actions ( Str :$session-name, Box :$sessions ) {
-  state Frame $session-frame;
+# Session button pressed to show the action buttons in groups
+method session-actions ( Str :$session-name, Grid :$sessions ) {
 
-  if !$session-frame {
-    $session-frame.clear-object if ?$session-frame;
-    with $session-frame .= new-frame('') {
-      $!config.set-css( .get-style-context, 'session-frame');
-      .set-margin-top(0);
-      .set-margin-bottom(0);
-      .set-margin-start(0);
-      .set-margin-end(0);
-      my Label() $label = .get-label-widget;
-      $!config.set-css( $label.get-style-context, 'session-frame-label');
-    }
-
-    $sessions.append($session-frame);
+  with my Frame $session-frame .= new-frame('') {
+    $!config.set-css( .get-style-context, 'session-frame');
+    .set-margin-top(0);
+    .set-margin-bottom(0);
+    .set-margin-start(0);
+    .set-margin-end(0);
+    my Label() $label = .get-label-widget;
+    $!config.set-css( $label.get-style-context, 'session-frame-label');
+    .set-label-widget(self.frame-label-widget($session-name));
   }
 
-  $session-frame.set-label-widget(self.frame-label-widget($session-name));
+  # The first row is for shortcuts and sessions. The second for
+  # actions of a session
+  $sessions.remove-row(1) if $sessions.get-child-at( 0, 1);
+  $sessions.attach( $session-frame, 0, 1, 1, 1);
 
   my Box $session-levels .= new-box( GTK_ORIENTATION_VERTICAL, 1);
   $session-frame.set-child($session-levels);
 
   $!app-window.set-default-size($!config.get-window-size);
+
+  # 
   loop ( my UInt $level = 0; $level < 7; $level++ ) {
     last unless $!config.has-actions-level( $session-name, :$level);
 
@@ -228,10 +228,12 @@ method session-actions ( Str :$session-name, Box :$sessions ) {
       # Clear first
       $!action-data{$session-name} = [];
       my UInt $count = 0;
-      for $!config.get-session-actions( $session-name, :$level) -> $action {
-        my Hash $button-action =
-          self.process-action( :$session-name, :$action, :$level, :$count);
-        my Overlay $overlay = self.action-button($button-action);
+      for $!config.get-session-actions( $session-name, $level) -> $action {
+#note "$?LINE $session-name, $level, ", $action.WHAT;
+        my Overlay $overlay = self.action-button(
+          self.process-action( :$session-name, :$action, :$level, :$count)
+        );
+
         .append($overlay);
 
         $count++;
@@ -282,7 +284,8 @@ method process-action (
     :$session-name, :$level, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
   );
 
-  note "\nSession data for $session-name";# if $*verbose;
+note "$?LINE $action.gist()";
+#  note "\nSession data for $session-name" if $*verbose;
 
   # Get tooltip text
   if ? $action<t> {
