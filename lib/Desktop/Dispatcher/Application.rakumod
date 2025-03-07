@@ -11,6 +11,7 @@ use Getopt::Long;
 
 use Gnome::Gtk4::Application:api<2>;
 use Gnome::Gtk4::ApplicationWindow:api<2>;
+#use Gnome::Gtk4::Grid:api<2>;
 
 use Gnome::Gio::ApplicationCommandLine:api<2>;
 use Gnome::Gio::T-ioenums:api<2>;
@@ -163,9 +164,8 @@ method setup-window ( ) {
   with $!app-window .= new-applicationwindow($!application) {
     my Desktop::Dispatcher::Actions $actions .= new( :$!config, :$!app-window);
 
-    my Gnome::Gtk4::Box $sessions-box = $actions.setup-sessions;
-    .set-child($sessions-box);
     .set-title($!config.get-window-title);
+    .set-child($actions.setup-sessions);
 
     .show;
   }
