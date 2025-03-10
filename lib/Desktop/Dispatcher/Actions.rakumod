@@ -229,7 +229,6 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
       $!action-data{$session-name} = [];
       my UInt $count = 0;
       for $!config.get-session-actions( $session-name, $level) -> $action {
-#note "$?LINE $session-name, $level, ", $action.WHAT;
         my Overlay $overlay = self.action-button(
           self.process-action( :$session-name, :$action, :$level, :$count)
         );
@@ -244,7 +243,6 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
 
 #-------------------------------------------------------------------------------
 method frame-label-widget ( Str $session-name --> Mu ) {
-#note "$?LINE run-all-actions: $session-name, ", $!config.run-all-actions($session-name);
 
   my Str $session-title = $!config.get-session-title($session-name);
   my Label $label .= new-label($session-title);
@@ -284,7 +282,7 @@ method process-action (
     :$session-name, :$level, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
   );
 
-note "$?LINE $action.gist()";
+#note "$?LINE $action.gist()";
 #  note "\nSession data for $session-name" if $*verbose;
 
   # Get tooltip text
@@ -456,7 +454,10 @@ method run-all-actions ( Str :$session-name --> Mu ) {
 #-------------------------------------------------------------------------------
 method substitute-vars ( Str $t, Hash :$v --> Str ) {
 
-  my Hash $variables = $v // $!config.get-variables;
+  my Hash $variables = $!config.get-variables;
+  $variables.append: $v if ?$v;
+#note "\n$?LINE $variables.gist()";
+
   my Str $text = $t;
 
   while $text ~~ m/ '$' $<variable-name> = [<alpha> | \d | '-']+ / {

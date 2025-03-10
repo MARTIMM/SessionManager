@@ -16,7 +16,8 @@ constant APP_ID is export = 'io.github.martimm.dispatcher';
 constant DATA_DIR is export = [~] $*HOME, '/.config/', APP_ID;
 
 has Str $.config-directory;
-has Hash $.action-refs;
+has Hash $!action-refs;
+has Hash $!variables;
 
 has Hash $!dispatch-config;
 has Gnome::Gtk4::CssProvider $!css-provider;
@@ -25,6 +26,7 @@ has Gnome::Gtk4::CssProvider $!css-provider;
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str :$!config-directory is copy ) {
   $!action-refs = %();
+  $!variables = %();
 
   $!config-directory = ?$!config-directory ?? $!config-directory !! DATA_DIR;
 
@@ -84,22 +86,27 @@ method load-config ( ) {
     }
   }
 
-note "$?LINE $!dispatch-config.keys()";
-  if $!dispatch-config<part-references>:exists {
-    my Hash $ref := $!dispatch-config<part-references>;
-    for $ref.kv -> $name, $file {
-note "$?LINE $name, $file";
-      $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
-    }
-  }
+  #if $!dispatch-config<part-references>:exists {
+  #  my Hash $ref := $!dispatch-config<part-references>;
+  #  for $ref.kv -> $name, $file {
+  #    $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
+  #  }
+  #}
 
   if $!dispatch-config<action-references>:exists {
     for @($!dispatch-config<action-references>) -> $file {
-note "$?LINE $file";
-      $!action-refs.append: load-yaml($file.IO.slurp).pairs;
-note "$?LINE $!action-refs.gist()";
+      $!action-refs = %( |$!action-refs, |load-yaml($file.IO.slurp));
     }
   }
+
+  if $!dispatch-config<variable-references>:exists {
+    for @($!dispatch-config<variable-references>) -> $file {
+      $!variables = %( |$!variables, |load-yaml($file.IO.slurp));
+    }
+  }
+
+note "\n\n$?LINE $!action-refs<puzzletable-run>.gist()";
+note "\n$?LINE $!variables.gist()";
 }
 
 #-------------------------------------------------------------------------------
@@ -141,25 +148,21 @@ method get-icon-size ( --> List ) {
 
 #-------------------------------------------------------------------------------
 method get-sessions ( --> Seq ) {
-#note "$?LINE get-actions";
   ($!dispatch-config<sessions> // %()).keys.sort
 }
 
 #-------------------------------------------------------------------------------
 method get-variables ( --> Hash ) {
-#note "$?LINE get-vars";
-  $!dispatch-config<config><variables> // %()
+  $!variables // %()
 }
 
 #-------------------------------------------------------------------------------
 method get-temp-variables ( --> Hash ) {
-#note "$?LINE get-vars";
   $!dispatch-config<config><temp-variables> // %();
 }
 
 #-------------------------------------------------------------------------------
 method set-temp-variables ( Hash $vars ) {
-#note "$?LINE get-vars";
   $!dispatch-config<config><temp-variables> = $vars
 }
 
@@ -180,7 +183,6 @@ method get-session-icon ( Str $name --> Str ) {
 
 #-------------------------------------------------------------------------------
 method get-session-overlay-icon ( Str $name --> Str ) {
-#note "$?LINE $name ", $!dispatch-config<sessions>{$name}<over> // "$*images/$name/o0.png";
   $!dispatch-config<sessions>{$name}<over> // "$*images/$name/o0.png"
 }
 
