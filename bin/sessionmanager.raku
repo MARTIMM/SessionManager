@@ -9,15 +9,14 @@ use Desktop::Dispatcher::Application;
 #-------------------------------------------------------------------------------
 # Initialize global variables
 
-my Str $*dispatcher-version = '0.4.5';
+my Str $*dispatcher-version = '0.4.6';
 my Array $*local-options = [<version>];
-my Array $*remote-options = [ |<config=s v verbose images=s parts=s> ];
+my Array $*remote-options = [ |<config=s v verbose images=s> ];
 my Bool $*verbose = False;
 
 my $*dispatch-testing = False;
 
 my Str $*images = 'Images';
-my Str $*parts = 'Parts';
 
 my Desktop::Dispatcher::Application $dispatcher .= new;
 exit($dispatcher.go-ahead);

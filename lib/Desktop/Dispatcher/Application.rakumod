@@ -110,7 +110,7 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   $*images = $o<images> if ? $o<images>;
 
   # Modify parts map. Default is at <config>/Parts.
-  $*parts = $o<parts> if ? $o<parts>;
+  #$*parts = $o<parts> if ? $o<parts>;
 
   my Str $config-directory;
   if ? $o<config> {

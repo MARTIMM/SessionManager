@@ -73,40 +73,30 @@ method load-config ( ) {
 
   die "dispatch configuration not found" unless ?$!dispatch-config;
 
-  # Check for exernal defined session parts
-  for $!dispatch-config<sessions>.keys -> $session {
-    if $!dispatch-config<sessions>{$session} ~~ Array {
-      my Str ( $file, $name ) = | $!dispatch-config<sessions>{$session};
-      $file = self.set-path("$*parts/$file");
-      my Hash $part-cfg = load-yaml($file.IO.slurp);
-      if $part-cfg<sessions>{$name}:exists {
-        $!dispatch-config<sessions>{$session} =
-          $part-cfg<sessions>{$name}:delete;
-      }
+  # Check and load separate session descriptions
+  if $!dispatch-config<part-references>:exists {
+    my Hash $ref := $!dispatch-config<part-references>;
+    for $ref.kv -> $name, $file {
+      $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
     }
   }
 
-  #if $!dispatch-config<part-references>:exists {
-  #  my Hash $ref := $!dispatch-config<part-references>;
-  #  for $ref.kv -> $name, $file {
-  #    $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
-  #  }
-  #}
-
+  # Check and load separate action descriptions
   if $!dispatch-config<action-references>:exists {
     for @($!dispatch-config<action-references>) -> $file {
       $!action-refs = %( |$!action-refs, |load-yaml($file.IO.slurp));
     }
   }
 
+  # Check and load variables
   if $!dispatch-config<variable-references>:exists {
     for @($!dispatch-config<variable-references>) -> $file {
       $!variables = %( |$!variables, |load-yaml($file.IO.slurp));
     }
   }
 
-note "\n\n$?LINE $!action-refs<puzzletable-run>.gist()";
-note "\n$?LINE $!variables.gist()";
+#note "\n\n$?LINE $!action-refs<puzzletable-run>.gist()";
+#note "\n$?LINE $!variables.gist()";
 }
 
 #-------------------------------------------------------------------------------
@@ -188,7 +178,7 @@ method get-session-overlay-icon ( Str $name --> Str ) {
 
 #-------------------------------------------------------------------------------
 method get-session-actions ( Str $name, Int $level --> List ) {
-note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
+#note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
 #  CONTROL { when CX::Warn {  note .gist; .resume; } }
 #  CATCH { default { .message.note; .backtrace.concise.note } }
 
