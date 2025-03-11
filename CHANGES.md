@@ -1,5 +1,11 @@
+* 2025-03-11 0.4.6
+  * Configuration changes
+  * Drop the --parts option for sessions. All sessions referred from config file
+  * Add variables in file and refer from config
+  * Add actions in file and refer from config
+
 * 2025-03-04 0.4.5
-  * button added to run all items in a session level
+  * button added to run all items in a session level, TODO: not yet correct!
 
 * 2024-09-27 0.4.4
   * Session config can be split up in session parts, stored in the Parts directory.

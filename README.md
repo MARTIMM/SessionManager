@@ -36,16 +36,6 @@ Example useage;
 > dispatcher --config=~/MyDispatchEnv
 ```
 
-<!--
-Optionally the action can show a checkbutton for each program which can be (de)selected to dis-/enable the start of a program depending on what is needed at that moment. *this is something for later.*
-
-The program must therefore show a dispatcher page showing a shallow tree. The actions are at the leafs of the tree and the parents of those actions function as a grouping for those actions. The difference compared to the application menu is that an action can do more than only start one application or script.
-
-DBus will play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera. *this is something for later.*
-
-There is a configuration section to create the configuration file. *this is something for later, first read from configurations made by hand.*
--->
-
 
 
 ## Installing the modules

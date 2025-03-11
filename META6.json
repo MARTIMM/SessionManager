@@ -6,7 +6,7 @@
   "author": "Marcel Timmerman",
   "auth": "cpan:MARTIMM",
 
-  "version": "0.4.5",
+  "version": "0.4.6",
   "tags": [ "desktop", "kde", "gnome", "tool" ],
   
   "license": "Artistic-2.0",
