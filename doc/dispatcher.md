@@ -16,10 +16,8 @@ The purpose of this program is that it can quickly setup an environment for some
 * [x] When a session button is pressed, it shows additional buttons to start a task needed to setup the session.
 * [x] The additional buttons are grouped in action lists.
 * [ ] (DONE but need changes) A button can be added to start all actions in an actions group.
-
- The actions are at the leafs of the tree and the parents of those actions function as a grouping for those actions. The difference compared to the application menu is that an action can start more applications or scripts at once.
-
-There is only one dispatcher instance running. All other instances started later will communicate with the main running program. It is possible to swap configurations.
+* [x] There is only one dispatcher instance running. All other instances started later will communicate with the main running program.
+* [x] It is possible to swap configurations when starting another instance.
 
 
 ## Additions for later
@@ -35,9 +33,24 @@ There is a configuration section to create the configuration file.
 
 #### Startup options
 * [x] `--config` option pointing to a root directory of the configuration.
-* [x] `--parts` option pointing to a directory parts of a configuration can be found. The parts found here, can be hooked up in the configuration file.
+* [x] References to parts can now be made from within the config file.
+* [x] Actions and variables can be referred to from the config file.
 
 
+
+
+
+
+
+<!--
+Optionally the action can show a checkbutton for each program which can be (de)selected to dis-/enable the start of a program depending on what is needed at that moment. *this is something for later.*
+
+The program must therefore show a dispatcher page showing a shallow tree. The actions are at the leafs of the tree and the parents of those actions function as a grouping for those actions. The difference compared to the application menu is that an action can do more than only start one application or script.
+
+DBus will play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera. *this is something for later.*
+
+There is a configuration section to create the configuration file. *this is something for later, first read from configurations made by hand.*
+-->
 
 <!--
 
