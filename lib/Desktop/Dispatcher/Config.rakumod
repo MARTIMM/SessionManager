@@ -84,6 +84,9 @@ method load-config ( ) {
   # Check and load separate action descriptions
   if $!dispatch-config<action-references>:exists {
     for @($!dispatch-config<action-references>) -> $file {
+#      $!action-refs = %( | $!action-refs, | load-yaml($file.IO.slurp));
+#note "$?LINE thunderbird: {$!action-refs<thunderbird-o>//'-'}";
+#note "$?LINE : {$!action-refs<thunderbird-o>//'-'}";
       $!action-refs =
         self.merge-hash( $!action-refs, load-yaml($file.IO.slurp));
     }
@@ -92,7 +95,7 @@ method load-config ( ) {
   # Check and load variables
   if $!dispatch-config<variable-references>:exists {
     for @($!dispatch-config<variable-references>) -> $file {
-      $!variables = self.merge-hash( $!variables, load-yaml($file.IO.slurp));
+      $!variables = %( | $!variables, | load-yaml($file.IO.slurp));
     }
   }
 
@@ -202,6 +205,33 @@ method get-session-icon ( Str $name --> Str ) {
 #-------------------------------------------------------------------------------
 method get-session-overlay-icon ( Str $name --> Str ) {
   $!dispatch-config<sessions>{$name}<over> // "$*images/$name/o0.png"
+}
+
+#-------------------------------------------------------------------------------
+method get-session-group ( Str $name, Int $level --> List ) {
+#note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
+#  CONTROL { when CX::Warn {  note .gist; .resume; } }
+#  CATCH { default { .message.note; .backtrace.concise.note } }
+
+  my Hash $sessions := $!dispatch-config<sessions>{$name};
+
+  my List $l = ();
+  my $lvl = $level + 1;
+
+  if $sessions{'group' ~ $lvl.Str}:exists {
+    $l = $sessions{'group' ~ $lvl.Str}<actions>;
+
+    # When 'group' is used, it is possible that an entry is just a string. If
+    # so, the string is a key in the $!action-refs hash to get the action
+    # hash from there.
+    loop ( my Int $i = 0; $i < $l.elems; $i++ ) {
+      if ( my $action = $l[$i] ) ~~ Str {
+        $l[$i] = $!action-refs{$action};
+      }
+    }
+  }
+
+  | $l
 }
 
 #-------------------------------------------------------------------------------

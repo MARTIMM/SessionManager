@@ -457,7 +457,8 @@ method substitute-vars ( Str $t, Hash :$v --> Str ) {
   my Hash $variables = $!config.get-variables;
   $variables.append: $v if ?$v;
 #note "\n$?LINE $variables.gist()";
-
+#note "\n$?LINE $variables<thunderbird-o>";
+#exit;
   my Str $text = $t;
 
   while $text ~~ m/ '$' $<variable-name> = [<alpha> | \d | '-']+ / {
