@@ -84,19 +84,47 @@ method load-config ( ) {
   # Check and load separate action descriptions
   if $!dispatch-config<action-references>:exists {
     for @($!dispatch-config<action-references>) -> $file {
-      $!action-refs = %( |$!action-refs, |load-yaml($file.IO.slurp));
+      $!action-refs =
+        self.merge-hash( $!action-refs, load-yaml($file.IO.slurp));
     }
   }
 
   # Check and load variables
   if $!dispatch-config<variable-references>:exists {
     for @($!dispatch-config<variable-references>) -> $file {
-      $!variables = %( |$!variables, |load-yaml($file.IO.slurp));
+      $!variables = self.merge-hash( $!variables, load-yaml($file.IO.slurp));
     }
   }
 
 #note "\n\n$?LINE $!action-refs<puzzletable-run>.gist()";
 #note "\n$?LINE $!variables.gist()";
+}
+
+#-------------------------------------------------------------------------------
+method merge-hash ( Hash $h1, Hash $h2 --> Hash ) {
+  for $h2.kv -> $k, $v {
+    if $h1{$k}:exists {
+      given $h2{$k} {
+        when Str {
+          $h1{$k} = $h2{$k};
+        }
+
+        when Array {
+          $h1{$k} = $h2{$k};
+        }
+
+        when Hash {
+          $h1{$k} = self.merge-hash( $h1{$k}, $h2{$k});
+        }
+      }
+    }
+
+    else {
+      $h1{$k} = $h2{$k};
+    }
+  }
+
+  $h1
 }
 
 #-------------------------------------------------------------------------------
