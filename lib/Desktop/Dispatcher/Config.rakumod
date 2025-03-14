@@ -216,15 +216,14 @@ method get-session-group ( Str $name, Int $level --> List ) {
   my Hash $sessions := $!dispatch-config<sessions>{$name};
 
   my List $l = ();
-  my $lvl = $level + 1;
 
-  if $sessions{'group' ~ $lvl.Str}:exists {
-    $l = $sessions{'group' ~ $lvl.Str}<actions>;
+  if $sessions{'group' ~ $level}:exists {
+    $l = $sessions{'group' ~ $level}<actions>;
 
-    # When 'group' is used, it is possible that an entry is just a string. If
-    # so, the string is a key in the $!action-refs hash to get the action
-    # hash from there.
-    loop ( my Int $i = 0; $i < $l.elems; $i++ ) {
+    # It is possible that an entry is just a string. If so, the string
+    # is a key in the $!action-refs hash to get the action hash from there.
+#    loop ( my Int $i = 0; $i < $l.elems; $i++ ) {
+    for 0 ..^ $l.elems -> $i {
       if ( my $action = $l[$i] ) ~~ Str {
         $l[$i] = $!action-refs{$action};
       }
@@ -243,20 +242,15 @@ method get-session-actions ( Str $name, Int $level --> List ) {
   my Hash $sessions := $!dispatch-config<sessions>{$name};
 
   my List $l = ();
-  my $lvl = $level;
-  $lvl = '' if $level ≤ 0;
 
- if $sessions{"actions$lvl"}:exists {
-    $l = $sessions{"actions$lvl"};
-  }
-
-  elsif $sessions{'group' ~ ($level + 1).Str}:exists {
-    $l = $sessions{'group' ~ ($level + 1).Str}<actions>;
+  if $sessions{'group' ~ $level}:exists {
+    $l = $sessions{'group' ~ $level}<actions>;
 
     # When 'group' is used, it is possible that an entry is just a string. If
     # so, the string is a key in the $!action-refs hash to get the action
     # hash from there.
-    loop ( my Int $i = 0; $i < $l.elems; $i++ ) {
+    #loop ( my Int $i = 0; $i < $l.elems; $i++ ) {
+    for 0 ..^ $l.elems -> $i {
       if ( my $action = $l[$i] ) ~~ Str {
         $l[$i] = $!action-refs{$action};
       }
@@ -267,13 +261,9 @@ method get-session-actions ( Str $name, Int $level --> List ) {
 }
 
 #-------------------------------------------------------------------------------
-method has-actions-level ( Str $name, Int :$level = 0 --> Bool ) {
+method has-actions-level ( Str $name, Int :$level --> Bool ) {
 
-  my Hash $sessions := $!dispatch-config<sessions>{$name};
-
-  ( $sessions{'actions' ~ ($level <= 0 ?? '' !! $level.Str)}:exists or
-    $sessions{'group' ~ ($level + 1).Str}<actions>:exists
-  )
+  $!dispatch-config<sessions>{$name}{'group' ~ $level}<actions>:exists
 }
 
 #-------------------------------------------------------------------------------

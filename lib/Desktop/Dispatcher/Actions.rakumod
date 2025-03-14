@@ -212,7 +212,8 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
   $!app-window.set-default-size($!config.get-window-size);
 
   # 
-  loop ( my UInt $level = 0; $level < 7; $level++ ) {
+  for 1..10 -> $level {
+note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name, :$level);
     last unless $!config.has-actions-level( $session-name, :$level);
 
     my Box $session-buttons .= new-box( GTK_ORIENTATION_HORIZONTAL, 1);
@@ -229,8 +230,10 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
       $!action-data{$session-name} = [];
       my UInt $count = 0;
       for $!config.get-session-actions( $session-name, $level) -> $action {
+
+        # Originally the level was from 0 .. ^n, now 1 .. n
         my Overlay $overlay = self.action-button(
-          self.process-action( :$session-name, :$action, :$level, :$count)
+          self.process-action( :$session-name, :$action, :level($level-1), :$count)
         );
 
         .append($overlay);
