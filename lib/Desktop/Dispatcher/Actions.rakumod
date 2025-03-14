@@ -88,9 +88,7 @@ method make-toolbar ( Grid $sessions --> Box ) {
   my $count = 0;
 
   for $!config.get-toolbar-actions -> Hash $action {
-    my Hash $action-data = self.process-action(
-      :session-name<toolbar>, :$action, :level(0), :$count
-    );
+    my Hash $action-data = self.process-action( 'toolbar', $action, 0, $count);
 #note "\n\n$?LINE ", $!action-data.gist;
 
     $action-data<tooltip> = "Run\n$action-data<tooltip>";
@@ -211,10 +209,10 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
 
   $!app-window.set-default-size($!config.get-window-size);
 
-  # 
+  # Maximum 10 levels. Originally started from 0, now 1.
   for 1..10 -> $level {
-note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name, :$level);
-    last unless $!config.has-actions-level( $session-name, :$level);
+note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name, $level);
+    last unless $!config.has-actions-level( $session-name, $level);
 
     my Box $session-buttons .= new-box( GTK_ORIENTATION_HORIZONTAL, 1);
     $session-levels.append($session-buttons);
@@ -233,7 +231,7 @@ note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name
 
         # Originally the level was from 0 .. ^n, now 1 .. n
         my Overlay $overlay = self.action-button(
-          self.process-action( :$session-name, :$action, :level($level-1), :$count)
+          self.process-action( $session-name, $action, $level-1, $count)
         );
 
         .append($overlay);
@@ -278,7 +276,7 @@ method frame-label-widget ( Str $session-name --> Mu ) {
 
 #-------------------------------------------------------------------------------
 method process-action (
-   Str :$session-name, Hash :$action, UInt :$level, UInt :$count
+   Str $session-name, Hash $action, UInt $level, UInt $count
    --> Hash
 ) {
   my Hash $ad = %(

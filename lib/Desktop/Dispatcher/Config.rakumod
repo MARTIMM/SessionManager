@@ -261,7 +261,7 @@ method get-session-actions ( Str $name, Int $level --> List ) {
 }
 
 #-------------------------------------------------------------------------------
-method has-actions-level ( Str $name, Int :$level --> Bool ) {
+method has-actions-level ( Str $name, Int $level --> Bool ) {
 
   $!dispatch-config<sessions>{$name}{'group' ~ $level}<actions>:exists
 }
