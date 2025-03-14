@@ -125,7 +125,7 @@ method make-toolbar ( Grid $sessions --> Box ) {
   # Then a series of session buttons
   for $!config.get-sessions -> $session-name {
     my Str $session-title =
-       "Session\n" ~ $!config.get-session-title($session-name);
+      "Session\n" ~ $!config.get-session-title($session-name);
     my Str $picture-file =
       self.substitute-vars($!config.get-session-icon($session-name));
 
@@ -194,6 +194,9 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
     .set-margin-bottom(0);
     .set-margin-start(0);
     .set-margin-end(0);
+
+    # Put a text upfront the  list of actions when specified
+    # CSS is used to rotate the text
     my Label() $label = .get-label-widget;
     $!config.set-css( $label.get-style-context, 'session-frame-label');
     .set-label-widget(self.frame-label-widget($session-name));
@@ -211,7 +214,7 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
 
   # Maximum 10 levels. Originally started from 0, now 1.
   for 1..10 -> $level {
-note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name, $level);
+#note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name, $level);
     last unless $!config.has-actions-level( $session-name, $level);
 
     my Box $session-buttons .= new-box( GTK_ORIENTATION_HORIZONTAL, 1);
@@ -223,6 +226,18 @@ note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name
       .set-margin-bottom(30);
       .set-margin-start(30);
       .set-margin-end(30);
+
+      # Get a title for the session group
+      my Str $gtitle = $!config.get-session-group-title( $session-name, $level);
+      my Label $glabel .= new-label;
+      $glabel.set-text($gtitle // '');
+      $glabel.set-margin-top(0);
+      $glabel.set-margin-bottom(0);
+      $glabel.set-margin-start(0);
+      $glabel.set-margin-end(0);
+
+      $!config.set-css( $glabel.get-style-context, 'group-session-label');
+      .append($glabel);
 
       # Clear first
       $!action-data{$session-name} = [];
@@ -246,7 +261,9 @@ note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name
 method frame-label-widget ( Str $session-name --> Mu ) {
 
   my Str $session-title = $!config.get-session-title($session-name);
-  my Label $label .= new-label($session-title);
+  my Label $label .= new-label;
+  $label.set-text($session-title);
+
   $!config.set-css( $label.get-style-context, 'session-frame-label');
 
   if $!config.run-all-actions($session-name) {

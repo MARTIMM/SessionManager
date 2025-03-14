@@ -135,8 +135,8 @@ method merge-hash ( Hash $h1, Hash $h2 --> Hash ) {
 #-------------------------------------------------------------------------------
 method change-session-actions ( ) {
 #note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
-  CONTROL { when CX::Warn {  note .gist; .resume; } }
-  CATCH { default { .message.note; .backtrace.concise.note } }
+#  CONTROL { when CX::Warn {  note .gist; .resume; } }
+#  CATCH { default { .message.note; .backtrace.concise.note } }
 
   my List $l = ();
   for $!dispatch-config<sessions>.keys -> $name {
@@ -239,62 +239,19 @@ method get-session-overlay-icon ( Str $name --> Str ) {
 
 #-------------------------------------------------------------------------------
 method get-session-group-title ( Str $name, Int $level --> Str ) {
-#note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
-#  CONTROL { when CX::Warn {  note .gist; .resume; } }
-#  CATCH { default { .message.note; .backtrace.concise.note } }
-
-  my Hash $sessions := $!dispatch-config<sessions>{$name};
-
-  my List $l = ();
-
-  if $sessions{'group' ~ $level}:exists {
-    $l = $sessions{'group' ~ $level}<actions>;
-#`{{
-    # It is possible that an entry is just a string. If so, the string
-    # is a key in the $!action-refs hash to get the action hash from there.
-#    loop ( my Int $i = 0; $i < $l.elems; $i++ ) {
-    for 0 ..^ $l.elems -> $i {
-      if ( my $action = $l[$i] ) ~~ Str {
-        $l[$i] = $!action-refs{$action};
-      }
-    }
-}}
-  }
-
-  | $l
+  $!dispatch-config<sessions>{$name}{'group' ~ $level}<title> // ''
 }
 
 #-------------------------------------------------------------------------------
 method get-session-actions ( Str $name, Int $level --> List ) {
-#note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
-#  CONTROL { when CX::Warn {  note .gist; .resume; } }
-#  CATCH { default { .message.note; .backtrace.concise.note } }
-
   my Hash $sessions := $!dispatch-config<sessions>{$name};
-
-  my List $l = ();
-
-  if $sessions{'group' ~ $level}:exists {
-    $l = $sessions{'group' ~ $level}<actions>;
-#`{{
-    # When 'group' is used, it is possible that an entry is just a string. If
-    # so, the string is a key in the $!action-refs hash to get the action
-    # hash from there.
-    #loop ( my Int $i = 0; $i < $l.elems; $i++ ) {
-    for 0 ..^ $l.elems -> $i {
-      if ( my $action = $l[$i] ) ~~ Str {
-        $l[$i] = $!action-refs{$action};
-      }
-    }
-}}
-  }
-
-  | $l
+  $sessions{'group' ~ $level}<actions>:exists
+      ?? | $sessions{'group' ~ $level}<actions>
+      !! ()
 }
 
 #-------------------------------------------------------------------------------
 method has-actions-level ( Str $name, Int $level --> Bool ) {
-
   $!dispatch-config<sessions>{$name}{'group' ~ $level}<actions>:exists
 }
 
