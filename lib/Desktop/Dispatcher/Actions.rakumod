@@ -151,7 +151,6 @@ method make-toolbar ( Grid $sessions --> Box ) {
     my Overlay $overlay .= new-overlay;
     $overlay.set-child($button);
 
-
     my Str $overlay-icon = $!config.set-path(
       self.substitute-vars($!config.get-session-overlay-icon($session-name))
     );
@@ -199,7 +198,7 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
     # CSS is used to rotate the text
     my Label() $label = .get-label-widget;
     $!config.set-css( $label.get-style-context, 'session-frame-label');
-    .set-label-widget(self.frame-label-widget($session-name));
+    .set-label-widget(self.label-widget( $session-name, :!show-button));
   }
 
   # The first row is for shortcuts and sessions. The second for
@@ -214,7 +213,6 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
 
   # Maximum 10 levels. Originally started from 0, now 1.
   for 1..10 -> $level {
-#note "$?LINE $session-name, $level, ", $!config.has-actions-level( $session-name, $level);
     last unless $!config.has-actions-level( $session-name, $level);
 
     my Box $session-buttons .= new-box( GTK_ORIENTATION_HORIZONTAL, 1);
@@ -229,15 +227,12 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
 
       # Get a title for the session group
       my Str $gtitle = $!config.get-session-group-title( $session-name, $level);
-      my Label $glabel .= new-label;
-      $glabel.set-text($gtitle // '');
-      $glabel.set-margin-top(0);
-      $glabel.set-margin-bottom(0);
-      $glabel.set-margin-start(0);
-      $glabel.set-margin-end(0);
-
-      $!config.set-css( $glabel.get-style-context, 'group-session-label');
-      .append($glabel);
+      with my Label $glabel .= new-label {
+        $session-buttons.append($glabel);
+        .set-text($gtitle // '');
+        .allocate( 200, 30, -1, N-Object);
+        $!config.set-css( $glabel.get-style-context, 'group-session-label');
+      }
 
       # Clear first
       $!action-data{$session-name} = [];
@@ -258,7 +253,7 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
 }
 
 #-------------------------------------------------------------------------------
-method frame-label-widget ( Str $session-name --> Mu ) {
+method label-widget ( Str $session-name, Bool :$show-button --> Mu ) {
 
   my Str $session-title = $!config.get-session-title($session-name);
   my Label $label .= new-label;
@@ -266,9 +261,9 @@ method frame-label-widget ( Str $session-name --> Mu ) {
 
   $!config.set-css( $label.get-style-context, 'session-frame-label');
 
-  if $!config.run-all-actions($session-name) {
+  if $show-button and $!config.run-all-actions($session-name) {
     my Str $png-file = [~] DATA_DIR, '/Images/fastforward.png>';
-    my Box $frame-label-widget .= new-box( GTK_ORIENTATION_HORIZONTAL, 5);
+    my Box $label-widget .= new-box( GTK_ORIENTATION_HORIZONTAL, 5);
 
     my Picture $picture .= new-picture;
     $picture.set-filename(%?RESOURCES<fastforward.png>.IO.Str);
@@ -280,10 +275,10 @@ method frame-label-widget ( Str $session-name --> Mu ) {
       self, 'run-all-actions', 'clicked', :$session-name
     );
 
-    $frame-label-widget.append($run-all-actions);
-    $frame-label-widget.append($label);
+    $label-widget.append($run-all-actions);
+    $label-widget.append($label);
 
-    $frame-label-widget
+    $label-widget
   }
 
   else {
@@ -299,9 +294,6 @@ method process-action (
   my Hash $ad = %(
     :$session-name, :$level, :picture-file(DATA_DIR ~ '/Images/config-icon.jpg')
   );
-
-#note "$?LINE $action.gist()";
-#  note "\nSession data for $session-name" if $*verbose;
 
   # Get tooltip text
   if ? $action<t> {
@@ -389,12 +381,14 @@ method action-button ( Hash $action --> Overlay ) {
   my Picture $overlay-pic;
   my Picture $picture;
 
-#my Hash $action := $action-data{$session-name};
-#note "\n$?LINE action-button $session-name, {$action.gist}, $action<picture-file>, $action<tooltip>";
-
   with $picture .= new-picture {
     .set-filename($action<picture-file>);
     .set-size-request($!config.get-icon-size);
+
+    .set-margin-top(0);
+    .set-margin-bottom(0);
+    .set-margin-start(0);
+    .set-margin-end(0);
   }
 
   with my Button $button .= new-button {
@@ -424,7 +418,6 @@ method action-button ( Hash $action --> Overlay ) {
 }
 
 #-------------------------------------------------------------------------------
-#method run-action ( Hash :$action-data ) {
 method run-action ( Hash :$action ) {
 
 #  my Hash $action-data := $!action-data{$session-name};
@@ -474,14 +467,11 @@ method substitute-vars ( Str $t, Hash :$v --> Str ) {
 
   my Hash $variables = $!config.get-variables;
   $variables.append: $v if ?$v;
-#note "\n$?LINE $variables.gist()";
-#note "\n$?LINE $variables<thunderbird-o>";
-#exit;
   my Str $text = $t;
 
   while $text ~~ m/ '$' $<variable-name> = [<alpha> | \d | '-']+ / {
     my Str $name = $/<variable-name>.Str;
-#note "$?LINE $text --- $name";
+
     # Look in the variables Hash
     if $variables{$name}:exists {
       $text ~~ s:g/ '$' $name /$variables{$name}/;
@@ -500,9 +490,6 @@ method substitute-vars ( Str $t, Hash :$v --> Str ) {
   }
 
   $text ~~ s:g/ '___' ([<alpha> | <[0..9]> | '-']+) /\$$0/;
-
-#note "$?LINE $text";
-#printf "\n";
 
   $text
 }
