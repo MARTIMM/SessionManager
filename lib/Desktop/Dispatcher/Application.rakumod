@@ -156,6 +156,7 @@ method setup-window ( ) {
   # Set the theme and initialize application window and give this object (a
   # Gnome::Gtk4::Application) as its argument.
   if ?$!app-window and $!app-window.is-valid {
+
     $!application.remove-window($!app-window);
     $!app-window.destroy;
     $!app-window.clear-object;
@@ -166,8 +167,7 @@ method setup-window ( ) {
 
     .set-title($!config.get-window-title);
     .set-child($actions.setup-sessions);
-
-    .show;
+    .present;
   }
 }
 
