@@ -37,6 +37,63 @@ There is a configuration section to create the configuration file.
 * [x] Actions and variables can be referred to from the config file.
 
 
+### Uml diagrams
+```plantuml
+@startuml
+
+'scale 0.8
+
+skinparam packageStyle rectangle
+skinparam stereotypeCBackgroundColor #80ffff
+set namespaceSeparator ::
+'hide members
+'hide attributes
+
+class Command < abstract >  <<(A,#80ffff)>> {
+  {abstract} execute()
+}
+
+note "A button or menu item is\nmapped to some action" as N1
+class SomeAction {
+  execute()
+}
+N1 ..SomeAction
+
+class MacroCommand {
+  execute()
+}
+
+class ActionGroup {
+}
+
+class ActionData {
+  - tooltip
+  - work-dir
+  - env
+  - script
+  - cmd
+  - picture-file
+  - overlay-picture-file
+  - temp-variables
+
+  run-action()
+}
+
+
+
+Command <|-- SomeAction
+Command <|-- MacroCommand
+
+SomeAction *-- ActionData
+ActionGroup *- "*" ActionData
+MacroCommand  o-- Command
+MacroCommand  o-- ActionGroup
+
+
+Button *- SomeAction
+GroupsArray *- "*" ActionGroup
+@enduml
+```
 
 
 
