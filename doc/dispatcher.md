@@ -37,7 +37,10 @@ There is a configuration section to create the configuration file.
 * [x] Actions and variables can be referred to from the config file.
 
 
-### Uml diagrams
+# Uml diagrams
+
+Diagram to show action data being used to execute some action after pressing a button.
+
 ```plantuml
 @startuml
 
@@ -45,11 +48,13 @@ There is a configuration section to create the configuration file.
 
 skinparam packageStyle rectangle
 skinparam stereotypeCBackgroundColor #80ffff
+skinparam linetype ortho
+
 set namespaceSeparator ::
-'hide members
+hide empty  members
 'hide attributes
 
-class Command < abstract >  <<(A,#80ffff)>> {
+abstract class Command <<(A,#80ffff)>> {
   {abstract} execute()
 }
 
@@ -59,42 +64,106 @@ class SomeAction {
 }
 N1 ..SomeAction
 
-class MacroCommand {
-  execute()
+class Variables < singleton > {
+  - Hash variables
+  - Hash temporary
 }
 
-class ActionGroup {
+class Actions {
+  - Hash ids
 }
 
 class ActionData {
-  - tooltip
-  - work-dir
-  - env
-  - script
-  - cmd
-  - picture-file
-  - overlay-picture-file
-  - temp-variables
+  - Str id
+  - Bool skip-group-run
+  - Str tooltip
+  - Str work-dir
+  - Hash env
+  - Str script
+  - Str cmd
+  - Str picture
+  - Str overlay-picture
+  - Object variables
+  - Object temp-variables
 
   run-action()
 }
 
-
-
+Actions *- "*" ActionData
 Command <|-- SomeAction
-Command <|-- MacroCommand
+SomeAction *-- "1" ActionData
+ActionData o- Variables
+SomeAction -* IconButton
 
-SomeAction *-- ActionData
-ActionGroup *- "*" ActionData
-MacroCommand  o-- Command
-MacroCommand  o-- ActionGroup
-
-
-Button *- SomeAction
-GroupsArray *- "*" ActionGroup
 @enduml
 ```
 
+```plantuml
+@startuml
+
+'scale 0.8
+
+skinparam packageStyle rectangle
+skinparam stereotypeCBackgroundColor #80ffff
+skinparam linetype ortho
+
+set namespaceSeparator ::
+hide empty  members
+'hide attributes
+
+abstract class Command <<(A,#80ffff)>> {
+  {abstract} execute()
+}
+
+class MacroCommand {
+  execute()
+}
+
+class Variables < singleton > {
+  - Hash variables
+  - Hash temporary
+}
+
+class Actions {
+  - Hash ids
+}
+
+class ActionGroup {
+  - Array ids
+}
+
+
+class ActionData {
+  - Bool skip-group-run
+  - Str tooltip
+  - Str work-dir
+  - Hash env
+  - Str script
+  - Str cmd
+  - Str picture
+  - Str overlay-picture
+  - Object variables
+  - Object temp-variables
+
+  run-action()
+}
+
+Actions *- "*" ActionData
+
+
+Command <|-- MacroCommand
+
+Command  --o MacroCommand
+MacroCommand  o-- ActionGroup
+note "A button or menu item is\nmapped to a group of actions" as N2
+N2 .. MacroCommand
+
+ActionData o- Variables
+MacroCommand -* GroupRunButton
+
+ActionGroup *- "1" Actions
+@enduml
+```
 
 
 
