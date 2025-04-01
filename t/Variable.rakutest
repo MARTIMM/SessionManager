@@ -5,13 +5,13 @@ use Desktop::Dispatcher::Variable;
 
 my Desktop::Dispatcher::Variable $v .= instance;
 
+
 lives-ok
   { $v.add( %(
     :v1('test var 1'),
     :v2('replace $v1')
   ))
   }, 'add var 1 and 2';
-
 
 is $v.substitute-vars('line with $v1'),
    'line with test var 1',
@@ -25,13 +25,13 @@ is $v.substitute-vars('line with $v3'),
    'line with $v3',
    'var $v3 not substituted';
 
+
 lives-ok
   { $v.add( %(
     :v1('test new var 1'),
     :v3('var 3 with $v1')
   ))
   }, 'replace var 1 and add var 3';
-
 
 is $v.substitute-vars('line with $v3'),
    'line with var 3 with test new var 1',
@@ -46,11 +46,22 @@ lives-ok
   { $v.set-temporary( %(
     :t1('temp 1')
   ))
-  }, 'Add temp variable t1';
+  }, 'Set temp variable t1';
 
 is $v.substitute-vars('line with $t1'),
    'line with temp 1',
    'substitution from temp vars';
+
+lives-ok
+  { $v.set-temporary( %(
+    :t2('temp 2')
+  ))
+  }, 'Set temp variable t2';
+
+is $v.substitute-vars('line with $t1'),
+   'line with $t1',
+   't1 not in temporary vars anymore';
+
 
 is $v.substitute-vars('line with $e1'),
    'line with $e1',
