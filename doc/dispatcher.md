@@ -51,31 +51,33 @@ skinparam stereotypeCBackgroundColor #80ffff
 skinparam linetype ortho
 
 set namespaceSeparator ::
-hide empty  members
-'hide attributes
+hide empty members
 
 abstract class Command <<(A,#80ffff)>> {
   {abstract} execute()
 }
 
-note "A button or menu item is\nmapped to some action" as N1
 class SomeAction {
+  - Str id
   execute()
 }
-N1 ..SomeAction
+
+note "A button or menu item is\nmapped to some action" as N1
+N1 .. SomeAction
 
 class Variables < singleton > {
   - Hash variables
   - Hash temporary
 }
 
-class Actions {
+class Actions < singleton > {
   - Hash ids
 }
 
 class ActionData {
   - Str id
-  - Bool skip-group-run
+  - Bool run-in-group
+
   - Str tooltip
   - Str work-dir
   - Hash env
@@ -83,8 +85,7 @@ class ActionData {
   - Str cmd
   - Str picture
   - Str overlay-picture
-  - Object variables
-  - Object temp-variables
+  - Hash tempvars
 
   run-action()
 }
@@ -92,7 +93,7 @@ class ActionData {
 Actions *- "*" ActionData
 Command <|-- SomeAction
 SomeAction *-- "1" ActionData
-ActionData o- Variables
+ActionData o- Variables: variables
 SomeAction -* IconButton
 
 @enduml
@@ -108,8 +109,7 @@ skinparam stereotypeCBackgroundColor #80ffff
 skinparam linetype ortho
 
 set namespaceSeparator ::
-hide empty  members
-'hide attributes
+hide empty members
 
 abstract class Command <<(A,#80ffff)>> {
   {abstract} execute()
@@ -124,7 +124,7 @@ class Variables < singleton > {
   - Hash temporary
 }
 
-class Actions {
+class Actions < singleton > {
   - Hash ids
 }
 
@@ -132,9 +132,10 @@ class ActionGroup {
   - Array ids
 }
 
-
 class ActionData {
-  - Bool skip-group-run
+  - Str id
+  - Bool run-in-group
+
   - Str tooltip
   - Str work-dir
   - Hash env
@@ -142,8 +143,7 @@ class ActionData {
   - Str cmd
   - Str picture
   - Str overlay-picture
-  - Object variables
-  - Object temp-variables
+  - Hash tempvars
 
   run-action()
 }
@@ -152,13 +152,12 @@ Actions *- "*" ActionData
 
 
 Command <|-- MacroCommand
-
 Command  --o MacroCommand
 MacroCommand  o-- ActionGroup
 note "A button or menu item is\nmapped to a group of actions" as N2
 N2 .. MacroCommand
 
-ActionData o- Variables
+ActionData o- Variables: variables
 MacroCommand -* GroupRunButton
 
 ActionGroup *- "1" Actions
