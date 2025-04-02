@@ -1,0 +1,78 @@
+use v6.d;
+
+use Test;
+use Desktop::Dispatcher::Variables;
+use Desktop::Dispatcher::ActionData;
+
+use Digest::SHA256::Native;
+
+#-------------------------------------------------------------------------------
+my Desktop::Dispatcher::Variables $v .= instance;
+
+#-------------------------------------------------------------------------------
+my Desktop::Dispatcher::ActionData $ad;
+
+$v.add( %(
+    :home</home/marcel>,
+    :icons1('$home/Sessions/Images/Archive')
+  )
+);
+
+lives-ok
+  {
+    $ad .= new(
+      :raw-action( %(
+          :t('Firefox Browser'),
+          :c<firefox>,
+          :o<$icons1/firefox.jpg>,
+          :i<$icons1/icon.png>,
+        )
+      )
+    );
+  }, "Create action data";
+
+is $ad.id, sha256-hex('Firefox Browser'), 'generated id';
+is $ad.picture, '/home/marcel/Sessions/Images/Archive/icon.png', "picture";
+is $ad.overlay-picture, '/home/marcel/Sessions/Images/Archive/firefox.jpg',
+   "overlay picture";
+
+
+lives-ok
+  {
+    $ad .= new(
+      :id<hoeperdepoep>,
+      :raw-action( %(
+          :t('Firefox Browser'),
+          :c<firefox>,
+          :o<$icons1/firefox.jpg>,
+          :i<$icons1/icon.png>,
+        )
+      )
+    );
+  }, "Create another action data";
+
+is $ad.id, 'hoeperdepoep', 'id from argument';
+
+
+lives-ok
+  {
+    $ad .= new(
+      :id<hoeperdepoep>,
+      :raw-action( %(
+          :t('Firefox Browser'),
+          :c<firefox>,
+          :o<$icons1/firefox.jpg>,
+          :i<$icons1/icon.png>,
+          :id<firefox>,
+        )
+      )
+    );
+  }, "Create another action data";
+
+is $ad.id, 'firefox', 'id from raw hash';
+
+
+#-------------------------------------------------------------------------------
+done-testing;
+
+=finish
