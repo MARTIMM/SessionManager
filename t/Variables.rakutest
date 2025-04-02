@@ -1,11 +1,13 @@
 use v6.d;
 
 use Test;
-use Desktop::Dispatcher::Variable;
 
-my Desktop::Dispatcher::Variable $v .= instance;
+use Desktop::Dispatcher::Variables;
 
+#-------------------------------------------------------------------------------
+my Desktop::Dispatcher::Variables $v .= instance;
 
+#-------------------------------------------------------------------------------
 lives-ok
   { $v.add( %(
     :v1('test var 1'),
@@ -73,6 +75,31 @@ is $v.substitute-vars('line with $e1'),
    'line with e1 from environment',
    'var $e1 from environment';
 
+
+mkdir 't/data', 0o700 unless 't/data'.IO.e;
+'t/data/v.yaml'.IO.spurt(Q:q:to/EOV/);
+  home: /home/marcel
+  projects: $home/Languages/Raku/Projects
+  projecttools: $home/Languages/Raku/Projects/Tools
+  icons1: $home/Sessions-Starter/Images/Image archive
+
+  config: $home/.config
+  local: $home/.local/share
+  EOV
+
+dies-ok
+  { $v.add-from-yaml('t/data/xxx.yaml')
+  }, 'file not found';
+
+lives-ok
+  { $v.add-from-yaml('t/data/v.yaml')
+  }, 'Add vars from file';
+
+is $v.substitute-vars('$projecttools'),
+   '/home/marcel/Languages/Raku/Projects/Tools',
+   'projecttools var substituted';
+
+#-------------------------------------------------------------------------------
 done-testing;
 
 =finish

@@ -1,9 +1,11 @@
 use v6.d;
 
-#-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::Variable;
+use YAMLish;
 
-my Desktop::Dispatcher::Variable $instance;
+#-------------------------------------------------------------------------------
+unit class Desktop::Dispatcher::Variables;
+
+my Desktop::Dispatcher::Variables $instance;
 
 has Hash $!variables;
 has Hash $!temporary;
@@ -15,7 +17,7 @@ submethod BUILD ( ) {
 }
 
 #-------------------------------------------------------------------------------
-method instance ( --> Desktop::Dispatcher::Variable ) {
+method instance ( --> Desktop::Dispatcher::Variables ) {
   $instance //= self.new;
 
   $instance
@@ -24,6 +26,12 @@ method instance ( --> Desktop::Dispatcher::Variable ) {
 #-------------------------------------------------------------------------------
 method add ( Hash:D $variables ) {
   $!variables = %( | $!variables, | $variables);
+}
+
+#-------------------------------------------------------------------------------
+method add-from-yaml ( Str:D $path ) {
+  die "File $path not found or unreadable" unless $path.IO.r;
+  $!variables = %( | $!variables, | load-yaml($path.IO.slurp));
 }
 
 #-------------------------------------------------------------------------------
