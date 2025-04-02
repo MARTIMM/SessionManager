@@ -1,0 +1,34 @@
+use v6.d;
+
+use Test;
+use Desktop::Dispatcher::Variables;
+use Desktop::Dispatcher::ActionData;
+use Desktop::Dispatcher::Actions;
+
+use Digest::SHA256::Native;
+
+#-------------------------------------------------------------------------------
+my Desktop::Dispatcher::Actions $actions .= instance;
+
+#-------------------------------------------------------------------------------
+lives-ok
+  {
+    $actions.add-action(
+      %(
+        :t('Firefox Browser'),
+        :c<firefox>,
+        :o<$icons1/firefox.jpg>,
+        :i<$icons1/icon.png>,
+      )
+    );
+  }, "Create action data";
+
+my Str $id = sha256-hex('Firefox Browser');
+
+my Desktop::Dispatcher::ActionData $action-data = $actions.get-action($id);
+is $action-data.id, $id, '.get-action()';
+
+#-------------------------------------------------------------------------------
+done-testing;
+
+=finish
