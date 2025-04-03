@@ -75,16 +75,16 @@ class Actions < singleton > {
 }
 
 class ActionData {
-  - Str id
+  # Str id
   - Bool run-in-group
 
-  - Str tooltip
+  # Str tooltip
   - Str work-dir
   - Hash env
   - Str script
   - Str cmd
-  - Str picture
-  - Str overlay-picture
+  # Str picture
+  # Str overlay-picture
   - Hash tempvars
 
   run-action()
@@ -133,17 +133,17 @@ class ActionGroup {
 }
 
 class ActionData {
-  - Str id
+  # Str id
   - Bool run-in-group
 
-  - Str tooltip
+  # Str tooltip
   - Str work-dir
   - Hash env
   - Str script
   - Str cmd
   - Str picture
-  - Str overlay-picture
-  - Hash tempvars
+  # Str overlay-picture
+  # Hash tempvars
 
   run-action()
 }
