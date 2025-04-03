@@ -22,7 +22,7 @@ use Gnome::N::N-Object:api<2>;
 #use Gnome::N::X:api<2>;
 #Gnome::N::debug(:on);
 
-use Desktop::Dispatcher::Actions;
+use Desktop::Dispatcher::ActionsOrig;
 use Desktop::Dispatcher::Config;
 
 #-------------------------------------------------------------------------------
@@ -163,7 +163,7 @@ method setup-window ( ) {
   }
 
   with $!app-window .= new-applicationwindow($!application) {
-    my Desktop::Dispatcher::Actions $actions .= new( :$!config, :$!app-window);
+    my Desktop::Dispatcher::ActionsOrig $actions .= new( :$!config, :$!app-window);
 
     .set-title($!config.get-window-title);
     .set-child($actions.setup-sessions);

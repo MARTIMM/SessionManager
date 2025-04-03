@@ -28,7 +28,7 @@ use Gnome::N::N-Object:api<2>;
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::Actions:auth<github:MARTIMM>;
+unit class Desktop::Dispatcher::ActionsOrig:auth<github:MARTIMM>;
 
 constant Box = Gnome::Gtk4::Box;
 constant Grid = Gnome::Gtk4::Grid;
