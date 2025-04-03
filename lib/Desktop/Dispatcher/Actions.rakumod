@@ -42,7 +42,7 @@ method add-action ( Hash:D $raw-action, Str :$id is copy ) {
 # Only in action reference files
 multi method add-actions ( Hash:D $raw-actions ) {
   for $raw-actions.keys -> $id {
-    self.add-action( $raw-actions{$id}, $id);
+    self.add-action( $raw-actions{$id}, :$id);
   }
 }
 
@@ -59,7 +59,7 @@ multi method add-actions ( Array:D $raw-actions ) {
 method add-from-yaml ( Str:D $path ) {
   die "File $path not found or unreadable" unless $path.IO.r;
 
-  self.add-actions(:raw-action(load-yaml($path.IO.slurp)));
+  self.add-actions(load-yaml($path.IO.slurp));
 }
 
 #-------------------------------------------------------------------------------

@@ -6,6 +6,7 @@ use Desktop::Dispatcher::ActionData;
 use Desktop::Dispatcher::Actions;
 
 use Digest::SHA256::Native;
+use YAMLish;
 
 #-------------------------------------------------------------------------------
 my Desktop::Dispatcher::Actions $actions .= instance;
@@ -27,6 +28,66 @@ my Str $id = sha256-hex('Firefox Browser');
 
 my Desktop::Dispatcher::ActionData $action-data = $actions.get-action($id);
 is $action-data.id, $id, '.get-action()';
+
+
+my Str $array-actions = Q:q:to/EOA/;
+    - t: Start konsole terminal for api 1
+      c: konsole --workdir $api1 $kp-api1
+
+    - t: Start file manager for api 1
+      c: dolphin $api1
+
+    - t: Start editor for api 1
+      c: code $api1
+    EOA
+
+lives-ok
+  {
+    $actions.add-actions(load-yaml($array-actions));
+  }, "set array of keyless actions";
+
+$id = sha256-hex('Start editor for api 1');
+
+$action-data = $actions.get-action($id);
+is $action-data.id, $id, '.get-action()';
+
+
+my Str $hash-actions = Q:q:to/EOA/;
+  puzzletable-dolphin:
+    t: Start file manager
+    c: dolphin --new-window $puzzle-project $puzzle-config
+    o: $dolphin-o
+
+  puzzletable-editor:
+    t: Start editor
+    c: code $puzzle-project
+
+  puzzletable-gitgui:
+    t: Start git user interface
+    p: $puzzle-project
+    c: git gui
+    o: $github-o
+  EOA
+
+lives-ok
+  {
+    $actions.add-actions(load-yaml($hash-actions));
+  }, "set array of keyed actions";
+
+$action-data = $actions.get-action('puzzletable-editor');
+is $action-data.id, 'puzzletable-editor', '.get-action()';
+
+
+mkdir 't/data', 0o700 unless 't/data'.IO.e;
+'t/data/a.yaml'.IO.spurt($hash-actions);
+lives-ok
+  {
+    $actions.add-from-yaml('t/data/a.yaml');
+  }, "set array of keyed actions read from file";
+
+$action-data = $actions.get-action('puzzletable-gitgui');
+is $action-data.id, 'puzzletable-gitgui', '.get-action()';
+
 
 #-------------------------------------------------------------------------------
 done-testing;
