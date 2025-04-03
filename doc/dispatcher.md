@@ -76,16 +76,23 @@ class Actions < singleton > {
 
 class ActionData {
   # Str id
-  - Bool run-in-group
+  # Bool run-in-group
 
-  # Str tooltip
-  - Str work-dir
+  - Proc::Async process
+  # Str run-error
+  # Str run-log
+  # Bool running
+  - Str workdir
   - Hash env
   - Str script
   - Str cmd
+
+  # Str tooltip
   # Str picture
   # Str overlay-picture
+
   - Hash tempvars
+  - Variables variables
 
   run-action()
 }
@@ -93,12 +100,14 @@ class ActionData {
 Actions *- "*" ActionData
 Command <|-- SomeAction
 SomeAction *-- "1" ActionData
-ActionData o- Variables: variables
+ActionData o- Variables
 SomeAction -* IconButton
 
 @enduml
 ```
 
+
+Diagram to show macro commands which can execute more than one command
 ```plantuml
 @startuml
 
@@ -134,16 +143,23 @@ class ActionGroup {
 
 class ActionData {
   # Str id
-  - Bool run-in-group
+  # Bool run-in-group
 
-  # Str tooltip
-  - Str work-dir
+  - Proc::Async process
+  # Str run-error
+  # Str run-log
+  # Bool running
+  - Str workdir
   - Hash env
   - Str script
   - Str cmd
+
+  # Str tooltip
   - Str picture
   # Str overlay-picture
+
   # Hash tempvars
+  - Variables variables
 
   run-action()
 }
@@ -157,7 +173,7 @@ MacroCommand  o-- ActionGroup
 note "A button or menu item is\nmapped to a group of actions" as N2
 N2 .. MacroCommand
 
-ActionData o- Variables: variables
+ActionData o- Variables
 MacroCommand -* GroupRunButton
 
 ActionGroup *- "1" Actions
