@@ -8,7 +8,13 @@ unit class Desktop::Dispatcher::ActionData;
 
 # ID is readable for easy access
 has Str $.id;
-has Bool $!run-in-group;
+has Bool $.run-in-group;
+
+has Proc::Async $!process;
+has Str $.run-error;
+has Str $.run-log;
+has Bool $.running;
+has Str $!shell;
 
 has Str $.tooltip;
 has Str $!workdir;
@@ -27,6 +33,7 @@ has Desktop::Dispatcher::Variables $!variables;
 submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {
 
   $!run-in-group = False;
+  $!running = False;
 
   $!variables .= instance;
 
@@ -72,5 +79,99 @@ submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {
 
 #-------------------------------------------------------------------------------
 method set-run-in-group ( Bool $!run-in-group ) { }
+
+#-------------------------------------------------------------------------------
+method set-shell ( Str:D $!shell ) { }
+
+#-------------------------------------------------------------------------------
+method run-action ( ) {     #( Bool $!run-in-group ) {
+
+  # Set temporary variables if any
+  $!variables.set-temporary($!temp-variables) if ?$!temp-variables;
+
+  # Set environment variables
+  if ? $!env {
+    for $!env.keys -> $name {
+      %*ENV{$name} = $!env{$name};
+    }
+  }
+
+  my Str $command = '';
+  $command ~= "cd '$!workdir>'\n" if ? $!workdir;
+  $command ~= $!cmd if ? $!cmd;
+  $command = $!variables.substitute-vars($command);
+
+  my Str $script-name;
+  $script-name = '/tmp/' ~ sha256-hex($command) ~ '.shell-script';
+  $script-name.IO.spurt($command);
+
+  $!process .= new( $!shell, $script-name);
+  $!run-log = '';
+  $!run-error = '';
+
+  react {
+    whenever $!process.stdout.lines {
+      $!run-log ~= "$_\n";
+    }
+
+    whenever $!process.stderr {
+      $!run-error ~= "$_\n";
+    }
+
+    whenever $!process.ready {
+      if $_ ~~ Broken {
+        $!run-error ~= "Script failed to start"
+      }
+
+      else {
+        $!run-log ~= "Program started ok, Pid: $_\n";
+        $!running = True;
+      }
+    }
+
+    whenever $!process.start {
+      $!run-log ~= "Program finished: exitcode={.exitcode}, signal={.signal}";
+      $!running = False;
+      done;
+    }
+
+#`{{
+    whenever $!process.print: “I\n♥\nCamelia\n” {
+      $!process.close-stdin
+    }
+}}
+#`{{
+    whenever signal(SIGTERM).merge: signal(SIGINT) {
+      once {
+        $!run-log ~= ‘Signal received, asking the process to stop’;
+        $!process.kill;
+        whenever signal($_).zip: Promise.in(2).Supply {
+            say ‘Kill it!’;
+            $!process.kill: SIGKILL
+        }
+      }
+    }
+}}
+  #`{{
+    whenever Promise.in(5) {
+      say ‘Timeout. Asking the process to stop’;
+      $!process.kill; # sends SIGHUP, change appropriately
+      whenever Promise.in(2) {
+          say ‘Timeout. Forcing the process to stop’;
+          $!process.kill: SIGKILL
+      }
+    }
+  }}
+  }
+
+#    "$!shell {$*verbose ?? '-xv ' !! ''}$script-name > /tmp/script.log &"
+
+  # Remove environment variables
+  if ? $!env {
+    for $!env.keys -> $name {
+      %*ENV{$name}:delete;
+    }
+  }
+}
 
 

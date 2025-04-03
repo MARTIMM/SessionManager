@@ -71,6 +71,27 @@ lives-ok
 
 is $ad.id, 'firefox', 'id from raw hash';
 
+ok !$ad.run-in-group, 'Will not run with group';
+$ad.set-run-in-group(True);
+ok $ad.run-in-group, 'Will run with group';
+
+
+lives-ok
+  {
+    $ad .= new(
+      :raw-action( %(
+          :t('Run test'),
+          :c('ls /usr/bin/ls'),
+        )
+      )
+    );
+  }, "Create ls action";
+
+$ad.set-shell('/usr/bin/sh');
+$ad.run-action;
+
+like $ad.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
+is $ad.run-error, '', 'no errors';
 
 #-------------------------------------------------------------------------------
 done-testing;
