@@ -1,0 +1,39 @@
+use v6.d;
+
+use Test;
+use Desktop::Dispatcher::Actions;
+use Desktop::Dispatcher::Command;
+use Desktop::Dispatcher::ActionCommand;
+
+use Digest::SHA256::Native;
+
+#-------------------------------------------------------------------------------
+my Desktop::Dispatcher::Actions $actions .= instance;
+$actions.add-action(
+  %(
+    :t('Run sleep test'),
+    :c('sleep 4'),
+  )
+);
+
+# Id is calculated from tooltip
+my Str $id = sha256-hex('Run sleep test');
+
+# Make it a Command object to decouple from the ActionCommand.
+my Desktop::Dispatcher::Command $command =
+  Desktop::Dispatcher::ActionCommand.new(:$id);
+
+$command.execute;
+
+while $command.running {
+  $*ERR.print('.');
+  $*ERR.flush;
+  sleep 0.5;
+}
+like $command.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
+is $command.run-error, '', 'no errors';
+
+#-------------------------------------------------------------------------------
+done-testing;
+
+=finish
