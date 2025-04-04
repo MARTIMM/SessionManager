@@ -33,6 +33,7 @@ There is a configuration section to create the configuration file.
 
 #### Startup options
 * [x] `--config` option pointing to a root directory of the configuration.
+* [ ] Remove the `--config` option because it became the only one.
 * [x] References to parts can now be made from within the config file.
 * [x] Actions and variables can be referred to from the config file.
 
@@ -81,6 +82,7 @@ class ActionData {
   - Proc::Async process
   # Str run-error
   # Str run-log
+  - Str current-log-line
   # Bool running
   - Str workdir
   - Hash env
@@ -148,6 +150,7 @@ class ActionData {
   - Proc::Async process
   # Str run-error
   # Str run-log
+  - Str current-log-line
   # Bool running
   - Str workdir
   - Hash env
