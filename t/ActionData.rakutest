@@ -89,9 +89,37 @@ lives-ok
 
 $ad.set-shell('/usr/bin/sh');
 $ad.run-action;
-
+while $ad.running {
+  $*ERR.print('.');
+  $*ERR.flush;
+  sleep 0.5;
+}
 like $ad.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
 is $ad.run-error, '', 'no errors';
+
+
+
+lives-ok
+  {
+    $ad .= new(
+      :raw-action( %(
+          :t('Run test'),
+          :c('sleep 4'),
+        )
+      )
+    );
+  }, "Create sleep action";
+
+$ad.set-shell('/usr/bin/bash');
+$ad.run-action;
+while $ad.running {
+  $*ERR.print($ad.get-new-log-lines);
+  $*ERR.flush;
+  sleep 0.5;
+}
+like $ad.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
+is $ad.run-error, '', 'no errors';
+
 
 #-------------------------------------------------------------------------------
 done-testing;
