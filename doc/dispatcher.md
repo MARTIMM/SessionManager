@@ -58,13 +58,14 @@ abstract class Command <<(A,#80ffff)>> {
   {abstract} execute()
 }
 
-class SomeAction {
+class RunActionCommand {
   - Str id
   execute()
+  tap()
 }
 
 note "A button or menu item is\nmapped to some action" as N1
-N1 .. SomeAction
+N1 .. RunActionCommand
 
 class Variables < singleton > {
   - Hash variables
@@ -82,7 +83,6 @@ class ActionData {
   - Proc::Async process
   # Str run-error
   # Str run-log
-  - Str current-log-line
   # Bool running
   - Str workdir
   - Hash env
@@ -97,13 +97,14 @@ class ActionData {
   - Variables variables
 
   run-action()
+  tap()
 }
 
 Actions *- "*" ActionData
-Command <|-- SomeAction
-SomeAction *-- "1" ActionData
+Command <|-- RunActionCommand
+RunActionCommand *-- "1" ActionData
 ActionData o- Variables
-SomeAction -* IconButton
+RunActionCommand -* IconButton
 
 @enduml
 ```
@@ -150,7 +151,6 @@ class ActionData {
   - Proc::Async process
   # Str run-error
   # Str run-log
-  - Str current-log-line
   # Bool running
   - Str workdir
   - Hash env
@@ -165,6 +165,7 @@ class ActionData {
   - Variables variables
 
   run-action()
+  tap()
 }
 
 Actions *- "*" ActionData
