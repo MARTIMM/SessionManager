@@ -98,7 +98,6 @@ like $ad.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
 is $ad.run-error, '', 'no errors';
 
 
-
 lives-ok
   {
     $ad .= new(
@@ -110,15 +109,49 @@ lives-ok
     );
   }, "Create sleep action";
 
-$ad.set-shell('/usr/bin/bash');
+#$ad.set-shell('/usr/bin/bash');
+$ad.tap(
+  -> $txt {$txt.note},
+  :done(
+    { note 'Finished';
+      like $ad.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
+      is $ad.run-error, '', 'no errors';
+    }
+  )
+);
+
 $ad.run-action;
+
+##`{{
 while $ad.running {
-  $*ERR.print($ad.get-new-log-lines);
+  $*ERR.print('.');
   $*ERR.flush;
   sleep 0.5;
 }
-like $ad.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
-is $ad.run-error, '', 'no errors';
+#}}
+
+
+
+
+$ad.tap(
+  -> $txt {$txt.note},
+  :done(
+    { note 'Finished';
+      like $ad.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
+      is $ad.run-error, '', 'no errors';
+    }
+  )
+);
+
+$ad.run-action;
+
+##`{{
+while $ad.running {
+  $*ERR.print('.');
+  $*ERR.flush;
+  sleep 0.5;
+}
+#}}
 
 
 #-------------------------------------------------------------------------------

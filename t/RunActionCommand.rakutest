@@ -23,6 +23,16 @@ my Str $id = sha256-hex('Run sleep test');
 my Desktop::Dispatcher::Command $command =
   Desktop::Dispatcher::RunActionCommand.new(:$id);
 
+$command.tap(
+  -> $txt {$txt.note},
+  :done(
+    { note 'Finished';
+      like $command.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
+      is $command.run-error, '', 'no errors';
+    }
+  )
+);
+
 $command.execute;
 
 while $command.running {
@@ -30,8 +40,6 @@ while $command.running {
   $*ERR.flush;
   sleep 0.5;
 }
-like $command.run-log, /'Program started ok, Pid: ' \d+ /, 'run ok';
-is $command.run-error, '', 'no errors';
 
 #-------------------------------------------------------------------------------
 done-testing;
