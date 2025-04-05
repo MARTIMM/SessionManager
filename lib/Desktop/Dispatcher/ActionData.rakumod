@@ -1,3 +1,4 @@
+
 use v6.d;
 
 use Desktop::Dispatcher::Variables;
@@ -13,9 +14,10 @@ has Bool $.run-in-group;
 has Proc::Async $!process;
 has Str $.run-error;
 has Str $.run-log;
-has Str $!current-log-line;
 has Bool $.running;
 has Str $!shell;
+has Supplier $!supplier;
+has Supply $!supply handles <tap>;
 
 has Str $.tooltip;
 has Str $!workdir;
@@ -32,6 +34,8 @@ has Desktop::Dispatcher::Variables $!variables;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {
+  $!supplier .= new;
+  $!supply = $!supplier.Supply;
 
   $!run-in-group = False;
   $!running = False;
@@ -110,7 +114,6 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
   $!process .= new( $!shell, $script-name);
   $!run-log = '';
   $!run-error = '';
-  $!current-log-line = '';
   $!running = True;
 
   my Promise $promise = start {
@@ -118,22 +121,24 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
     react {
       whenever $!process.stdout.lines {
         $!run-log ~= "$_\n";
-        $!current-log-line ~= "$_\n";
+        $!supplier.emit("N:$_\n");
       }
 
       whenever $!process.stderr.lines {
         $!run-error ~= "$_\n";
+        $!supplier.emit("E:$_\n");
       }
 
       whenever $!process.ready {
         if $_ ~~ Broken {
-          $!run-error ~= "Script failed to start or has errors";
+          $!run-error ~= "Script failed to start or has errors\n";
+          $!supplier.emit("E:Script failed to start or has errors\n");
         }
 
         else {
           my Str $l = "Program started ok, Pid: $_\n";
           $!run-log ~= $l;
-          $!current-log-line ~= $l;
+          $!supplier.emit("N:$l");
         }
       }
 
@@ -141,43 +146,14 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
         my Str $l =
           "Program finished: exitcode={.exitcode}, signal={.signal}\n";
         $!run-log ~= $l;
-        $!current-log-line ~= $l;
+        $!supplier.emit("N:$l");
+        $!supplier.done;
         $!running = False;
 
         await $promise;
         done;
       }
-
-  #`{{
-      whenever $!process.print: “I\n♥\nCamelia\n” {
-        $!process.close-stdin
-      }
-  }}
-  #`{{
-      whenever signal(SIGTERM).merge: signal(SIGINT) {
-        once {
-          $!run-log ~= ‘Signal received, asking the process to stop’;
-          $!process.kill;
-          whenever signal($_).zip: Promise.in(2).Supply {
-              say ‘Kill it!’;
-              $!process.kill: SIGKILL
-          }
-        }
-      }
-  }}
-    #`{{
-      whenever Promise.in(5) {
-        say ‘Timeout. Asking the process to stop’;
-        $!process.kill; # sends SIGHUP, change appropriately
-        whenever Promise.in(2) {
-            say ‘Timeout. Forcing the process to stop’;
-            $!process.kill: SIGKILL
-        }
-      }
-    }}
     }
-
-  #    "$!shell {$*verbose ?? '-xv ' !! ''}$script-name > /tmp/script.log &"
 
     # Remove environment variables
     if ? $!env {
@@ -188,10 +164,3 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
   }
 }
 
-#-------------------------------------------------------------------------------
-method get-new-log-lines ( --> Str ) {
-  my Str $l = $!current-log-line;
-  $!current-log-line = '';
-
-  $l
-}
