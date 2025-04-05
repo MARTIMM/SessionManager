@@ -3,7 +3,7 @@ use v6.d;
 use Test;
 use Desktop::Dispatcher::Actions;
 use Desktop::Dispatcher::Command;
-use Desktop::Dispatcher::ActionCommand;
+use Desktop::Dispatcher::RunActionCommand;
 
 use Digest::SHA256::Native;
 
@@ -19,9 +19,9 @@ $actions.add-action(
 # Id is calculated from tooltip
 my Str $id = sha256-hex('Run sleep test');
 
-# Make it a Command object to decouple from the ActionCommand.
+# Make it a Command object to decouple from the RunActionCommand.
 my Desktop::Dispatcher::Command $command =
-  Desktop::Dispatcher::ActionCommand.new(:$id);
+  Desktop::Dispatcher::RunActionCommand.new(:$id);
 
 $command.execute;
 

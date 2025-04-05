@@ -7,7 +7,7 @@ use Desktop::Dispatcher::Command;
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::ActionCommand;
+unit class Desktop::Dispatcher::RunActionCommand;
 also is Desktop::Dispatcher::Command;
 
 #-------------------------------------------------------------------------------
