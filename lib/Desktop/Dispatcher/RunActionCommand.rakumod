@@ -12,7 +12,7 @@ also is Desktop::Dispatcher::Command;
 
 #-------------------------------------------------------------------------------
 has Desktop::Dispatcher::ActionData $!action-data handles <
-      running run-log run-error get-new-log-lines tap
+      running run-log run-error tap
       >;
 
 #-------------------------------------------------------------------------------
