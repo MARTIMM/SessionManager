@@ -3,7 +3,7 @@ use v6.d;
 
 use NativeCall;
 
-use Desktop::Dispatcher::Config;
+use Desktop::Dispatcher::ConfigOrig;
 
 use Gnome::Gtk4::ApplicationWindow:api<2>;
 use Gnome::Gtk4::Box:api<2>;
@@ -43,7 +43,7 @@ constant Overlay = Gnome::Gtk4::Overlay;
 constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
 constant Texture = Gnome::Gdk4::Texture;
 
-has Desktop::Dispatcher::Config $!config;
+has Desktop::Dispatcher::ConfigOrig $!config;
 #has Bool $!init-config;
 has Str $!shell; 
 has ApplicationWindow $!app-window;
@@ -51,7 +51,7 @@ has Hash $!action-data;
 
 #-------------------------------------------------------------------------------
 submethod BUILD (
-  Desktop::Dispatcher::Config:D :$!config, ApplicationWindow :$!app-window
+  Desktop::Dispatcher::ConfigOrig:D :$!config, ApplicationWindow :$!app-window
 ) {
 #  $!init-config = True;
   $!shell = $!config.get-shell;

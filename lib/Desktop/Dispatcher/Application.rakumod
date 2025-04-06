@@ -23,7 +23,7 @@ use Gnome::N::N-Object:api<2>;
 #Gnome::N::debug(:on);
 
 use Desktop::Dispatcher::ActionsOrig;
-use Desktop::Dispatcher::Config;
+use Desktop::Dispatcher::ConfigOrig;
 
 #-------------------------------------------------------------------------------
 unit class Desktop::Dispatcher::Application:auth<github:MARTIMM>;
@@ -31,7 +31,7 @@ unit class Desktop::Dispatcher::Application:auth<github:MARTIMM>;
 has Gnome::Gtk4::Application $!application;
 has Gnome::Gtk4::ApplicationWindow $!app-window;
 
-has Desktop::Dispatcher::Config $!config;
+has Desktop::Dispatcher::ConfigOrig $!config;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
