@@ -114,7 +114,7 @@ Diagram to show macro commands which can execute more than one command
 ```plantuml
 @startuml
 
-'scale 0.8
+'scale 0.9
 
 skinparam packageStyle rectangle
 skinparam stereotypeCBackgroundColor #80ffff
@@ -131,42 +131,15 @@ class MacroCommand {
   execute()
 }
 
-class Variables < singleton > {
-  - Hash variables
-  - Hash temporary
-}
+class Variables < singleton > { }
 
-class Actions < singleton > {
-  - Hash ids
-}
+class Actions < singleton > { }
 
 class ActionGroup {
   - Array ids
 }
 
-class ActionData {
-  # Str id
-  # Bool run-in-group
-
-  - Proc::Async process
-  # Str run-error
-  # Str run-log
-  # Bool running
-  - Str workdir
-  - Hash env
-  - Str script
-  - Str cmd
-
-  # Str tooltip
-  - Str picture
-  # Str overlay-picture
-
-  # Hash tempvars
-  - Variables variables
-
-  run-action()
-  tap()
-}
+class ActionData { }
 
 Actions *- "*" ActionData
 
@@ -180,11 +153,73 @@ N2 .. MacroCommand
 ActionData o- Variables
 MacroCommand -* GroupRunButton
 
-ActionGroup *- "1" Actions
+ActionGroup *-- "1" Actions
 @enduml
 ```
 
+A few more examples of command objects
 
+```plantuml
+@startuml
+
+'scale 0.9
+
+skinparam packageStyle rectangle
+skinparam stereotypeCBackgroundColor #80ffff
+skinparam linetype ortho
+
+set namespaceSeparator ::
+hide empty members
+
+abstract class Command <<(A,#80ffff)>> {
+  {abstract} execute()
+}
+
+class CreateButtonCommand {
+  execute()
+}
+
+class Variables < singleton > { }
+
+class Actions < singleton > { }
+
+class ActionData { }
+
+Actions *- "*" ActionData
+
+Command <|-- CreateButtonCommand
+ActionData o-up- CreateButtonCommand
+
+ActionData o- Variables
+
+@enduml
+```
+
+The configuration file is the loader of the YAML config file which has references to parts, variables and action data.
+
+```plantuml
+@startuml
+
+'scale 0.8
+
+skinparam packageStyle rectangle
+skinparam stereotypeCBackgroundColor #80ffff
+skinparam linetype ortho
+
+set namespaceSeparator ::
+hide empty members
+
+
+class Config <singleton> {
+  - css
+  - default-images
+}
+
+Config --> Actions
+Config --> Variables
+
+@enduml
+```
 
 
 <!--
