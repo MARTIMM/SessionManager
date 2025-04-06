@@ -20,8 +20,8 @@ submethod BUILD ( Str:D :$id is copy ) {
   my Desktop::Dispatcher::Actions $actions .= instance;
   $!action-data = $actions.get-action($id);
   if ! $!action-data {
-    # If action data isn't found, try iot is if it was a tooltip string
-    # Those are taken when no id was found and converted into shs256
+    # If action data isn't found, try $id as if it was a tooltip
+    # string. Those are taken when no id was found and converted into sha256
     # strings in Desktop::Dispatcher::ActionData.
     $id = sha256-hex($id);
     $!action-data = $actions.get-action($id);
