@@ -18,8 +18,11 @@ submethod BUILD ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method new ( ) { !!! }
+
+#-------------------------------------------------------------------------------
 method instance ( --> Desktop::Dispatcher::Actions ) {
-  $instance //= self.new;
+  $instance //= self.bless;
 
   $instance
 }
