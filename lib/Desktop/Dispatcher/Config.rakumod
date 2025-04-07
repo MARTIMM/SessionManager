@@ -1,7 +1,19 @@
 use v6.d;
 
 use Desktop::Dispatcher::Variables;
+use Desktop::Dispatcher::ActionData;
 use Desktop::Dispatcher::Actions;
+
+use Gnome::Gtk4::StyleContext:api<2>;
+use Gnome::Gtk4::CssProvider:api<2>;
+use Gnome::Gtk4::T-styleprovider:api<2>;
+
+use Gnome::N::N-Object:api<2>;
+#use Gnome::N::X:api<2>;
+#Gnome::N::debug(:on);
+
+use YAMLish;
+use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
 unit class Desktop::Dispatcher::Config;
@@ -65,9 +77,9 @@ method new ( ) { !!! }
 
 #-------------------------------------------------------------------------------
 method instance (
-  Str :$!config-directory --> Desktop::Dispatcher::Config
+  Str :$config-directory --> Desktop::Dispatcher::Config
 ) {
-  $instance //= self.bless(:$!config-directory);
+  $instance //= self.bless(:$config-directory);
 
   $instance
 }
@@ -80,35 +92,72 @@ method load-config ( ) {
 
   die "dispatch configuration not found" unless ?$!dispatch-config;
 
-  # Check and load separate session descriptions
+  # Set a few variable before hand
+  my Desktop::Dispatcher::Variables $variables .= instance;
+  $variables.add( %(
+    :$!config-directory,
+    :home($*HOME),
+  ));
+
+  # First! Check and load variables
+  if $!dispatch-config<variable-references>:exists {
+    for @($!dispatch-config<variable-references>) -> $file {
+      $variables.add-from-yaml($file);
+    }
+  }
+
+  # Check and load separate session descriptions, variables are now possible
   if $!dispatch-config<part-references>:exists {
     my Hash $ref := $!dispatch-config<part-references>;
-    for $ref.kv -> $name, $file {
+    for $ref.kv -> $name, $file is copy {
+      $file = $variables.substitute-vars($file);
       $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
     }
   }
 
   # Check and load separate action descriptions
   if $!dispatch-config<action-references>:exists {
-    my Desktop::Dispatcher::Actions $actions .= new;
-    for @($!dispatch-config<action-references>) -> $file {
-#      $!action-refs = %( | $!action-refs, | load-yaml($file.IO.slurp));
-#note "$?LINE thunderbird: {$!action-refs<thunderbird-o>//'-'}";
-#note "$?LINE : {$!action-refs<thunderbird-o>//'-'}";
-      $!action-refs =
-        self.merge-hash( $!action-refs, load-yaml($file.IO.slurp));
+    my Desktop::Dispatcher::Actions $actions .= instance;
+    for @($!dispatch-config<action-references>) -> $file is copy {
+      $file = $variables.substitute-vars($file);
+      $actions.add-from-yaml($file);
     }
   }
 
-  # Check and load variables
-  if $!dispatch-config<variable-references>:exists {
-    for @($!dispatch-config<variable-references>) -> $file {
-      $!variables = %( | $!variables, | load-yaml($file.IO.slurp));
+  self.check-actions;
+}
+
+#-------------------------------------------------------------------------------
+method check-actions ( ) {
+#note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
+#  CONTROL { when CX::Warn {  note .gist; .resume; } }
+#  CATCH { default { .message.note; .backtrace.concise.note } }
+
+  $!dispatch-config<toolbar> =
+    self.check-session-entries($!dispatch-config<toolbar>);
+
+  for $!dispatch-config<sessions>.keys -> $name {
+    my Hash $sessions = $!dispatch-config<sessions>{$name};
+    for 1 .. 10 -> $level {
+      last unless $sessions{'group' ~ $level}:exists;
+      $sessions{'group' ~ $level}<actions> =
+        self.check-session-entries($sessions{'group' ~ $level}<actions>);
     }
   }
+}
 
-  self.change-session-actions;
+#-------------------------------------------------------------------------------
+method check-session-entries ( Array $raw-entries --> Array ) {
+  my Desktop::Dispatcher::Actions $actions .= instance;
 
-#note "\n\n$?LINE $!action-refs<puzzletable-run>.gist()";
-#note "\n$?LINE $!variables.gist()";
+  # It is possible that an entry is just a string. If so, the string is
+  # a key in the $!action-refs hash to get the action hash from there.
+  # When it is a Hash, it must be added to the actions data
+  for 0 ..^ $raw-entries.elems -> $i {
+    if $raw-entries[$i] ~~ Hash and $raw-entries[$i]<t>:exists {
+      $actions.add-action($raw-entries[$i]);
+      $raw-entries[$i] = sha256-hex($raw-entries[$i]<t>);
+    }
+#TODO ... what to do when tooltip isn't there
+  }
 }

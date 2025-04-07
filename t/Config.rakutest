@@ -1,0 +1,123 @@
+use v6.d;
+
+use Test;
+
+use Desktop::Dispatcher::Variables;
+use Desktop::Dispatcher::Actions;
+use Desktop::Dispatcher::Config;
+use Desktop::Dispatcher::ActionData;
+
+use Digest::SHA256::Native;
+use YAMLish;
+
+#-------------------------------------------------------------------------------
+my Str $config-directory = './t/data';
+
+"$config-directory/dispatch-config.yaml".IO.spurt(Q:q:to/EOCFG/);
+  shell: /usr/bin/tcsh
+
+  theme:
+    title: Environment starter
+
+    icon-size: [ 200, 200]
+    window-size: [ 1000, 300]
+
+  part-references:
+    02-Part: $config-directory/part.yaml
+
+  action-references:
+    - $config-directory/actions.yaml
+
+  # Is read first, no variables read to use here
+  variable-references:
+    - t/data/variables.yaml
+
+  toolbar:
+    - t: Firefox Browser
+      c: firefox
+      o: $icons1/firefox.jpg
+
+  sessions:
+    00-Places:
+      title: Places to go
+      group1:
+        actions:
+          - t: Config directories
+            c: dolphin --new-window $home/Sessions-Starter $config $local
+
+          - t: Other directories
+            c: dolphin --new-window /mnt
+  EOCFG
+
+# Parts example, 2 groups. 1st has a ref to an action, 2nd defines
+# an action without an id.
+"$config-directory/part.yaml".IO.spurt(Q:q:to/EOCFG/);
+  title: Developing the puzzle table program
+
+  group1:
+    title: Setup
+    actions:
+      - puzzletable-dolphin
+
+  group2:
+    title: Testing
+    actions:
+      - t: Puzzle table tests
+        p: $puzzle-project
+        c: konsole $kp-puzzletable $khide $ke prove6 -Ilib -v --timer t
+        o: $puzzle-table-o
+  EOCFG
+
+# Actions example
+"$config-directory/actions.yaml".IO.spurt(Q:q:to/EOCFG/);
+  caps-lock-unlock:
+    t: Toggle Caps Lock
+    c: xdotool key Caps_Lock
+    o: $caps-lock-o
+
+  puzzletable-dolphin:
+    t: Start file manager
+    c: dolphin --new-window $puzzle-project $puzzle-config
+    o: $dolphin-o
+
+  browser-firefox:
+    t: Firefox Browser
+    c: firefox
+    o: $firefox-o
+  EOCFG
+
+# Variables example. The variable $config-directory is set by Config
+# as well as $home
+"$config-directory/variables.yaml".IO.spurt(Q:q:to/EOCFG/);
+  datadir: ./t/data
+  icons1: $config-directory
+
+  config: $home/.config
+  local: $home/.local/share
+
+  projects: $home/Languages/Raku/Projects
+  puzzle-project: $projects/PuzzleTable
+  puzzle-config: $home/.config/io.github.martimm.puzzle-table
+
+  caps-lock-o: $icons1/caps-lock.png
+  firefox-o: $icons1/firefox.jpg
+  dolphin-o: $icons1/600px-Dolphin-logo.svg.png
+  puzzle-table-o: $icons1/puzzle-table-logo.png
+
+  EOCFG
+
+
+my Desktop::Dispatcher::Config $config .= instance(:$config-directory);
+
+#-------------------------------------------------------------------------------
+my Str $id = sha256-hex('Puzzle table tests');
+my Desktop::Dispatcher::Actions $actions .= instance;
+my Desktop::Dispatcher::ActionData $action-data = $actions.get-action($id);
+is $action-data.id, $id, 'keyless action entry';
+is $action-data.overlay-picture, './t/data/puzzle-table-logo.png',
+   'variable substitution';
+
+#-------------------------------------------------------------------------------
+done-testing;
+
+=finish
