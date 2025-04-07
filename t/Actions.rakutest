@@ -90,6 +90,7 @@ is $action-data.id, 'puzzletable-gitgui', '.get-action()';
 
 
 #-------------------------------------------------------------------------------
+'t/data/a.yaml'.IO.unlink;
 done-testing;
 
 =finish

@@ -99,7 +99,9 @@ is $v.substitute-vars('$projecttools'),
    '/home/marcel/Languages/Raku/Projects/Tools',
    'projecttools var substituted';
 
+
 #-------------------------------------------------------------------------------
+'t/data/v.yaml'.IO.unlink;
 done-testing;
 
 =finish
