@@ -3,6 +3,7 @@ use v6.d;
 use Desktop::Dispatcher::ActionData;
 use Desktop::Dispatcher::Actions;
 use Desktop::Dispatcher::Command;
+use Desktop::Dispatcher::Config;
 
 #use Gnome::Gtk4::ApplicationWindow:api<2>;
 #use Gnome::Gtk4::Box:api<2>;
@@ -51,17 +52,9 @@ has Desktop::Dispatcher::ActionData $!action-data handles <
       >;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Str:D :$id is copy ) {
+submethod BUILD ( Str:D :$id ) {
   my Desktop::Dispatcher::Actions $actions .= instance;
   $!action-data = $actions.get-action($id);
-  if ! $!action-data {
-    # If action data isn't found, try $id as if it was a tooltip string
-    # Those are taken when no id was found and converted into sha256
-    # strings in Desktop::Dispatcher::ActionData.
-    $id = sha256-hex($id);
-    $!action-data = $actions.get-action($id);
-  }
-
   die "Failed to find an action with id '$id'" unless ?$!action-data;
 }
 
@@ -71,9 +64,10 @@ method execute ( --> Overlay ) {
   my Picture $overlay-pic;
   my Picture $picture;
 
+  my Desktop::Dispatcher::Config $config .= instance(:$config-directory);
   with $picture .= new-picture {
     .set-filename($!action-data.picture);
-#    .set-size-request($!config.get-icon-size);
+    .set-size-request($config.get-icon-size);
 
     .set-margin-top(0);
     .set-margin-bottom(0);
@@ -82,9 +76,9 @@ method execute ( --> Overlay ) {
   }
 
   with my Button $button .= new-button {
+    $config.set-css( .get-style-context, 'session-button');
     .set-child($picture);
     .set-tooltip-text($!action-data.tooltip);
-#    $!config.set-css( .get-style-context, 'session-button');
     .register-signal( $!action-data, 'run-action', 'clicked');
   }
 
