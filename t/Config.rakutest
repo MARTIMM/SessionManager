@@ -13,6 +13,14 @@ use YAMLish;
 #-------------------------------------------------------------------------------
 my Str $config-directory = './t/data';
 
+#-------------------------------------------------------------------------------
+# Example configuration. References to one part, one action and a variable file
+# There is a toolbar and a sessions section. The part is inserted into the
+# sessions section. The keys in the sessions are ordered so the '02-Part' is 
+# after the '00-Places'. All actions in the toolbar and sessions are added to
+# the Actions object when they are a Hash. The created id replaces the Hash.
+# When the entry is a string, this should be an id to be found in the Actions
+# object.
 "$config-directory/dispatch-config.yaml".IO.spurt(Q:q:to/EOCFG/);
   shell: /usr/bin/tcsh
 
@@ -30,7 +38,7 @@ my Str $config-directory = './t/data';
 
   # Is read first, no variables read to use here
   variable-references:
-    - t/data/variables.yaml
+    - $config-directory/variables.yaml
 
   toolbar:
     - t: Firefox Browser
@@ -49,6 +57,7 @@ my Str $config-directory = './t/data';
             c: dolphin --new-window /mnt
   EOCFG
 
+#-------------------------------------------------------------------------------
 # Parts example, 2 groups. 1st has a ref to an action, 2nd defines
 # an action without an id.
 "$config-directory/part.yaml".IO.spurt(Q:q:to/EOCFG/);
@@ -68,6 +77,7 @@ my Str $config-directory = './t/data';
         o: $puzzle-table-o
   EOCFG
 
+#-------------------------------------------------------------------------------
 # Actions example
 "$config-directory/actions.yaml".IO.spurt(Q:q:to/EOCFG/);
   caps-lock-unlock:
@@ -86,6 +96,7 @@ my Str $config-directory = './t/data';
     o: $firefox-o
   EOCFG
 
+#-------------------------------------------------------------------------------
 # Variables example. The variable $config-directory is set by Config
 # as well as $home
 "$config-directory/variables.yaml".IO.spurt(Q:q:to/EOCFG/);
@@ -106,7 +117,7 @@ my Str $config-directory = './t/data';
 
   EOCFG
 
-
+#-------------------------------------------------------------------------------
 my Desktop::Dispatcher::Config $config .= instance(:$config-directory);
 
 #-------------------------------------------------------------------------------
@@ -116,6 +127,11 @@ my Desktop::Dispatcher::ActionData $action-data = $actions.get-action($id);
 is $action-data.id, $id, 'keyless action entry';
 is $action-data.overlay-picture, './t/data/puzzle-table-logo.png',
    'variable substitution';
+
+my Int ( $w, $h) = $config.get-window-size;
+is-deeply ( $w, $h), ( 1000, 300), '.get-window-size()';
+( $w, $h) = $config.get-icon-size;
+is-deeply ( $w, $h), ( 200, 200), '.get-icon-size()';
 
 #-------------------------------------------------------------------------------
 done-testing;
