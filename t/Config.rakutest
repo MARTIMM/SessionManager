@@ -132,7 +132,7 @@ my Int ( $w, $h) = $config.get-window-size;
 is-deeply ( $w, $h), ( 1000, 300), '.get-window-size()';
 ( $w, $h) = $config.get-icon-size;
 is-deeply ( $w, $h), ( 200, 200), '.get-icon-size()';
-
+is $config.get-window-title, 'Environment starter', '.get-window-title()';
 #-------------------------------------------------------------------------------
 done-testing;
 
