@@ -4,7 +4,7 @@ use v6.d;
 
 #%*ENV<IGNORE_GNOME_DEPRECATION_MESSAGES> = 1;
 
-use Desktop::Dispatcher::Application;
+use Desktop::Dispatcher::Gui::Application;
 
 #-------------------------------------------------------------------------------
 # Initialize global variables
@@ -18,5 +18,5 @@ my $*dispatch-testing = False;
 
 my Str $*images = 'Images';
 
-my Desktop::Dispatcher::Application $dispatcher .= new;
+my Desktop::Dispatcher::Gui::Application $dispatcher .= new;
 exit($dispatcher.go-ahead);

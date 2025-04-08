@@ -139,7 +139,7 @@ method check-actions ( ) {
   for $!dispatch-config<sessions>.keys -> $name {
     my Hash $sessions = $!dispatch-config<sessions>{$name};
     for 1 .. 10 -> $level {
-      last unless $sessions{'group' ~ $level}:exists;
+      last unless $sessions{'group' ~ $level}<actions>:exists;
       $sessions{'group' ~ $level}<actions> =
         self.check-session-entries($sessions{'group' ~ $level}<actions>);
     }
@@ -183,14 +183,14 @@ method get-icon-size ( --> List ) {
   | $!dispatch-config<theme><icon-size>;
 }
 
+#-------------------------------------------------------------------------------
+method get-window-title ( --> Str ) {
+  $!dispatch-config<theme><title> // 'Session Manager';
+}
+
 =finish
 
 
-
-#-------------------------------------------------------------------------------
-method get-window-title ( --> Str ) {
-  $!dispatch-config<theme><title> // 'Dispatcher';
-}
 
 #-------------------------------------------------------------------------------
 method get-sessions ( --> Seq ) {
