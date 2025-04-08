@@ -2,6 +2,7 @@ use v6.d;
 
 use Desktop::Dispatcher::ActionData;
 
+use Digest::SHA256::Native;
 use YAMLish;
 
 #-------------------------------------------------------------------------------
@@ -66,12 +67,22 @@ method add-from-yaml ( Str:D $path ) {
 }
 
 #-------------------------------------------------------------------------------
-method get-action ( Str:D $id --> Desktop::Dispatcher::ActionData ) {
+method get-action ( Str:D $id is copy --> Desktop::Dispatcher::ActionData ) {
   if $!data-ids{$id}:exists {
     $!data-ids{$id}
   }
 
   else {
-    Desktop::Dispatcher::ActionData
+    # If action data isn't found, try $id as if it was a tooltip
+    # string. Those are taken when no id was found and converted into sha256
+    # strings in Desktop::Dispatcher::ActionData.
+    $id = sha256-hex($id);
+    if $!data-ids{$id}:exists {
+      $!data-ids{$id}
+    }
+
+    else {
+      Desktop::Dispatcher::ActionData
+    }
   }
 }

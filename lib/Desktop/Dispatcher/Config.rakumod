@@ -41,11 +41,9 @@ submethod BUILD ( Str :$!config-directory = DATA_DIR ) {
 
   mkdir DATA_DIR ~ '/Images', 0o700 unless (DATA_DIR ~ '/Images').IO.e;
   
+  # It is supposed to copy files to a controllable location See also issue #5746
+  # at https://github.com/rakudo/rakudo/issues/5746.
   my Str $png-file;
-# It is supposed to copy files to a controllable location See also issue #5746
-# at https://github.com/rakudo/rakudo/issues/5746.
-# But this can be done: %?RESOURCES<dispatcher.css>.IO.absolute()
-# !!!It is warned against doing this!!!
   for <
     diamond-steel-floor.jpg brushed-light.jpg brushed-dark.jpg
     config-icon.jpg brushed-copper.jpg mozaic.jpg dispatch-icon.png
@@ -60,6 +58,7 @@ submethod BUILD ( Str :$!config-directory = DATA_DIR ) {
     $png-file = [~] DATA_DIR, '/Images/', $i;
     %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
   }
+
   # Copy style sheet to data directory and load into program
   my Str $css-file = DATA_DIR ~ '/dispatcher.css';
   %?RESOURCES<dispatcher.css>.copy($css-file);
@@ -101,7 +100,8 @@ method load-config ( ) {
 
   # First! Check and load variables
   if $!dispatch-config<variable-references>:exists {
-    for @($!dispatch-config<variable-references>) -> $file {
+    for @($!dispatch-config<variable-references>) -> $file is copy {
+      $file = $variables.substitute-vars($file);
       $variables.add-from-yaml($file);
     }
   }
@@ -160,4 +160,102 @@ method check-session-entries ( Array $raw-entries --> Array ) {
     }
 #TODO ... what to do when tooltip isn't there
   }
+}
+
+#-------------------------------------------------------------------------------
+method set-css ( N-Object $context, Str:D $css-class ) {
+  return unless ?$css-class;
+
+  my Gnome::Gtk4::StyleContext $style-context .= new(:native-object($context));
+  $style-context.add-provider(
+    $!css-provider, GTK_STYLE_PROVIDER_PRIORITY_USER
+  );
+  $style-context.add-class($css-class);
+}
+
+#-------------------------------------------------------------------------------
+method get-window-size ( --> List ) {
+  | $!dispatch-config<theme><window-size>;
+}
+
+#-------------------------------------------------------------------------------
+method get-icon-size ( --> List ) {
+  | $!dispatch-config<theme><icon-size>;
+}
+
+=finish
+
+
+
+#-------------------------------------------------------------------------------
+method get-window-title ( --> Str ) {
+  $!dispatch-config<theme><title> // 'Dispatcher';
+}
+
+#-------------------------------------------------------------------------------
+method get-sessions ( --> Seq ) {
+  ($!dispatch-config<sessions> // %()).keys.sort
+}
+
+#-------------------------------------------------------------------------------
+method get-variables ( --> Hash ) {
+  $!variables // %()
+}
+
+#-------------------------------------------------------------------------------
+method get-temp-variables ( --> Hash ) {
+  $!dispatch-config<config><temp-variables> // %();
+}
+
+#-------------------------------------------------------------------------------
+method set-temp-variables ( Hash $vars ) {
+  $!dispatch-config<config><temp-variables> = $vars
+}
+
+#-------------------------------------------------------------------------------
+method get-session-title ( Str $name --> Str ) {
+  $!dispatch-config<sessions>{$name}<title> // '[-]'
+}
+
+#-------------------------------------------------------------------------------
+method run-all-actions ( Str $name --> Bool ) {
+  $!dispatch-config<sessions>{$name}<run-all-actions> // False
+}
+
+#-------------------------------------------------------------------------------
+method get-session-icon ( Str $name --> Str ) {
+  $!dispatch-config<sessions>{$name}<icon> // "$*images/$name/0.png"
+}
+
+#-------------------------------------------------------------------------------
+method get-session-overlay-icon ( Str $name --> Str ) {
+  $!dispatch-config<sessions>{$name}<over> // "$*images/$name/o0.png"
+}
+
+#-------------------------------------------------------------------------------
+method get-session-group-title ( Str $name, Int $level --> Str ) {
+  $!dispatch-config<sessions>{$name}{'group' ~ $level}<title> // ''
+}
+
+#-------------------------------------------------------------------------------
+method get-session-actions ( Str $name, Int $level --> List ) {
+  my Hash $sessions := $!dispatch-config<sessions>{$name};
+  $sessions{'group' ~ $level}<actions>:exists
+      ?? | $sessions{'group' ~ $level}<actions>
+      !! ()
+}
+
+#-------------------------------------------------------------------------------
+method has-actions-level ( Str $name, Int $level --> Bool ) {
+  $!dispatch-config<sessions>{$name}{'group' ~ $level}<actions>:exists
+}
+
+#-------------------------------------------------------------------------------
+method get-toolbar-actions ( --> List ) {
+  $!dispatch-config<toolbar>:exists ?? @($!dispatch-config<toolbar>) !! ()
+}
+
+#-------------------------------------------------------------------------------
+method get-shell ( --> Str ) {
+  $!dispatch-config<shell>:exists ?? $!dispatch-config<shell> !! '/usr/bin/bash'
 }
