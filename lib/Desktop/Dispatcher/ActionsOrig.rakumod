@@ -310,9 +310,9 @@ method process-action (
 
   # Set environment
   if ? $action<e> {
-    $ad<env> = [];
-    for @($action<e>) -> $a {
-      $ad<env>.push: self.substitute-vars($a);
+    $ad<env> = %();
+    for $action<e>.keys -> $k {
+      $ad<env>{$k} = self.substitute-vars($action<e>{$k});
     }
 #    note "Set environment to $ad<env>" if $*verbose;
   }
@@ -427,10 +427,9 @@ method run-action ( Hash :$action ) {
   my Str ( $k, $v, $cmd);
   if ? $action<env> {
     note "Set environment to; " if $*verbose;
-    for @($action<env>) -> $es {
-      ( $k, $v ) = $es.split('=');
-      note "   $k = $v" if $*verbose;
-      %*ENV{$k} = $v;
+    for $action<env>.keys -> $k {
+      note "   $k = $action<env>{$k}" if $*verbose;
+      %*ENV{$k} = $action<env>{$k};
     }
   }
 

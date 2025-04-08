@@ -26,7 +26,7 @@ use Desktop::Dispatcher::ActionsOrig;
 use Desktop::Dispatcher::ConfigOrig;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::Application:auth<github:MARTIMM>;
+unit class Desktop::Dispatcher::ApplicationOrig:auth<github:MARTIMM>;
 
 has Gnome::Gtk4::Application $!application;
 has Gnome::Gtk4::ApplicationWindow $!app-window;
