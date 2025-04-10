@@ -22,16 +22,17 @@ use Gnome::N::N-Object:api<2>;
 #use Gnome::N::X:api<2>;
 #Gnome::N::debug(:on);
 
-#use Desktop::Dispatcher::Actions;
-use Desktop::Dispatcher::Config;
+#use SessionManager::Actions;
+use SessionManager::Config;
+use SessionManager::Gui::Toolbar;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::Gui::Application:auth<github:MARTIMM>;
+unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
 
 has Gnome::Gtk4::Application $!application;
 has Gnome::Gtk4::ApplicationWindow $!app-window;
-
-#has Desktop::Dispatcher::Config $!config;
+#has SessionManager::Gui::Toolbar $!toolbar;
+#has SessionManager::Config $!config;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -118,7 +119,7 @@ note "$?LINE $args.gist()";
     $config-directory = $o.<config> // Str;
   }
 
-  my Desktop::Dispatcher::Config $config .= instance(:$config-directory);
+  my SessionManager::Config $config .= instance(:$config-directory);
 
   # finish up
   if $cl.get-is-remote {
@@ -163,12 +164,14 @@ method setup-window ( ) {
     $!app-window.clear-object;
   }
 
-  my Desktop::Dispatcher::Config $config .= instance;
+  my SessionManager::Config $config .= instance;
   with $!app-window .= new-applicationwindow($!application) {
-#    my Desktop::Dispatcher::Actions $actions .= new( :$!config, :$!app-window);
+#    my SessionManager::Actions $actions .= new( :$!config, :$!app-window);
+
 
     .set-title($config.get-window-title);
-#    .set-child($actions.setup-sessions);
+    .set-child(SessionManager::Gui::Toolbar.new-box);
+
     .present;
   }
 }

@@ -1,16 +1,16 @@
 use v6.d;
 
 use Test;
-use Desktop::Dispatcher::Variables;
-use Desktop::Dispatcher::ActionData;
+use SessionManager::Variables;
+use SessionManager::ActionData;
 
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
-my Desktop::Dispatcher::Variables $v .= instance;
+my SessionManager::Variables $v .= instance;
 
 #-------------------------------------------------------------------------------
-my Desktop::Dispatcher::ActionData $ad;
+my SessionManager::ActionData $ad;
 
 $v.add( %(
     :home</home/marcel>,

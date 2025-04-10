@@ -22,16 +22,16 @@ use Gnome::N::N-Object:api<2>;
 #use Gnome::N::X:api<2>;
 #Gnome::N::debug(:on);
 
-use Desktop::Dispatcher::ActionsOrig;
-use Desktop::Dispatcher::ConfigOrig;
+use SessionManager::ActionsOrig;
+use SessionManager::ConfigOrig;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::ApplicationOrig:auth<github:MARTIMM>;
+unit class SessionManager::ApplicationOrig:auth<github:MARTIMM>;
 
 has Gnome::Gtk4::Application $!application;
 has Gnome::Gtk4::ApplicationWindow $!app-window;
 
-has Desktop::Dispatcher::ConfigOrig $!config;
+has SessionManager::ConfigOrig $!config;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -163,7 +163,7 @@ method setup-window ( ) {
   }
 
   with $!app-window .= new-applicationwindow($!application) {
-    my Desktop::Dispatcher::ActionsOrig $actions .= new( :$!config, :$!app-window);
+    my SessionManager::ActionsOrig $actions .= new( :$!config, :$!app-window);
 
     .set-title($!config.get-window-title);
     .set-child($actions.setup-sessions);

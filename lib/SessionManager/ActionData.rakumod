@@ -1,11 +1,11 @@
 
 use v6.d;
 
-use Desktop::Dispatcher::Variables;
+use SessionManager::Variables;
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::ActionData;
+unit class SessionManager::ActionData;
 
 # ID is readable for easy access
 has Str $.id;
@@ -30,7 +30,7 @@ has Str $.picture;
 has Str $.overlay-picture;
 
 has Hash $!temp-variables;
-has Desktop::Dispatcher::Variables $!variables;
+has SessionManager::Variables $!variables;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {

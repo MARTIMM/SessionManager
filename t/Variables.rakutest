@@ -2,10 +2,10 @@ use v6.d;
 
 use Test;
 
-use Desktop::Dispatcher::Variables;
+use SessionManager::Variables;
 
 #-------------------------------------------------------------------------------
-my Desktop::Dispatcher::Variables $v .= instance;
+my SessionManager::Variables $v .= instance;
 
 #-------------------------------------------------------------------------------
 lives-ok

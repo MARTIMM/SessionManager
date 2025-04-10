@@ -1,15 +1,15 @@
 use v6.d;
 
 use Test;
-use Desktop::Dispatcher::Variables;
-use Desktop::Dispatcher::ActionData;
-use Desktop::Dispatcher::Actions;
+use SessionManager::Variables;
+use SessionManager::ActionData;
+use SessionManager::Actions;
 
 use Digest::SHA256::Native;
 use YAMLish;
 
 #-------------------------------------------------------------------------------
-my Desktop::Dispatcher::Actions $actions .= instance;
+my SessionManager::Actions $actions .= instance;
 
 #-------------------------------------------------------------------------------
 lives-ok
@@ -26,7 +26,7 @@ lives-ok
 
 my Str $id = sha256-hex('Firefox Browser');
 
-my Desktop::Dispatcher::ActionData $action-data = $actions.get-action($id);
+my SessionManager::ActionData $action-data = $actions.get-action($id);
 is $action-data.id, $id, '.get-action()';
 
 

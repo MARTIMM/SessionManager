@@ -1,12 +1,12 @@
 use v6.d;
 
-use Desktop::Dispatcher::ActionData;
+use SessionManager::ActionData;
 
 use Digest::SHA256::Native;
 use YAMLish;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::Actions;
+unit class SessionManager::Actions;
 
 #-------------------------------------------------------------------------------
 my $instance;
@@ -22,7 +22,7 @@ submethod BUILD ( ) {
 method new ( ) { !!! }
 
 #-------------------------------------------------------------------------------
-method instance ( --> Desktop::Dispatcher::Actions ) {
+method instance ( --> SessionManager::Actions ) {
   $instance //= self.bless;
 
   $instance
@@ -30,7 +30,7 @@ method instance ( --> Desktop::Dispatcher::Actions ) {
 
 #-------------------------------------------------------------------------------
 method add-action ( Hash:D $raw-action, Str :$id is copy ) {
-  my Desktop::Dispatcher::ActionData $action-data;
+  my SessionManager::ActionData $action-data;
   if ? $id {
     $action-data .= new( :$raw-action, :$id);
     $!data-ids{$id} = $action-data;
@@ -67,7 +67,7 @@ method add-from-yaml ( Str:D $path ) {
 }
 
 #-------------------------------------------------------------------------------
-method get-action ( Str:D $id is copy --> Desktop::Dispatcher::ActionData ) {
+method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
   if $!data-ids{$id}:exists {
     $!data-ids{$id}
   }
@@ -75,14 +75,14 @@ method get-action ( Str:D $id is copy --> Desktop::Dispatcher::ActionData ) {
   else {
     # If action data isn't found, try $id as if it was a tooltip
     # string. Those are taken when no id was found and converted into sha256
-    # strings in Desktop::Dispatcher::ActionData.
+    # strings in SessionManager::ActionData.
     $id = sha256-hex($id);
     if $!data-ids{$id}:exists {
       $!data-ids{$id}
     }
 
     else {
-      Desktop::Dispatcher::ActionData
+      SessionManager::ActionData
     }
   }
 }

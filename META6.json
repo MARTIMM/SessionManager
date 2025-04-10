@@ -1,5 +1,5 @@
 {
-  "name": "Desktop::Dispatcher",
+  "name": "SessionManager",
   "description": "Dispatcher tool",
 
   "authors": [ "Marcel Timmerman" ],
@@ -13,9 +13,9 @@
   "raku-version": "6.d",
 
   "provides": {
-    "Desktop::Dispatcher::Application": "lib/Desktop/Dispatcher/Application.rakumod",
-    "Desktop::Dispatcher::Actions": "lib/Desktop/Dispatcher/Actions.rakumod",
-    "Desktop::Dispatcher::Config": "lib/Desktop/Dispatcher/Config.rakumod"
+    "SessionManager::Application": "lib/Desktop/Dispatcher/Application.rakumod",
+    "SessionManager::Actions": "lib/Desktop/Dispatcher/Actions.rakumod",
+    "SessionManager::Config": "lib/Desktop/Dispatcher/Config.rakumod"
   },
 
   "depends": [

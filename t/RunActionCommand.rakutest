@@ -2,14 +2,14 @@ use v6.d;
 
 use Test;
 
-use Desktop::Dispatcher::Actions;
-use Desktop::Dispatcher::Command;
-use Desktop::Dispatcher::RunActionCommand;
+use SessionManager::Actions;
+use SessionManager::Command;
+use SessionManager::RunActionCommand;
 
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
-my Desktop::Dispatcher::Actions $actions .= instance;
+my SessionManager::Actions $actions .= instance;
 $actions.add-action(
   %(
     :t('Run sleep test'),
@@ -21,8 +21,8 @@ $actions.add-action(
 my Str $id = sha256-hex('Run sleep test');
 
 # Make it a Command object to decouple from the RunActionCommand.
-my Desktop::Dispatcher::Command $command =
-  Desktop::Dispatcher::RunActionCommand.new(:$id);
+my SessionManager::Command $command =
+  SessionManager::RunActionCommand.new(:$id);
 
 $command.tap(
   -> $txt {$txt.note},

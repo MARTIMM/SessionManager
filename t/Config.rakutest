@@ -2,10 +2,10 @@ use v6.d;
 
 use Test;
 
-use Desktop::Dispatcher::Variables;
-use Desktop::Dispatcher::Actions;
-use Desktop::Dispatcher::Config;
-use Desktop::Dispatcher::ActionData;
+use SessionManager::Variables;
+use SessionManager::Actions;
+use SessionManager::Config;
+use SessionManager::ActionData;
 
 use Digest::SHA256::Native;
 use YAMLish;
@@ -118,12 +118,12 @@ my Str $config-directory = './t/data';
   EOCFG
 
 #-------------------------------------------------------------------------------
-my Desktop::Dispatcher::Config $config .= instance(:$config-directory);
+my SessionManager::Config $config .= instance(:$config-directory);
 
 #-------------------------------------------------------------------------------
 my Str $id = sha256-hex('Puzzle table tests');
-my Desktop::Dispatcher::Actions $actions .= instance;
-my Desktop::Dispatcher::ActionData $action-data = $actions.get-action($id);
+my SessionManager::Actions $actions .= instance;
+my SessionManager::ActionData $action-data = $actions.get-action($id);
 is $action-data.id, $id, 'keyless action entry';
 is $action-data.overlay-picture, './t/data/puzzle-table-logo.png',
    'variable substitution';

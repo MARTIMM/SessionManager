@@ -1,6 +1,6 @@
 use v6.d;
 
-unit class Desktop::Dispatcher::Command;
+unit class SessionManager::Command;
 
 # Abstract method
 method execute ( ) { ... }

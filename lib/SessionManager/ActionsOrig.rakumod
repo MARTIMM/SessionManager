@@ -3,7 +3,7 @@ use v6.d;
 
 use NativeCall;
 
-use Desktop::Dispatcher::ConfigOrig;
+use SessionManager::ConfigOrig;
 
 use Gnome::Gtk4::ApplicationWindow:api<2>;
 use Gnome::Gtk4::Box:api<2>;
@@ -28,7 +28,7 @@ use Gnome::N::N-Object:api<2>;
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::ActionsOrig:auth<github:MARTIMM>;
+unit class SessionManager::ActionsOrig:auth<github:MARTIMM>;
 
 constant Box = Gnome::Gtk4::Box;
 constant Grid = Gnome::Gtk4::Grid;
@@ -43,7 +43,7 @@ constant Overlay = Gnome::Gtk4::Overlay;
 constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
 constant Texture = Gnome::Gdk4::Texture;
 
-has Desktop::Dispatcher::ConfigOrig $!config;
+has SessionManager::ConfigOrig $!config;
 #has Bool $!init-config;
 has Str $!shell; 
 has ApplicationWindow $!app-window;
@@ -51,7 +51,7 @@ has Hash $!action-data;
 
 #-------------------------------------------------------------------------------
 submethod BUILD (
-  Desktop::Dispatcher::ConfigOrig:D :$!config, ApplicationWindow :$!app-window
+  SessionManager::ConfigOrig:D :$!config, ApplicationWindow :$!app-window
 ) {
 #  $!init-config = True;
   $!shell = $!config.get-shell;

@@ -43,7 +43,7 @@ Example useage;
 Use zef to install the package and programs.
 
 ```
-> zef install DeskTop::Dispatcher
+> zef install SessionManager
 ```
 
 

@@ -3,9 +3,9 @@ use v6.d;
 use YAMLish;
 
 #-------------------------------------------------------------------------------
-unit class Desktop::Dispatcher::Variables;
+unit class SessionManager::Variables;
 
-my Desktop::Dispatcher::Variables $instance;
+my SessionManager::Variables $instance;
 
 has Hash $!variables;
 has Hash $!temporary;
@@ -20,7 +20,7 @@ submethod BUILD ( ) {
 method new ( ) { !!! }
 
 #-------------------------------------------------------------------------------
-method instance ( --> Desktop::Dispatcher::Variables ) {
+method instance ( --> SessionManager::Variables ) {
   $instance //= self.bless;
 
   $instance
