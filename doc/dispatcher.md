@@ -100,14 +100,78 @@ class ActionData {
   tap()
 }
 
-Actions *- "*" ActionData
+Actions o- "*" ActionData
 Command <|-- RunActionCommand
 RunActionCommand *-- "1" ActionData
 ActionData o- Variables
-RunActionCommand -* IconButton
+RunActionCommand -* CommandButton
 
 @enduml
 ```
+
+An example to create a command button. Result is a CommandButton
+
+```plantuml
+@startuml
+
+'scale 0.9
+
+skinparam packageStyle rectangle
+skinparam stereotypeCBackgroundColor #80ffff
+skinparam linetype ortho
+
+set namespaceSeparator ::
+hide empty members
+
+abstract class Command <<(A,#80ffff)>> {
+  {abstract} execute()
+}
+
+class CreateButtonCommand {
+  execute()
+}
+
+class Variables < singleton > { }
+
+class Actions < singleton > { }
+
+class ActionData { }
+
+Actions o- "*" ActionData
+
+Command <|-- CreateButtonCommand
+ActionData o-up- CreateButtonCommand
+
+ActionData o- Variables
+
+@enduml
+```
+
+```plantuml
+@startuml
+
+'scale 0.9
+
+skinparam packageStyle rectangle
+skinparam stereotypeCBackgroundColor #80ffff
+skinparam linetype ortho
+
+set namespaceSeparator ::
+hide empty members
+
+class Actions < singleton > { }
+
+Application *- ApplicationWindow
+Config -* Application
+Application *-- Toolbar
+Toolbar *-- "*" Session
+Config --* Toolbar
+Session *- "*" CommandButton
+Session *-- Actions
+
+@enduml
+```
+
 
 
 Diagram to show macro commands which can execute more than one command
@@ -141,8 +205,7 @@ class ActionGroup {
 
 class ActionData { }
 
-Actions *- "*" ActionData
-
+Actions o- "*" ActionData
 
 Command <|-- MacroCommand
 Command  --o MacroCommand
@@ -154,44 +217,6 @@ ActionData o- Variables
 MacroCommand -* GroupRunButton
 
 ActionGroup *-- "1" Actions
-@enduml
-```
-
-A few more examples of command objects
-
-```plantuml
-@startuml
-
-'scale 0.9
-
-skinparam packageStyle rectangle
-skinparam stereotypeCBackgroundColor #80ffff
-skinparam linetype ortho
-
-set namespaceSeparator ::
-hide empty members
-
-abstract class Command <<(A,#80ffff)>> {
-  {abstract} execute()
-}
-
-class CreateButtonCommand {
-  execute()
-}
-
-class Variables < singleton > { }
-
-class Actions < singleton > { }
-
-class ActionData { }
-
-Actions *- "*" ActionData
-
-Command <|-- CreateButtonCommand
-ActionData o-up- CreateButtonCommand
-
-ActionData o- Variables
-
 @enduml
 ```
 
@@ -215,8 +240,8 @@ class Config <singleton> {
   - default-images
 }
 
-Config --> Actions
-Config --> Variables
+Config o-- Actions
+Config *- Variables
 
 @enduml
 ```
