@@ -35,8 +35,8 @@
 }
 
 .group-session-label {
-  /* Fails to change width and height */
-  transform: rotate(-90deg);
+  /* Bug: Fails to change width and height properly */
+  /*transform: rotate(-90deg);*/
 
   color: rgb(71, 0, 71);
   background-color: rgba(255, 209, 255, 0.3);

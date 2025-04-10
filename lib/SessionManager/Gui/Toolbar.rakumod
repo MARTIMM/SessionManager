@@ -56,14 +56,18 @@ submethod BUILD ( ) {
     .set-orientation(GTK_ORIENTATION_HORIZONTAL);
     $config.set-css( .get-style-context, 'session-toolbar');
     .set-spacing(10);
+#    .set-vexpand-set(True);
+#    .set-vexpand(True);
+#    .set-valign(GTK_ALIGN_FILL);
   }
 
   my Hash $sessions = $config.get-sessions;
   for $sessions.keys.sort -> $session-name {
-    my SessionManager::Gui::Session $session .= new-overlay(
+    my SessionManager::Gui::Session $session .= new(
       :$session-name, :session($sessions{$session-name})
     );
-    self.append($session);
+
+    self.append($session.session-button);
   }
 
 #`{{

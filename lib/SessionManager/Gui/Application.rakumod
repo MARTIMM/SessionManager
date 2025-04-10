@@ -11,6 +11,7 @@ use Getopt::Long;
 
 use Gnome::Gtk4::Application:api<2>;
 use Gnome::Gtk4::ApplicationWindow:api<2>;
+use Gnome::Gtk4::T-enums:api<2>;
 #use Gnome::Gtk4::Grid:api<2>;
 
 use Gnome::Gio::ApplicationCommandLine:api<2>;
@@ -168,6 +169,9 @@ method setup-window ( ) {
   with $!app-window .= new-applicationwindow($!application) {
 #    my SessionManager::Actions $actions .= new( :$!config, :$!app-window);
 
+    .set-vexpand-set(True);
+    .set-vexpand(True);
+    .set-valign(GTK_ALIGN_FILL);
 
     .set-title($config.get-window-title);
     .set-child(SessionManager::Gui::Toolbar.new-box);

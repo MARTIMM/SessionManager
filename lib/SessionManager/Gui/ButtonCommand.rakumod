@@ -27,7 +27,7 @@ use Gnome::Glib::T-error:api<2>;
 
 use Gnome::N::N-Object:api<2>;
 
-use Digest::SHA256::Native;
+#use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
 #constant Box = Gnome::Gtk4::Box;
