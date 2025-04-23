@@ -38,7 +38,7 @@ submethod BUILD ( ) {
 # $!dispatch-testing = True;
 
   $!application .= new-application(
-    APP_ID, G_APPLICATION_HANDLES_COMMAND_LINE
+    APP_ID, G_APPLICATION_NON_UNIQUE +| G_APPLICATION_HANDLES_COMMAND_LINE
   );
 
   # Register all necessary signals
@@ -72,6 +72,7 @@ method go-ahead ( --> Int ) {
   }
 
   my $argv = CArray[Str].new($arg_arr);
+note "$?LINE $arg_arr.gist()";
 
   $!application.run( $argc, $argv);
 }
@@ -86,6 +87,7 @@ method local-options ( N-Object $no-vd --> Int ) {
 
   # Local options which do not need a config file or primary instance
   my $o = get-options( |$*local-options, |$*remote-options);
+note "$?LINE $o.gist()";
   if $o<version> {
     say "Version of dispatcher is $*dispatcher-version";
     $exit-code = 0;
@@ -102,6 +104,7 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   my Array $args = $cl.get-arguments;
   my Capture $o = get-options-from( $args[1..*-1], |$*remote-options);
 
+note "$?LINE $o.gist()";
   if $o<v>:exists or $o<verbose>:exists {
     $*verbose = True;
   }
