@@ -76,11 +76,24 @@ submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {
     $!tooltip = $tooltip;
   }
 
-  # ID from raw hash has precedence of call argument
+  # ID from raw hash has precedence over call argument
   $!id = $raw-action<id> if ? $raw-action<id>;
 
   # If there is no ID, generate an MD5 from the tooltip or a random number
   $!id = sha256-hex($!tooltip // rand.Str) unless ? $!id;
+}
+
+#-------------------------------------------------------------------------------
+method set-image-to-session-path (
+  Str $session-name, Str $image-name, Bool :$overlay = False
+) {
+  if $overlay {
+    $!overlay-picture = "$*images/$session-name/$image-name";
+  }
+
+  else {
+    $!picture = "$*images/$session-name/$image-name";
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -91,6 +104,7 @@ method set-shell ( Str:D $!shell ) { }
 
 #-------------------------------------------------------------------------------
 method run-action ( ) {     #( Bool $!run-in-group ) {
+#note "$?LINE run action '$!tooltip'";
 
   # Set temporary variables if any
   $!variables.set-temporary($!temp-variables) if ?$!temp-variables;
@@ -154,6 +168,9 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
         done;
       }
     }
+
+#note "$?LINE $!run-log";
+    $script-name.IO.unlink;
 
     # Remove environment variables
     if ? $!env {
