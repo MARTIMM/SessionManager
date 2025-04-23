@@ -36,8 +36,9 @@ has Gnome::Gtk4::CssProvider $!css-provider;
 submethod BUILD ( Str :$!config-directory = DATA_DIR ) {
 #  $!action-refs = %();
 #  $!variables = %();
+note "$?LINE $!config-directory";
 
-  die "configuration directory not found" unless $!config-directory.IO.d;
+  die "configuration directory not found" unless $!config-directory.IO ~~ :d;
 
   mkdir DATA_DIR ~ '/Images', 0o700 unless (DATA_DIR ~ '/Images').IO.e;
   
@@ -90,6 +91,8 @@ method load-config ( ) {
   );
 
   die "dispatch configuration not found" unless ?$!dispatch-config;
+
+  $*images = [~] $!config-directory, '/', $*images;
 
   # Set a few variable before hand
   my SessionManager::Variables $variables .= instance;
@@ -154,12 +157,14 @@ method check-session-entries ( Array $raw-entries --> Array ) {
   # a key in the $!action-refs hash to get the action hash from there.
   # When it is a Hash, it must be added to the actions data
   for 0 ..^ $raw-entries.elems -> $i {
-    if $raw-entries[$i] ~~ Hash and $raw-entries[$i]<t>:exists {
-      $actions.add-action($raw-entries[$i]);
-      $raw-entries[$i] = sha256-hex($raw-entries[$i]<t>);
+    if $raw-entries[$i] ~~ Hash {
+      # Add the actions Hash to the action data and
+      # store the returned id instead.
+      $raw-entries[$i] = $actions.add-action($raw-entries[$i]);
     }
-#TODO ... what to do when tooltip isn't there
   }
+  
+  $raw-entries
 }
 
 #-------------------------------------------------------------------------------
