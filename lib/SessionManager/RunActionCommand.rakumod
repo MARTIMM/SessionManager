@@ -12,7 +12,7 @@ also is SessionManager::Command;
 
 #-------------------------------------------------------------------------------
 has SessionManager::ActionData $!action-data handles <
-      running run-log run-error tap
+      running run-log run-error tap tooltip
       >;
 
 #-------------------------------------------------------------------------------
