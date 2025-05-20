@@ -109,43 +109,6 @@ RunActionCommand -* CommandButton
 @enduml
 ```
 
-An example to create a command button. Result is a CommandButton
-
-```plantuml
-@startuml
-
-'scale 0.9
-
-skinparam packageStyle rectangle
-skinparam stereotypeCBackgroundColor #80ffff
-skinparam linetype ortho
-
-set namespaceSeparator ::
-hide empty members
-
-abstract class Command <<(A,#80ffff)>> {
-  {abstract} execute()
-}
-
-class CreateButtonCommand {
-  execute()
-}
-
-class Variables < singleton > { }
-
-class Actions < singleton > { }
-
-class ActionData { }
-
-Actions o- "*" ActionData
-
-Command <|-- CreateButtonCommand
-ActionData o-up- CreateButtonCommand
-
-ActionData o- Variables
-
-@enduml
-```
 
 ```plantuml
 @startuml
@@ -246,6 +209,50 @@ Config *- Variables
 @enduml
 ```
 
+
+
+
+
+<!--
+An example to create a command button. Result is a CommandButton
+
+```plantuml
+@startuml
+
+'scale 0.9
+
+skinparam packageStyle rectangle
+skinparam stereotypeCBackgroundColor #80ffff
+skinparam linetype ortho
+
+set namespaceSeparator ::
+hide empty members
+
+abstract class Command <<(A,#80ffff)>> {
+  {abstract} execute()
+}
+
+class CreateButtonCommand {
+  execute()
+}
+
+class Variables < singleton > { }
+
+class Actions < singleton > { }
+
+class ActionData { }
+
+Actions o- "*" ActionData
+
+Command <|-- CreateButtonCommand
+ActionData o-up- CreateButtonCommand
+
+ActionData o- Variables
+
+@enduml
+```
+
+-->
 
 <!--
 Optionally the action can show a checkbutton for each program which can be (de)selected to dis-/enable the start of a program depending on what is needed at that moment. *this is something for later.*

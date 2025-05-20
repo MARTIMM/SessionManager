@@ -1,3 +1,7 @@
+* 2025-04-23 0.4.7
+  * It is now possible to display results of script, run in **SessionManager::ActionData**, in a scrollable window.
+  * New version does not use images, only icons.
+
 * 2025-03-11 0.4.6
   * Configuration changes
   * Drop the --parts option for sessions. All sessions referred from config file
