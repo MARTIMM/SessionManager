@@ -73,29 +73,31 @@ method load-config ( ) {
 
   die "dispatch configuration not found" unless ?$!dispatch-config;
 
+  # Check and load variables
+  if $!dispatch-config<variable-references>:exists {
+    for @($!dispatch-config<variable-references>) -> $file {
+      $!variables = %( | $!variables, | load-yaml($file.IO.slurp));
+    }
+  }
+
   # Check and load separate session descriptions
   if $!dispatch-config<part-references>:exists {
     my Hash $ref := $!dispatch-config<part-references>;
-    for $ref.kv -> $name, $file {
+    for $ref.kv -> $name, $file is copy {
+      $file = self.substitute-vars($file);
       $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
     }
   }
 
   # Check and load separate action descriptions
   if $!dispatch-config<action-references>:exists {
-    for @($!dispatch-config<action-references>) -> $file {
+    for @($!dispatch-config<action-references>) -> $file is copy {
 #      $!action-refs = %( | $!action-refs, | load-yaml($file.IO.slurp));
 #note "$?LINE thunderbird: {$!action-refs<thunderbird-o>//'-'}";
 #note "$?LINE : {$!action-refs<thunderbird-o>//'-'}";
+      $file = self.substitute-vars($file);
       $!action-refs =
         self.merge-hash( $!action-refs, load-yaml($file.IO.slurp));
-    }
-  }
-
-  # Check and load variables
-  if $!dispatch-config<variable-references>:exists {
-    for @($!dispatch-config<variable-references>) -> $file {
-      $!variables = %( | $!variables, | load-yaml($file.IO.slurp));
     }
   }
 
@@ -263,4 +265,36 @@ method get-toolbar-actions ( --> List ) {
 #-------------------------------------------------------------------------------
 method get-shell ( --> Str ) {
   $!dispatch-config<shell>:exists ?? $!dispatch-config<shell> !! '/usr/bin/bash'
+}
+
+#-------------------------------------------------------------------------------
+method substitute-vars ( Str $t, Hash :$v --> Str ) {
+
+  my Hash $variables = $!variables;
+  $variables.append: $v if ?$v;
+  my Str $text = $t;
+
+  while $text ~~ m/ '$' $<variable-name> = [<alpha> | \d | '-']+ / {
+    my Str $name = $/<variable-name>.Str;
+
+    # Look in the variables Hash
+    if $variables{$name}:exists {
+      $text ~~ s:g/ '$' $name /$variables{$name}/;
+    }
+
+    # Look in the environment
+    elsif %*ENV{$name}:exists {
+      $text ~~ s:g/ '$' $name /%*ENV{$name}/;
+    }
+
+    # Fail and block variable by substituting $ for __
+    else {
+      note "No substitution yet or variable \$$name" if $*verbose;
+      $text ~~ s:g/ '$' $name /___$name/;
+    }
+  }
+
+  $text ~~ s:g/ '___' ([<alpha> | <[0..9]> | '-']+) /\$$0/;
+
+  $text
 }

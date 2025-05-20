@@ -18,5 +18,6 @@ my $*dispatch-testing = False;
 
 my Str $*images = 'Images';
 
+
 my SessionManager::Gui::Application $dispatcher .= new;
 exit($dispatcher.go-ahead);

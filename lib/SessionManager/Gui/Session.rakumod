@@ -60,9 +60,12 @@ constant Frame = Gnome::Gtk4::Frame;
 
 has Str $!session-name;
 has Hash $!manage-session;
+has Grid $!session-manager-box;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Str:D :$!session-name, Hash:D :$!manage-session ) { }
+submethod BUILD (
+  Str:D :$!session-name, Hash:D :$!manage-session, Grid :$!session-manager-box
+) { }
 
 #-------------------------------------------------------------------------------
 method session-button ( --> Button ) {
@@ -75,7 +78,7 @@ method session-button ( --> Button ) {
     .set-label($!manage-session<title>);
 #    .set-child($picture);
 #    .set-tooltip-text("Session\n$!manage-session<title>");
-#    $config.set-css( .get-style-context, 'session-toolbar-button');
+    $config.set-css( .get-style-context, 'session-button');
 
     .register-signal(
       self, 'session-actions', 'clicked',
@@ -91,11 +94,24 @@ method session-button ( --> Button ) {
 method session-actions (
   Str :$session-name, Hash:D :$manage-session
 ) {
-#note "\n\n$?LINE $session-name, $manage-session.gist()";
+#note "\n$?LINE $session-name";
+  # Cleanup previous action boxes, start at the deepest level
+  for 10...1 -> $x {
+#note "$?LINE $x, {$!session-manager-box.get-child-at( $x, 0) // '-'}";
+    if $!session-manager-box.get-child-at( $x, 0) {
+      $!session-manager-box.remove-column($x);
+    }
 
-  my Grid $sessions .= new-grid;
+#    else {
+#      last;
+#    }
+  }
+
+#  my Grid $sessions .= new-grid;
 
   my SessionManager::Config $config .= instance;
+
+#`{{
   with my Frame $session-frame .= new-frame('') {
     $config.set-css( .get-style-context, 'session-frame');
     .set-margin-top(0);
@@ -111,14 +127,14 @@ method session-actions (
       self.label-widget( $session-name, $manage-session, :!show-button)
     );
   }
+}}
 
   # The first row is for shortcuts and sessions. The second for
   # actions of a session
-  $sessions.remove-row(1) if $sessions.get-child-at( 0, 1);
-  $sessions.attach( $session-frame, 0, 1, 1, 1);
-
-  my Box $session-levels .= new-box( GTK_ORIENTATION_HORIZONTAL, 1);
-  $session-frame.set-child($session-levels);
+#  $sessions.remove-row(1) if $sessions.get-child-at( 0, 1);
+#  $sessions.attach( $session-frame, 0, 1, 1, 1);
+#  my Box $session-levels .= new-box( GTK_ORIENTATION_HORIZONTAL, 1);
+#  $session-frame.set-child($session-levels);
 
 
   # Maximum of 10 levels. Originally started from 0, now 1.
@@ -134,10 +150,10 @@ method session-actions (
 #      .set-margin-bottom(30);
 #      .set-margin-start(30);
 #      .set-margin-end(30);
-      .set-hexpand-set(True);
-      .set-hexpand(True);
-      .set-vexpand-set(True);
-      .set-vexpand(True);
+#      .set-hexpand-set(True);
+#      .set-hexpand(True);
+#      .set-vexpand-set(True);
+#      .set-vexpand(True);
 #      .set-valign(GTK_ALIGN_FILL);
 
 #`{{
@@ -157,8 +173,12 @@ method session-actions (
         my SessionManager::Command $command =
           SessionManager::RunActionCommand.new(:$id);
 #note "$?LINE $command.tooltip()";
-        my Button $button .= new-with-label($command.tooltip);
+        my Button $button .= new-button; #with-label($command.tooltip);
+        self.set-box-widget(
+          $button, $command.tooltip, $command.overlay-picture
+        );
         $button.register-signal( self, 'setup-run', 'clicked', :$id, :$command);
+        $config.set-css( $button.get-style-context, 'session-action-button');
         .append($button);
 
 #`{{
@@ -188,66 +208,84 @@ method session-actions (
 }}
     }
 
-    $session-levels.append($session-buttons);
+    # Add session actions group
+    $!session-manager-box.attach( $session-buttons, $level, 0, 1, 1);
+#    $session-levels.append($session-buttons);
   }
 
+#`{{
   with my Window $window .= new-window {
     .set-child($sessions);
     .set-title($manage-session<title>);
 #      .set-default-size($config.get-window-size);
     .present;
   }
+}}
 }
 
 #-------------------------------------------------------------------------------
 method setup-run ( Str:D :$id, SessionManager::Command:D :$command ) {
 
-  my SessionManager::Config $config .= instance;
+  my Tap $tap;
+  my Window $window;
 
-#note "$?LINE $*THREAD.id()";
-  with my ScrolledWindow $scrolled-window .= new-scrolledwindow {
-    .set-child($textview);
+  if $command.cmd-logging {
+    my SessionManager::Config $config .= instance;
+    my TextBuffer() $text-buffer;
+    my TextView $textview .= new-textview;
+    $textview.set-wrap-mode(GTK_WRAP_WORD);
+
+  #note "$?LINE $*THREAD.id()";
+    with my ScrolledWindow $scrolled-window .= new-scrolledwindow {
+      .set-child($textview);
+    }
+
+    with $window .= new-window {
+      .set-title($command.tooltip);
+      .set-child($scrolled-window);
+      .set-default-size($config.get-window-size);
+      .present;
+    }
+
+    $text-buffer = $textview.get-buffer;
+    my Int $buffer-end = 0;
+    $tap = $command.tap(
+      -> $txt {
+  #      "$?LINE $*THREAD.id(), $txt".printf;
+        $text-buffer.insert-at-cursor( $txt, $txt.chars);
+        $buffer-end += $txt.chars;
+      },
+      :done({ say "Supply is done" }),
+      :quit( -> $ex { say "Supply finished with error $ex" }),
+    );
   }
-
-  with my Window $window .= new-window {
-    .set-title($command.tooltip);
-    .set-child($scrolled-window);
-    .set-default-size($config.get-window-size);
-    .present;
-  }
-
-  my TextBuffer() $text-buffer;
-  my TextView $textview .= new-textview;
-  $text-buffer = $textview.get-buffer;
-  my Int $buffer-end = 0;
-  my $tap = $command.tap(
-    -> $txt {
-#      "$?LINE $*THREAD.id(), $txt".printf;
-      $text-buffer.insert-at-cursor( $txt, $txt.chars);
-      $buffer-end += $txt.chars;
-    },
-    :done({ say "Supply is done" }),
-    :quit( -> $ex { say "Supply finished with error $ex" }),
-  );
 
   $command.execute;
 
-  my Gnome::Glib::N-MainLoop $main-loop .= new-mainloop( N-Object, True);
-  my Gnome::Glib::N-MainContext() $main-context = $main-loop.get-context;
-  while $command.running {
-    $*ERR.print('.');
-    $*ERR.flush;
-    sleep 0.5;
+  if $command.cmd-logging {
+    my Gnome::Glib::N-MainLoop $main-loop .= new-mainloop( N-Object, True);
+    my Gnome::Glib::N-MainContext() $main-context = $main-loop.get-context;
+    while $command.running {
+  #    $*ERR.print('.');
+  #    $*ERR.flush;
 
-    while $main-context.pending {
-      $main-context.iteration(False);
+      while $main-context.pending {
+        $main-context.iteration(False);
+      }
+
+      sleep 0.5;
     }
+
+    sleep $command.cmd-finish-wait;
+    $window.destroy;
+
+    $tap.close;
   }
 
-  $tap.close;
   note 'Finished';
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method label-widget (
   Str $session-name, Hash:D $manage-session, Bool :$show-button --> Mu
@@ -285,6 +323,75 @@ method label-widget (
     $label
 #  }
 }
+}}
+
+#-------------------------------------------------------------------------------
+# Create a widget with an image, an icon on the left, and text, left justified
+# in a horizontal box
+method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
+  # No type; could be a Box or a Label
+  my $widget;
+  #if $image-path.IO ~~ :r {
+#note "$?LINE set-box-widget {$image-path // '-'}";
+  if ? $image-path {
+    my Picture $picture .= new-picture;
+    $picture.set-filename($image-path);
+    $picture.set-size-request( 64, 64);
+
+    my Box $image-container = Box.new-box( GTK_ORIENTATION_HORIZONTAL, 0);
+    $image-container.append($picture);
+
+    my Label $label .= new-label;
+    $label.set-text($label-text);
+
+    with my Label $strut .= new-label {
+      .set-text(' ');
+      .hexpand(True);
+    }
+
+    with $widget = Box.new-box( GTK_ORIENTATION_HORIZONTAL, 5) {
+      .append($image-container);
+      .append($label);
+      .append($strut);
+    }
+  }
+
+  else {
+    $widget = Label.new-label;
+    $widget.set-text($label-text);
+  }
+
+  $button.set-child($widget);
+}
+
+
+#`{{
+  $config.set-css( $label.get-style-context, 'session-frame-label');
+  if $show-button and $!config.run-all-actions($session-name) {
+    my Str $png-file = [~] DATA_DIR, '/Images/fastforward.png>';
+    my Box $label-widget .= new-box( GTK_ORIENTATION_HORIZONTAL, 5);
+
+    my Picture $picture .= new-picture;
+    $picture.set-filename(%?RESOURCES<fastforward.png>.IO.Str);
+    $picture.set-size-request( 32, 32);
+
+    my Button $run-all-actions .= new-button;
+    $run-all-actions.set-child($picture);
+    $run-all-actions.register-signal(
+      self, 'run-all-actions', 'clicked', :$session-name
+    );
+
+    $label-widget.append($run-all-actions);
+    $label-widget.append($label);
+
+    $label-widget
+  }
+
+  else {
+    $label
+#  }
+}
+}}
 
 
 

@@ -12,7 +12,8 @@ use Getopt::Long;
 use Gnome::Gtk4::Application:api<2>;
 use Gnome::Gtk4::ApplicationWindow:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
-#use Gnome::Gtk4::Grid:api<2>;
+#use Gnome::Gtk4::Box:api<2>;
+use Gnome::Gtk4::Grid:api<2>;
 
 use Gnome::Gio::ApplicationCommandLine:api<2>;
 use Gnome::Gio::T-ioenums:api<2>;
@@ -29,6 +30,8 @@ use SessionManager::Gui::Toolbar;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
+
+constant Grid = Gnome::Gtk4::Grid;
 
 has Gnome::Gtk4::Application $!application;
 has Gnome::Gtk4::ApplicationWindow $!app-window;
@@ -165,6 +168,14 @@ method setup-window ( ) {
     $!app-window.clear-object;
   }
 
+  # Use of grid makes it easier to remove boxes from the grid later on
+  my Grid $session-manager-box .= new-grid;
+  my SessionManager::Gui::Toolbar $toolbar .= new-box(
+    GTK_ORIENTATION_VERTICAL, 1,
+    :$session-manager-box
+  );
+  $session-manager-box.attach( $toolbar, 0, 0, 1, 1);
+
   my SessionManager::Config $config .= instance;
   with $!app-window .= new-applicationwindow($!application) {
 #    my SessionManager::Actions $actions .= new( :$!config, :$!app-window);
@@ -174,7 +185,7 @@ method setup-window ( ) {
     .set-valign(GTK_ALIGN_FILL);
 
     .set-title($config.get-window-title);
-    .set-child(SessionManager::Gui::Toolbar.new-box);
+    .set-child($session-manager-box);
 
     .present;
   }

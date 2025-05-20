@@ -29,17 +29,11 @@ method instance ( --> SessionManager::Actions ) {
 }
 
 #-------------------------------------------------------------------------------
-method add-action ( Hash:D $raw-action, Str :$id is copy ) {
+method add-action ( Hash:D $raw-action, Str :$id = '' --> Str ) {
   my SessionManager::ActionData $action-data;
-  if ? $id {
-    $action-data .= new( :$raw-action, :$id);
-    $!data-ids{$id} = $action-data;
-  }
-
-  else {
-    $action-data .= new(:$raw-action);
-    $!data-ids{$action-data.id} = $action-data;
-  }
+  $action-data .= new( :$raw-action, :$id);
+  $!data-ids{$action-data.id} = $action-data;
+  $action-data.id
 }
 
 #-------------------------------------------------------------------------------

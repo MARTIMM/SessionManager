@@ -11,7 +11,7 @@ unit class SessionManager::ActionData;
 has Str $.id;
 has Bool $.run-in-group;
 
-has Proc::Async $!process;
+#has Proc::Async $!process;
 has Str $.run-error;
 has Str $.run-log;
 has Bool $.running;
@@ -24,6 +24,9 @@ has Str $!workdir;
 has Hash $!env;
 has Str $!script;
 has Str $!cmd;
+has Bool $.cmd-logging;
+has UInt $.cmd-finish-wait;
+has Bool $!cmd-background;
 
 # Picture paths are readable to be able to set on a button or elsewhere
 has Str $.picture;
@@ -56,7 +59,21 @@ submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {
   $!script = $!variables.substitute-vars($raw-action<s>) if ? $raw-action<s>;
 
   # Set command to run
-  $!cmd = $!variables.substitute-vars($raw-action<c>) if ? $raw-action<c>;
+  if ? $raw-action<c> {
+    $!cmd = $!variables.substitute-vars($raw-action<c>);
+    $!cmd-logging = False;    # $raw-action<co><l>
+    $!cmd-finish-wait = 10;   # $raw-action<co><w>
+    $!cmd-background = True;  # $raw-action<co><b>
+    if ?$raw-action<co> {
+      if $raw-action<co><l>.defined {
+        $!cmd-logging = ? $raw-action<co><l>;
+        $!cmd-background = False;
+      }
+
+      $!cmd-finish-wait = $raw-action<co><w> if $raw-action<co><w>.defined;
+#      $!cmd-background = ? $raw-action<co><b> if $raw-action<co><b>.defined;
+    }
+  }
 
   # Set icon on the button.
   $!picture = $!variables.substitute-vars($raw-action<i>)
@@ -117,7 +134,7 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
   }
 
   my Str $command = '';
-  $command ~= "cd '$!workdir>'\n" if ? $!workdir;
+  $command ~= "cd '$!workdir'\n" if ? $!workdir;
   $command ~= $!cmd if ? $!cmd;
   $command = $!variables.substitute-vars($command);
 
@@ -125,51 +142,11 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
   $script-name = '/tmp/' ~ sha256-hex($command) ~ '.shell-script';
   $script-name.IO.spurt($command);
 
-  $!process .= new( $!shell, $script-name);
-  $!run-log = '';
-  $!run-error = '';
-  $!running = True;
+note "\n$?LINE $script-name\n$command";
 
-  my Promise $promise = start {
-
-    react {
-      whenever $!process.stdout.lines {
-        $!run-log ~= "$_\n";
-        $!supplier.emit("N:$_\n");
-      }
-
-      whenever $!process.stderr.lines {
-        $!run-error ~= "$_\n";
-        $!supplier.emit("E:$_\n");
-      }
-
-      whenever $!process.ready {
-        if $_ ~~ Broken {
-          $!run-error ~= "Script failed to start or has errors\n";
-          $!supplier.emit("E:Script failed to start or has errors\n");
-        }
-
-        else {
-          my Str $l = "Program started ok, Pid: $_\n";
-          $!run-log ~= $l;
-          $!supplier.emit("N:$l");
-        }
-      }
-
-      whenever $!process.start {
-        my Str $l =
-          "Program finished: exitcode={.exitcode}, signal={.signal}\n";
-        $!run-log ~= $l;
-        $!supplier.emit("N:$l");
-        $!supplier.done;
-        $!running = False;
-
-        await $promise;
-        done;
-      }
-    }
-
-#note "$?LINE $!run-log";
+  if $!cmd-background {
+    shell "$!shell $script-name &> /dev/null \&";
+#`{{
     $script-name.IO.unlink;
 
     # Remove environment variables
@@ -178,6 +155,65 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
         %*ENV{$name}:delete;
       }
     }
+}}
+  }
+
+  else {
+    my Proc::Async $process;
+
+    $process .= new( $!shell, $script-name);
+    $!run-log = '';
+    $!run-error = '';
+    $!running = True;
+
+    my Promise $promise = start {
+      react {
+        whenever $process.stdout.lines {
+          $!run-log ~= "$_\n";
+          $!supplier.emit("N> $_\n") if $!cmd-logging;
+        }
+
+        whenever $process.stderr.lines {
+          $!run-error ~= "$_\n";
+          $!supplier.emit("E> $_\n") if $!cmd-logging;
+        }
+
+        whenever $process.ready {
+          if $_ ~~ Broken {
+            $!run-error ~= "Script failed to start or has errors\n";
+            $!supplier.emit("E> Script failed to start or has errors\n")
+              if $!cmd-logging;
+          }
+
+          else {
+            my Str $l = "\n$command\n\nN> Program started ok, Pid: $_\n";
+            $!run-log ~= $l;
+            $!supplier.emit("N> $l") if $!cmd-logging;
+          }
+        }
+
+        whenever $process.start {
+          my Str $l =
+            "Program finished: exitcode={.exitcode}, signal={.signal}\n";
+          $!run-log ~= $l;
+          $!supplier.emit("N> $l") if $!cmd-logging;
+          $!supplier.done;
+          $!running = False;
+
+          await $promise;
+          done;
+        }
+      }
+
+note "$?LINE $!run-log";
+      $script-name.IO.unlink;
+
+      # Remove environment variables
+      if ? $!env {
+        for $!env.keys -> $name {
+          %*ENV{$name}:delete;
+        }
+      }
+    }
   }
 }
-

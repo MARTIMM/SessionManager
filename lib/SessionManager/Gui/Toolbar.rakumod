@@ -49,11 +49,12 @@ constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
 constant Texture = Gnome::Gdk4::Texture;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( ) {
+submethod BUILD ( Grid :$session-manager-box ) {
 
   my SessionManager::Config $config .= instance;
+
   with self {
-    .set-orientation(GTK_ORIENTATION_HORIZONTAL);
+    .set-orientation(GTK_ORIENTATION_VERTICAL);
     $config.set-css( .get-style-context, 'session-toolbar');
     .set-spacing(10);
 #    .set-vexpand-set(True);
@@ -64,7 +65,8 @@ submethod BUILD ( ) {
   my Hash $sessions = $config.get-sessions;
   for $sessions.keys.sort -> $session-name {
     my SessionManager::Gui::Session $session .= new(
-      :$session-name, :session($sessions{$session-name})
+      :$session-name, :manage-session($sessions{$session-name}),
+      :$session-manager-box
     );
 
     self.append($session.session-button);

@@ -12,14 +12,16 @@ also is SessionManager::Command;
 
 #-------------------------------------------------------------------------------
 has SessionManager::ActionData $!action-data handles <
-      running run-log run-error tap tooltip
-      >;
+      running run-log run-error tap tooltip overlay-picture cmd-logging
+      cmd-finish-wait
+    >;
+      # cmd-background
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str:D :$id ) {
   my SessionManager::Actions $actions .= instance;
   $!action-data = $actions.get-action($id);
-  die "Failed to find an action with id '$id'" unless ?$!action-data;
+  die "Failed to find an action with id '$id'" unless ? $!action-data;
 }
 
 #-------------------------------------------------------------------------------

@@ -136,8 +136,8 @@ method check-actions ( ) {
 #  CONTROL { when CX::Warn {  note .gist; .resume; } }
 #  CATCH { default { .message.note; .backtrace.concise.note } }
 
-  $!dispatch-config<toolbar> =
-    self.check-session-entries($!dispatch-config<toolbar>);
+#  $!dispatch-config<toolbar> =
+#    self.check-session-entries($!dispatch-config<toolbar>);
 
   for $!dispatch-config<sessions>.keys -> $name {
     my Hash $sessions = $!dispatch-config<sessions>{$name};
