@@ -125,6 +125,8 @@ note "$?LINE $args.gist()";
 
   my SessionManager::Config $config .= instance(:$config-directory);
 
+  $config.set-legacy(?$o<legacy>);
+
   # finish up
   if $cl.get-is-remote {
     self.setup-window;

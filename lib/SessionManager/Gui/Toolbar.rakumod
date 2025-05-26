@@ -52,9 +52,11 @@ constant Texture = Gnome::Gdk4::Texture;
 submethod BUILD ( Grid :$session-manager-box ) {
 
   my SessionManager::Config $config .= instance;
+  my GtkOrientation $orientation =
+      $config.legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
 
   with self {
-    .set-orientation(GTK_ORIENTATION_VERTICAL);
+    .set-orientation($orientation);
     $config.set-css( .get-style-context, 'session-toolbar');
     .set-spacing(10);
 #    .set-vexpand-set(True);
@@ -124,7 +126,6 @@ submethod BUILD ( Grid :$session-manager-box ) {
 }}
 
 }
-
 
 
 =finish

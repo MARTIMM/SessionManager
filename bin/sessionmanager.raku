@@ -11,7 +11,7 @@ use SessionManager::Gui::Application;
 
 my Str $*dispatcher-version = '0.4.6';
 my Array $*local-options = [<version>];
-my Array $*remote-options = [ |<config=s v verbose images=s> ];
+my Array $*remote-options = [ |<config=s v verbose images=s legacy> ];
 my Bool $*verbose = False;
 
 my $*dispatch-testing = False;

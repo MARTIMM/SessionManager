@@ -9,6 +9,7 @@ use SessionManager::Command;
 
 #use Gnome::Gtk4::ApplicationWindow:api<2>;
 use Gnome::Gtk4::Window:api<2>;
+use Gnome::Gtk4::Widget:api<2>;
 use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::Label:api<2>;
@@ -16,7 +17,7 @@ use Gnome::Gtk4::Picture:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Frame:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
-#use Gnome::Gtk4::Overlay:api<2>;
+use Gnome::Gtk4::Overlay:api<2>;
 #use Gnome::Gtk4::PopoverMenu:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::TextView:api<2>;
@@ -24,8 +25,8 @@ use Gnome::Gtk4::TextBuffer:api<2>;
 #use Gnome::Gtk4::N-TextIter:api<2>;
 #use Gnome::Gtk4::T-textiter:api<2>;
 
-#use Gnome::GdkPixbuf::Pixbuf:api<2>;
-#use Gnome::Gdk4::Texture:api<2>;
+use Gnome::GdkPixbuf::Pixbuf:api<2>;
+use Gnome::Gdk4::Texture:api<2>;
 
 use Gnome::Glib::N-Error:api<2>;
 use Gnome::Glib::T-error:api<2>;
@@ -43,6 +44,7 @@ unit class SessionManager::Gui::Session:auth<github:MARTIMM>;
 #also is Gnome::Gtk4::Overlay;
 
 constant Window = Gnome::Gtk4::Window;
+constant Widget = Gnome::Gtk4::Widget;
 constant Box = Gnome::Gtk4::Box;
 constant Grid = Gnome::Gtk4::Grid;
 #constant ApplicationWindow = Gnome::Gtk4::ApplicationWindow;
@@ -53,10 +55,10 @@ constant Button = Gnome::Gtk4::Button;
 constant Label = Gnome::Gtk4::Label;
 constant Picture = Gnome::Gtk4::Picture;
 constant Frame = Gnome::Gtk4::Frame;
-#constant Overlay = Gnome::Gtk4::Overlay;
+constant Overlay = Gnome::Gtk4::Overlay;
 
-#constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
-#constant Texture = Gnome::Gdk4::Texture;
+constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
+constant Texture = Gnome::Gdk4::Texture;
 
 has Str $!session-name;
 has Hash $!manage-session;
@@ -68,25 +70,37 @@ submethod BUILD (
 ) { }
 
 #-------------------------------------------------------------------------------
-method session-button ( --> Button ) {
+method session-button ( --> Widget ) {
+
+  my Widget $widget;
 
   my SessionManager::Config $config .= instance;
 #  my SessionManager::Variables $v .= instance;
 #  $config.set-css( self.get-style-context, 'session-toolbar');
 
-  with my Button $button .= new-button {
-    .set-label($!manage-session<title>);
-#    .set-child($picture);
-#    .set-tooltip-text("Session\n$!manage-session<title>");
-    $config.set-css( .get-style-context, 'session-button');
-
-    .register-signal(
-      self, 'session-actions', 'clicked',
-      :$!session-name, :$!manage-session
+  if $config.legacy {
+    $widget = self.legacy-button(
+      'session-actions', :$!session-name, :$!manage-session
     );
   }
 
-  $button
+  else {
+    with my Button $button .= new-button {
+      .set-label($!manage-session<title>);
+  #    .set-child($picture);
+  #    .set-tooltip-text("Session\n$!manage-session<title>");
+      $config.set-css( .get-style-context, 'session-button');
+
+      .register-signal(
+        self, 'session-actions', 'clicked',
+        :$!session-name, :$!manage-session
+      );
+    }
+
+    $widget = $button;
+  }
+
+  $widget
 }
 
 #-------------------------------------------------------------------------------
@@ -96,10 +110,20 @@ method session-actions (
 ) {
 #note "\n$?LINE $session-name";
   # Cleanup previous action boxes, start at the deepest level
+
+  my SessionManager::Config $config .= instance;
   for 10...1 -> $x {
 #note "$?LINE $x, {$!session-manager-box.get-child-at( $x, 0) // '-'}";
-    if $!session-manager-box.get-child-at( $x, 0) {
-      $!session-manager-box.remove-column($x);
+    if $config.legacy {
+      if $!session-manager-box.get-child-at( 0, $x) {
+        $!session-manager-box.remove-row($x);
+      }
+    }
+
+    else {
+      if $!session-manager-box.get-child-at( $x, 0) {
+        $!session-manager-box.remove-column($x);
+      }
     }
 
 #    else {
@@ -109,7 +133,6 @@ method session-actions (
 
 #  my Grid $sessions .= new-grid;
 
-  my SessionManager::Config $config .= instance;
 
 #`{{
   with my Frame $session-frame .= new-frame('') {
@@ -144,8 +167,10 @@ method session-actions (
 
 #    my Box $session-buttons .= new-box( GTK_ORIENTATION_VERTICAL, 1);
 
-    with my Box $session-buttons .= new-box( GTK_ORIENTATION_VERTICAL, 1) {
-      .set-spacing(20);
+    my GtkOrientation $orientation =
+       $config.legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
+    my Box $session-buttons .= new-box( $orientation, 1);
+    $session-buttons.set-spacing(20);
 #      .set-margin-top(0);
 #      .set-margin-bottom(30);
 #      .set-margin-start(30);
@@ -157,59 +182,73 @@ method session-actions (
 #      .set-valign(GTK_ALIGN_FILL);
 
 #`{{
-      # Get a title for the session group
-      my Str $gtitle = $config.get-session-group-title( $session-name, $level);
-      with my Label $glabel .= new-label {
-        $session-buttons.append($glabel);
-        .set-text($gtitle // '');
-        .allocate( 200, 30, -1, N-Object);
-        $config.set-css( $glabel.get-style-context, 'group-session-label');
-      }
+    # Get a title for the session group
+    my Str $gtitle = $config.get-session-group-title( $session-name, $level);
+    with my Label $glabel .= new-label {
+      $session-buttons.append($glabel);
+      .set-text($gtitle // '');
+      .allocate( 200, 30, -1, N-Object);
+      $config.set-css( $glabel.get-style-context, 'group-session-label');
+    }
 }}
 
-      my UInt $count = 0;
-      for @($manage-session{"group$level"}<actions>) -> $id {
+    my UInt $count = 0;
+    for @($manage-session{"group$level"}<actions>) -> $id {
 
-        my SessionManager::Command $command =
-          SessionManager::RunActionCommand.new(:$id);
+      my SessionManager::Command $command =
+        SessionManager::RunActionCommand.new(:$id);
 #note "$?LINE $command.tooltip()";
-        my Button $button .= new-button; #with-label($command.tooltip);
+      my Widget $widget;
+      if $config.legacy {
+        $widget = self.legacy-button(
+          'setup-run', :$id, :$command, :$level, :$count
+        );
+      }
+
+      else {
+        $widget = Button.new-button; #with-label($command.tooltip);
         self.set-box-widget(
-          $button, $command.tooltip, $command.overlay-picture
+          $widget, $command.tooltip, $command.overlay-picture
         );
-        $button.register-signal( self, 'setup-run', 'clicked', :$id, :$command);
-        $config.set-css( $button.get-style-context, 'session-action-button');
-        .append($button);
-
-#`{{
-        my SessionManager::Gui::CommandButton $button-command .= new(:$id);
-        .append($button-command.make-button(
-            $session-name, $level - 1, $count
-          )
-        );
-}}
-        $count++;
+        $widget.register-signal( self, 'setup-run', 'clicked', :$id, :$command);
+        $config.set-css( $widget.get-style-context, 'session-action-button');
       }
 
+      $session-buttons.append($widget);
 #`{{
-      # Clear first
-      $!action-data{$session-name} = [];
-      my UInt $count = 0;
-      for $config.get-session-actions( $session-name, $level) -> $action {
-        # Originally the level was from 0 .. ^n, now 1 .. n
-        my Overlay $overlay = self.action-button(
-          self.process-action( $session-name, $action, $level-1, $count)
-        );
-
-        .append($overlay);
-
-        $count++;
-      }
+      my SessionManager::Gui::CommandButton $button-command .= new(:$id);
+      .append($button-command.make-button(
+          $session-name, $level - 1, $count
+        )
+      );
 }}
+      $count++;
     }
 
+#`{{
+    # Clear first
+    $!action-data{$session-name} = [];
+    my UInt $count = 0;
+    for $config.get-session-actions( $session-name, $level) -> $action {
+      # Originally the level was from 0 .. ^n, now 1 .. n
+      my Overlay $overlay = self.action-button(
+        self.process-action( $session-name, $action, $level-1, $count)
+      );
+
+      .append($overlay);
+
+      $count++;
+    }
+}}
+
     # Add session actions group
-    $!session-manager-box.attach( $session-buttons, $level, 0, 1, 1);
+    if $config.legacy {
+      $!session-manager-box.attach( $session-buttons, 0, $level, 1, 1);
+    }
+
+    else {
+      $!session-manager-box.attach( $session-buttons, $level, 0, 1, 1);
+    }
 #    $session-levels.append($session-buttons);
   }
 
@@ -346,7 +385,7 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
 
     with my Label $strut .= new-label {
       .set-text(' ');
-      .hexpand(True);
+      .set-hexpand(True);
     }
 
     with $widget = Box.new-box( GTK_ORIENTATION_HORIZONTAL, 5) {
@@ -396,33 +435,48 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
 
 
 
-=finish
 #-------------------------------------------------------------------------------
-method session-button ( --> Overlay ) {
+method legacy-button (
+  Str $method, Int :$level = -1, Int :$count = -1, *%options --> Overlay
+) {
 
   my SessionManager::Config $config .= instance;
   my SessionManager::Variables $v .= instance;
 #  $config.set-css( self.get-style-context, 'session-toolbar');
 
   my Str $title = "Session\n$!manage-session<title>";
-  my Str $picture-file = $config.set-path(
-    $v.substitute-vars($!manage-session<icon> // "$*images/$!session-name/0.png")
-  );
-note "$?LINE $picture-file, ", $picture-file.IO ~~ :r;
+  my Str $picture-file;
+    if $count == -1 and $level == -1 {
+      $picture-file = $config.set-path(
+        $v.substitute-vars(
+          $!manage-session<icon> // "$*images/$!session-name/0.png"
+        )
+      );
+    }
+
+    else {
+      $picture-file = $config.set-path(
+        $v.substitute-vars(
+          $!manage-session<icon> // "$*images/$!session-name/$level$count.png"
+        )
+      );
+    }
+
+note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
 
   my Picture $picture .= new-picture;
   with $picture {
     .set-filename($picture-file);
     my Int ( $w, $h) = $config.get-icon-size;
-    .set-size-request( $w, -1);
+    .set-size-request( $w, $h);
 
     .set-margin-top(0);
     .set-margin-bottom(0);
     .set-margin-start(0);
     .set-margin-end(0);
-    #.set-hexpand(True);
-#    .set-vexpand-set(True);
-#    .set-vexpand(True);
+#    .set-hexpand(True);
+    .set-vexpand-set(True);
+    .set-vexpand(True);
 #    .set-valign(GTK_ALIGN_FILL);
   }
 
@@ -430,22 +484,34 @@ note "$?LINE $picture-file, ", $picture-file.IO ~~ :r;
     .set-child($picture);
     .set-tooltip-text($!manage-session<title>);
     $config.set-css( .get-style-context, 'session-toolbar-button');
-    .register-signal(
-      self, 'session-actions', 'clicked', :$!session-name, :$!manage-session
-    );
+    .register-signal( self, $method, 'clicked', |%options);
   }
 
   my Overlay $overlay .= new-overlay;
   $overlay.set-child($button);
 #  $overlay.set-size-request($config.get-icon-size);
 
-  my Str $overlay-icon = $config.set-path(
-    $v.substitute-vars($!manage-session<over> // "$*images/$!session-name/o0.png")
-  );
+  my Str $overlay-icon;
+  if $count == -1 and $level == -1 {
+    $overlay-icon = $config.set-path(
+      $v.substitute-vars(
+        $!manage-session<over> // "$*images/$!session-name/o0.png"
+      )
+    );
+  }
+
+  else {
+    $overlay-icon = $config.set-path(
+      $v.substitute-vars(
+        $!manage-session<over> // "$*images/$!session-name/o$level$count.png"
+      )
+    );
+  }
+
 note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :r;
   if ? $overlay-icon.IO.r {
     $picture .= new-for-paintable(
-      SessionManager::Gui::CommandButton.set-texture($overlay-icon)
+      self.set-texture($overlay-icon)
     );
 
     with $picture {
@@ -461,7 +527,6 @@ note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :r;
 }
 
 
-=finish
 
 #-------------------------------------------------------------------------------
 method set-texture ( Str $file --> Texture ) {
@@ -478,6 +543,7 @@ method set-texture ( Str $file --> Texture ) {
   Texture.new-for-pixbuf($gdkpixbuf)
 }
 
+=finish
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str:D :$!session-name, Hash:D :$!manage-session ) {

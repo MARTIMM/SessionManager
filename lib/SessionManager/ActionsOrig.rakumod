@@ -92,7 +92,7 @@ method make-toolbar ( Grid $sessions --> Box ) {
 #note "\n\n$?LINE ", $!action-data.gist;
 
     $action-data<tooltip> = "Run\n$action-data<tooltip>";
-
+#`{{
     with my Picture $picture .= new-picture {
       .set-filename($action-data<picture-file>);
       .set-size-request($!config.get-icon-size);
@@ -102,7 +102,7 @@ method make-toolbar ( Grid $sessions --> Box ) {
       .set-margin-start(0);
       .set-margin-end(0);
     }
-
+  }}
     my Overlay $overlay = self.action-button($action-data);
     if $action-data<overlay-picture-file>:exists and
       $action-data<overlay-picture-file>.IO.r
@@ -241,7 +241,7 @@ method session-actions ( Str :$session-name, Grid :$sessions ) {
 
         # Originally the level was from 0 .. ^n, now 1 .. n
         my Overlay $overlay = self.action-button(
-          self.process-action( $session-name, $action, $level-1, $count)
+          self.process-action( $session-name, $action, $level - 1, $count)
         );
 
         .append($overlay);

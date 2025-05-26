@@ -24,6 +24,7 @@ my $instance;
 constant APP_ID is export = 'io.github.martimm.dispatcher';
 constant DATA_DIR is export = [~] $*HOME, '/.config/', APP_ID;
 
+has Bool $.legacy = False;
 has Str $.config-directory;
 #has Hash $!action-refs;
 #has Hash $!variables;
@@ -177,6 +178,9 @@ method set-css ( N-Object $context, Str:D $css-class ) {
   );
   $style-context.add-class($css-class);
 }
+
+#-------------------------------------------------------------------------------
+method set-legacy ( Bool $!legacy ) { }
 
 #-------------------------------------------------------------------------------
 method get-window-size ( --> List ) {
