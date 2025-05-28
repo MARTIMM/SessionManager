@@ -164,30 +164,33 @@ method setup-window ( ) {
   # Set the theme and initialize application window and give this object (a
   # Gnome::Gtk4::Application) as its argument.
   if ?$!app-window and $!app-window.is-valid {
-
     $!application.remove-window($!app-window);
     $!app-window.destroy;
     $!app-window.clear-object;
   }
 
+  $!app-window .= new-applicationwindow($!application);
+
   # Use of grid makes it easier to remove boxes from the grid later on
   my Grid $session-manager-box .= new-grid;
   my SessionManager::Gui::Toolbar $toolbar .= new-box(
     GTK_ORIENTATION_VERTICAL, 1,
-    :$session-manager-box
+    :$session-manager-box, :$!app-window
   );
   $session-manager-box.attach( $toolbar, 0, 0, 1, 1);
 
   my SessionManager::Config $config .= instance;
-  with $!app-window .= new-applicationwindow($!application) {
+  with $!app-window {
 #    my SessionManager::Actions $actions .= new( :$!config, :$!app-window);
 
-    .set-vexpand-set(True);
-    .set-vexpand(True);
+#    .set-vexpand-set(True);
+#    .set-vexpand(True);
     .set-valign(GTK_ALIGN_FILL);
 
     .set-title($config.get-window-title);
     .set-child($session-manager-box);
+
+    .set-default-size($config.get-window-size);
 
     .present;
   }
