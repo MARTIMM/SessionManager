@@ -188,6 +188,11 @@ method get-window-size ( --> List ) {
 }
 
 #-------------------------------------------------------------------------------
+method get-log-window-size ( --> List ) {
+  | $!dispatch-config<theme><log-window-size>;
+}
+
+#-------------------------------------------------------------------------------
 method get-icon-size ( --> List ) {
   | $!dispatch-config<theme><icon-size>;
 }
