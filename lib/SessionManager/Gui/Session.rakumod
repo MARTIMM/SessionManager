@@ -64,9 +64,12 @@ has Str $!session-name;
 has Hash $!manage-session;
 has Grid $!session-manager-box;
 
+has Mu $!app-window;
+
 #-------------------------------------------------------------------------------
 submethod BUILD (
-  Str:D :$!session-name, Hash:D :$!manage-session, Grid :$!session-manager-box
+  Str:D :$!session-name, Hash:D :$!manage-session,
+  Grid :$!session-manager-box, Mu :$!app-window
 ) { }
 
 #-------------------------------------------------------------------------------
@@ -125,6 +128,8 @@ method session-actions (
         $!session-manager-box.remove-column($x);
       }
     }
+#note "$?LINE $config.get-window-size(), ", ? $!app-window;
+    $!app-window.set-default-size($config.get-window-size) if ? $!app-window;
 
 #    else {
 #      last;
@@ -201,7 +206,7 @@ method session-actions (
       my Widget $widget;
       if $config.legacy {
         $widget = self.legacy-button(
-          'setup-run', :$id, :$command, :$level, :$count
+          'setup-run', :$id, :$command, :level($level - 1), :$count
         );
       }
 
@@ -282,7 +287,7 @@ method setup-run ( Str:D :$id, SessionManager::Command:D :$command ) {
     with $window .= new-window {
       .set-title($command.tooltip);
       .set-child($scrolled-window);
-      .set-default-size($config.get-window-size);
+      .set-default-size($config.get-log-window-size);
       .present;
     }
 
@@ -437,12 +442,14 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
 
 #-------------------------------------------------------------------------------
 method legacy-button (
-  Str $method, Int :$level = -1, Int :$count = -1, *%options --> Overlay
+  Str $method, Int :$level = -1, Int :$count = -1,
+  SessionManager::Command :$command, *%options --> Overlay
 ) {
-
   my SessionManager::Config $config .= instance;
   my SessionManager::Variables $v .= instance;
 #  $config.set-css( self.get-style-context, 'session-toolbar');
+
+#  my SessionManager::Command $command = %options<command>;
 
   my Str $title = "Session\n$!manage-session<title>";
   my Str $picture-file;
@@ -457,12 +464,12 @@ method legacy-button (
     else {
       $picture-file = $config.set-path(
         $v.substitute-vars(
-          $!manage-session<icon> // "$*images/$!session-name/$level$count.png"
+          $command.picture // "$*images/$!session-name/$level$count.png"
         )
       );
     }
 
-note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
+#note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
 
   my Picture $picture .= new-picture;
   with $picture {
@@ -484,7 +491,7 @@ note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
     .set-child($picture);
     .set-tooltip-text($!manage-session<title>);
     $config.set-css( .get-style-context, 'session-toolbar-button');
-    .register-signal( self, $method, 'clicked', |%options);
+    .register-signal( self, $method, 'clicked', :$command, |%options);
   }
 
   my Overlay $overlay .= new-overlay;
@@ -503,12 +510,12 @@ note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
   else {
     $overlay-icon = $config.set-path(
       $v.substitute-vars(
-        $!manage-session<over> // "$*images/$!session-name/o$level$count.png"
+        $command.overlay-picture // "$*images/$!session-name/o$level$count.png"
       )
     );
   }
 
-note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :r;
+#note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :r;
   if ? $overlay-icon.IO.r {
     $picture .= new-for-paintable(
       self.set-texture($overlay-icon)

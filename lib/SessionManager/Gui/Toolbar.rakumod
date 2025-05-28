@@ -49,7 +49,7 @@ constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
 constant Texture = Gnome::Gdk4::Texture;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Grid :$session-manager-box ) {
+submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
 
   my SessionManager::Config $config .= instance;
   my GtkOrientation $orientation =
@@ -68,7 +68,7 @@ submethod BUILD ( Grid :$session-manager-box ) {
   for $sessions.keys.sort -> $session-name {
     my SessionManager::Gui::Session $session .= new(
       :$session-name, :manage-session($sessions{$session-name}),
-      :$session-manager-box
+      :$session-manager-box, :$app-window
     );
 
     self.append($session.session-button);

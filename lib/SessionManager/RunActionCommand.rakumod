@@ -12,8 +12,8 @@ also is SessionManager::Command;
 
 #-------------------------------------------------------------------------------
 has SessionManager::ActionData $!action-data handles <
-      running run-log run-error tap tooltip overlay-picture cmd-logging
-      cmd-finish-wait
+      running run-log run-error tap tooltip picture overlay-picture
+      cmd-logging cmd-finish-wait
     >;
       # cmd-background
 
