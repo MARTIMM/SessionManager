@@ -106,7 +106,7 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
 
   my Array $args = $cl.get-arguments;
   my Capture $o = get-options-from( $args[1..*-1], |$*remote-options);
-note "$?LINE $args.gist()";
+#note "$?LINE $args.gist()";
 
   if $o<v>:exists or $o<verbose>:exists {
     $*verbose = True;

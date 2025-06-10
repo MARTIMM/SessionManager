@@ -37,7 +37,7 @@ has Gnome::Gtk4::CssProvider $!css-provider;
 submethod BUILD ( Str :$!config-directory = DATA_DIR ) {
 #  $!action-refs = %();
 #  $!variables = %();
-note "$?LINE $!config-directory";
+#note "$?LINE $!config-directory";
 
   die "configuration directory not found" unless $!config-directory.IO ~~ :d;
 

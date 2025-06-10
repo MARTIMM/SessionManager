@@ -142,7 +142,7 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
   $script-name = '/tmp/' ~ sha256-hex($command) ~ '.shell-script';
   $script-name.IO.spurt($command);
 
-note "\n$?LINE $script-name\n$command";
+#note "\n$?LINE $script-name\n$command";
 
   if $!cmd-background {
     shell "$!shell $script-name &> /dev/null \&";
