@@ -3,6 +3,8 @@ use v6.d;
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
 
+use GnomeTools::Gtk::Dialog;
+
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Edit::Action;
 
@@ -14,7 +16,7 @@ submethod BUILD ( ) {
 method actions-create-action ( N-Object $parameter ) {
   note "$?LINE";
 
-  with my SessionManager::Gui::Dialog $dialog .= new(
+  with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Delete Container Dialog')
   ) {
     my Str $current-root = $!config.get-current-root;
