@@ -27,14 +27,15 @@ use Gnome::N::N-Object:api<2>;
 #use SessionManager::Actions;
 use SessionManager::Config;
 use SessionManager::Gui::Toolbar;
+use SessionManager::Gui::MenuBar;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
 
 constant Grid = Gnome::Gtk4::Grid;
 
-has Gnome::Gtk4::Application $!application;
-has Gnome::Gtk4::ApplicationWindow $!app-window;
+has Gnome::Gtk4::Application $.application;
+has Gnome::Gtk4::ApplicationWindow $.app-window;
 #has SessionManager::Gui::Toolbar $!toolbar;
 #has SessionManager::Config $!config;
 
@@ -169,19 +170,21 @@ method setup-window ( ) {
     $!app-window.clear-object;
   }
 
-  $!app-window .= new-applicationwindow($!application);
+  with $!app-window .= new-applicationwindow($!application) {
 
-  # Use of grid makes it easier to remove boxes from the grid later on
-  my Grid $session-manager-box .= new-grid;
-  my SessionManager::Gui::Toolbar $toolbar .= new-box(
-    GTK_ORIENTATION_VERTICAL, 1,
-    :$session-manager-box, :$!app-window
-  );
-  $session-manager-box.attach( $toolbar, 0, 0, 1, 1);
+    # Use of grid makes it easier to remove boxes from the grid later on
+    my Grid $session-manager-box .= new-grid;
+    my SessionManager::Gui::Toolbar $toolbar .= new-box(
+      GTK_ORIENTATION_VERTICAL, 1, :$session-manager-box, :$!app-window
+    );
+    $session-manager-box.attach( $toolbar, 0, 0, 1, 1);
 
-  my SessionManager::Config $config .= instance;
-  with $!app-window {
+    my SessionManager::Config $config .= instance;
+
 #    my SessionManager::Actions $actions .= new( :$!config, :$!app-window);
+    my SessionManager::Gui::MenuBar $menu-bar .= new(:main(self));
+    $!application.set-menubar($menu-bar.bar);
+    .set-show-menubar(True);
 
 #    .set-vexpand-set(True);
 #    .set-vexpand(True);
