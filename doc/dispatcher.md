@@ -22,12 +22,33 @@ The purpose of this program is that it can quickly setup an environment for some
 
 ## Additions for later
 
-Optionally the action can show a checkbutton for each program which can be (de)selected to dis-/en-able the start of a program depending on what is needed at that moment.
+* Optionally the action can show a checkbutton for each program which can be (de-)selected to disable or enable the start of a program depending on what is needed at that moment.
 
-DBus will play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera.
+* DBus will play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera.
 
-There is a configuration section to create the configuration file.
+* There is a configuration section to create the configuration file.
 
+* Editing of actions, variables and sessions. To make it more simple, the directory names `Actions`, `Parts` and `Images` are fixed. The sessions entry point is in the file `sessions.yaml`. In this file are only `Part` references and some basic configs for themes and other minor settings.
+
+  ```plantuml
+  @startyaml
+  root directory:
+    - sessions.yaml
+    - variables.yaml
+    - Actions:
+      - action-specs1.yaml
+      - action-specs2.yaml
+      - ...
+    - Parts:
+      - part-spec1.yaml
+      - part-spec2.yaml
+      - ...
+    - Images:
+      - Set1 directory
+      - Set2 directory
+      - ...
+  @endyaml
+  ```
 
 ### Application workings
 
