@@ -6,21 +6,35 @@
   "author": "Marcel Timmerman",
   "auth": "cpan:MARTIMM",
 
-  "version": "0.4.7",
+  "version": "0.5.0",
   "tags": [ "desktop", "kde", "gnome", "tool" ],
   
   "license": "Artistic-2.0",
   "raku-version": "6.d",
 
   "provides": {
-    "SessionManager::Application": "lib/Desktop/Dispatcher/Application.rakumod",
-    "SessionManager::Actions": "lib/Desktop/Dispatcher/Actions.rakumod",
-    "SessionManager::Config": "lib/Desktop/Dispatcher/Config.rakumod"
+    "SessionManager::Gui::Edit::Action":
+      "lib/SessionManager/Gui/Edit/Action.rakumod",
+    "SessionManager::Gui::Edit::Variable":
+      "lib/SessionManager/Gui/Edit/Variable.rakumod",
+
+    "SessionManager::Gui::Application":
+      "lib/SessionManager/Gui/Application.rakumod",
+    "SessionManager::Gui::MenuBar": "lib/SessionManager/Gui/MenuBar.rakumod",
+    "SessionManager::Gui::Session": "lib/SessionManager/Gui/Session.rakumod",
+    "SessionManager::Gui::Toolbar": "lib/SessionManager/Gui/Toolbar.rakumod",
+
+    "SessionManager::ActionData": "lib/SessionManager/ActionData.rakumod",
+    "SessionManager::Actions": "lib/SessionManager/Actions.rakumod",
+    "SessionManager::Command": "lib/SessionManager/Command.rakumod",
+    "SessionManager::Config": "lib/SessionManager/Config.rakumod",
+    "SessionManager::RunActionCommand":
+      "lib/SessionManager/RunActionCommand.rakumod",
+    "SessionManager::Variables": "lib/SessionManager/Variables.rakumod"
   },
 
   "depends": [
-    "Gnome::Gtk4:api<2>","YAMLish", "Getopt::Long", "Digest::SHA256::Native",
-    "Archive::Libarchive:", "Archive::Libarchive::Constants"
+    "Gnome::Gtk4:api<2>", "YAMLish", "Getopt::Long",
   ],
 
   "resources": [
@@ -31,5 +45,5 @@
     "mozaic.jpg", "bookmark.png", "fastforward.png"
   ],
 
-  "source-url": "git://github.com/MARTIMM/dispatcher.git"
+  "source-url": "git://github.com/MARTIMM/SessionManager.git"
 }
