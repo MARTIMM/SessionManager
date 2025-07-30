@@ -1,3 +1,9 @@
+
+* 2025-07-30 0.5.0
+  * Available on github.
+  * WIP: actions and variables edit.
+  * Add menubar.
+
 * 2025-04-23 0.4.7
   * It is now possible to display results of script, run in **SessionManager::ActionData**, in a scrollable window.
   * New version does not use images, only icons.
