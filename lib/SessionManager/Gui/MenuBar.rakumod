@@ -3,6 +3,7 @@ use v6.d;
 use NativeCall;
 
 use SessionManager::Gui::Edit::Action;
+use SessionManager::Gui::Edit::Variable;
 
 use Gnome::Gio::Menu:api<2>;
 use Gnome::Gio::MenuItem:api<2>;
@@ -21,17 +22,20 @@ has $!application is required;
 has $!main is required;
 
 has Array $!menus;
-has SessionManager::Gui::Edit::Action $!actions-edit;
+has SessionManager::Gui::Edit::Action $!action-edit;
+has SessionManager::Gui::Edit::Variable $!variable-edit;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( :$!main ) {
   $!application = $!main.application;
-  $!actions-edit .= new;
+  $!action-edit .= new;
+  $!variable-edit .= new;
 
   $!bar .= new-menu;
   $!menus = [
     self.make-menu( :menu-name<File>, :shortcut),
     self.make-menu( :menu-name<Actions>, :shortcut),
+    self.make-menu( :menu-name<Variables>, :shortcut),
   ];
 }
 
@@ -55,16 +59,33 @@ method make-menu (
 
     when 'Actions' {
       self.bind-action(
-        $menu, $menu-name, $!actions-edit, 'Create Action',
+        $menu, $menu-name, $!action-edit, 'Create',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
       self.bind-action(
-        $menu, $menu-name, $!actions-edit, 'Modify Action'
+        $menu, $menu-name, $!action-edit, 'Modify'
 #        , :icon<application-exit>,
 #        :tooltip('Quit application')
       );
       self.bind-action(
-        $menu, $menu-name, $!actions-edit, 'Delete Action'
+        $menu, $menu-name, $!action-edit, 'Delete'
+#        , :icon<application-exit>,
+#        :tooltip('Quit application')
+      );
+    }
+
+    when 'Variables' {
+      self.bind-action(
+        $menu, $menu-name, $!variable-edit, 'Add',
+#        :icon<view-refresh>, :tooltip('Refresh sidebar')
+      );
+      self.bind-action(
+        $menu, $menu-name, $!variable-edit, 'Modify'
+#        , :icon<application-exit>,
+#        :tooltip('Quit application')
+      );
+      self.bind-action(
+        $menu, $menu-name, $!variable-edit, 'Delete'
 #        , :icon<application-exit>,
 #        :tooltip('Quit application')
       );
@@ -170,7 +191,7 @@ has $!main is required;
 
 has Array $!menus;
 has PuzzleTable::Gui::Puzzle $!phandling;
-has PuzzleTable::Gui::Category $!actions-edit;
+has PuzzleTable::Gui::Category $!action-edit;
 has PuzzleTable::Gui::Container $!cont;
 has PuzzleTable::Gui::Settings $!set;
 has PuzzleTable::Gui::Help $!help;
@@ -181,7 +202,7 @@ submethod BUILD ( :$!main ) {
   $!phandling .= new(:$!main);
   $!set .= new(:$!main);
   $!help .= new(:$!main);
-  $!actions-edit .= new(:$!main);
+  $!action-edit .= new(:$!main);
   $!cont .= new(:$!main);
 
   $!bar .= new-menu;
@@ -207,7 +228,7 @@ method make-menu (
   with $menu-name {
     when 'File' {
       self.bind-action(
-        $menu, $menu-name, $!actions-edit, 'Refresh Sidebar',
+        $menu, $menu-name, $!action-edit, 'Refresh Sidebar',
         :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
       self.bind-action(
@@ -225,15 +246,15 @@ method make-menu (
 
     when 'Category' {
       self.bind-action(
-        $menu, $menu-name, $!actions-edit, 'Add',
+        $menu, $menu-name, $!action-edit, 'Add',
         :path(DATA_DIR ~ 'images/add-cat.png'), :tooltip('Add a new category')
       );
       self.bind-action(
-        $menu, $menu-name, $!actions-edit, 'Rename',
+        $menu, $menu-name, $!action-edit, 'Rename',
         :path(DATA_DIR ~ 'images/ren-cat.png'), :tooltip('Rename a category')
       );
-      self.bind-action( $menu, $menu-name, $!actions-edit, 'Delete');
-      self.bind-action( $menu, $menu-name, $!actions-edit, 'Lock');
+      self.bind-action( $menu, $menu-name, $!action-edit, 'Delete');
+      self.bind-action( $menu, $menu-name, $!action-edit, 'Lock');
     }
 
     when 'Puzzle' {
