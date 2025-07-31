@@ -2,7 +2,7 @@ use v6.d;
 
 use SessionManager::Gui::Variables;
 use SessionManager::ActionData;
-use SessionManager::Actions;
+use SessionManager::Gui::Actions;
 
 use Gnome::Gtk4::StyleContext:api<2>;
 use Gnome::Gtk4::CssProvider:api<2>;
@@ -121,7 +121,7 @@ method load-config ( ) {
 
   # Check and load separate action descriptions
   if $!dispatch-config<action-references>:exists {
-    my SessionManager::Actions $actions .= instance;
+    my SessionManager::Gui::Actions $actions .= instance;
     for @($!dispatch-config<action-references>) -> $file is copy {
       $file = $variables.substitute-vars($file);
       $actions.add-from-yaml($file);
@@ -152,7 +152,7 @@ method check-actions ( ) {
 
 #-------------------------------------------------------------------------------
 method check-session-entries ( Array $raw-entries --> Array ) {
-  my SessionManager::Actions $actions .= instance;
+  my SessionManager::Gui::Actions $actions .= instance;
 
   # It is possible that an entry is just a string. If so, the string is
   # a key in the $!action-refs hash to get the action hash from there.

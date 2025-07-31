@@ -24,7 +24,7 @@ use Gnome::N::N-Object:api<2>;
 #use Gnome::N::X:api<2>;
 #Gnome::N::debug(:on);
 
-#use SessionManager::Actions;
+#use SessionManager::Gui::Actions;
 use SessionManager::Config;
 use SessionManager::Gui::Toolbar;
 use SessionManager::Gui::MenuBar;
@@ -189,7 +189,7 @@ method setup-window ( ) {
 
     my SessionManager::Config $config .= instance;
 
-#    my SessionManager::Actions $actions .= new( :$!config, :$!app-window);
+#    my SessionManager::Gui::Actions $actions .= new( :$!config, :$!app-window);
     my SessionManager::Gui::MenuBar $menu-bar .= new(:main(self));
     $!application.set-menubar($menu-bar.bar);
     .set-show-menubar(True);

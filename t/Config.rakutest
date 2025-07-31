@@ -3,7 +3,7 @@ use v6.d;
 use Test;
 
 use SessionManager::Gui::Variables;
-use SessionManager::Actions;
+use SessionManager::Gui::Actions;
 use SessionManager::Config;
 use SessionManager::ActionData;
 
@@ -122,7 +122,7 @@ my SessionManager::Config $config .= instance(:$config-directory);
 
 #-------------------------------------------------------------------------------
 my Str $id = sha256-hex('Puzzle table tests');
-my SessionManager::Actions $actions .= instance;
+my SessionManager::Gui::Actions $actions .= instance;
 my SessionManager::ActionData $action-data = $actions.get-action($id);
 is $action-data.id, $id, 'keyless action entry';
 is $action-data.overlay-picture, './t/data/puzzle-table-logo.png',

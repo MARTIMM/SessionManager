@@ -2,14 +2,14 @@ use v6.d;
 
 use Test;
 
-use SessionManager::Actions;
+use SessionManager::Gui::Actions;
 use SessionManager::Command;
 use SessionManager::RunActionCommand;
 
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
-my SessionManager::Actions $actions .= instance;
+my SessionManager::Gui::Actions $actions .= instance;
 $actions.add-action(
   %(
     :t('Run sleep test'),
