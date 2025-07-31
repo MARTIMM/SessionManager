@@ -13,9 +13,7 @@
   "raku-version": "6.d",
 
   "provides": {
-    "SessionManager::Gui::Edit::Action":
-      "lib/SessionManager/Gui/Edit/Action.rakumod",
-
+    "SessionManager::Gui::Actions": "lib/SessionManager/Gui/Actions.rakumod",
     "SessionManager::Gui::Application":
       "lib/SessionManager/Gui/Application.rakumod",
     "SessionManager::Gui::MenuBar": "lib/SessionManager/Gui/MenuBar.rakumod",
@@ -25,7 +23,6 @@
       "lib/SessionManager/Gui/Variables.rakumod",
 
     "SessionManager::ActionData": "lib/SessionManager/ActionData.rakumod",
-    "SessionManager::Actions": "lib/SessionManager/Actions.rakumod",
     "SessionManager::Command": "lib/SessionManager/Command.rakumod",
     "SessionManager::Config": "lib/SessionManager/Config.rakumod",
     "SessionManager::RunActionCommand":
