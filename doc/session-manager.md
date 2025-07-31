@@ -30,6 +30,8 @@ The purpose of this program is that it can quickly setup an environment for some
 
 * Editing of actions, variables and sessions. To make it more simple, the directory names `Actions`, `Parts` and `Images` are fixed. The sessions entry point is in the file `sessions.yaml`. In this file are only `Part` references and some basic configs for themes and other minor settings.
 
+### Application workings
+
   ```plantuml
   @startyaml
   root directory:
@@ -47,17 +49,28 @@ The purpose of this program is that it can quickly setup an environment for some
       - Set1 directory
       - Set2 directory
       - ...
+    - Config:
+      - variables.yaml
+      - actions.yaml
+      - parts.yaml
+      - sessions.yaml
   @endyaml
   ```
 
-### Application workings
-
 #### Startup options
 * [x] `--config` option pointing to a root directory of the configuration.
-* [ ] Remove the `--config` option because it became the only one.
+* [x] Remove the `--config` option because it became the only one.
 * [x] References to parts can now be made from within the config file.
 * [x] Actions and variables can be referred to from the config file.
 
+#### Changes to support editing of actions, variables and sessions
+* [ ] Rename `dispatch-config.yaml` to `sessions.yaml`
+* [ ] Load all config files as before but save them into separate config files. These files will also be loaded when available after the users config files are loaded. This makes it possible for the user to still change the configuration by hand for the time being.
+* Add edit possibilities for;
+  * [ ] Variables, saved in `./Config/variables.yaml`
+  * [ ] Actions, saved in `./Config/actions.yaml`
+  * [ ] Parts, saved in `./Config/parts.yaml`
+  * [ ] Sessions, saved in `./Config/sessions.yaml`
 
 # Uml diagrams
 
