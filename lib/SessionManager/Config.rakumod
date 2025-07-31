@@ -22,27 +22,20 @@ unit class SessionManager::Config;
 my $instance;
 
 constant APP_ID is export = 'io.github.martimm.session-manager';
-#constant DATA_DIR is export = [~] $*HOME, '/.config/', APP_ID;
 
 has Bool $.legacy = False;
-has Str $.config-directory;
-#has Hash $!action-refs;
-#has Hash $!variables;
 
 has Hash $!dispatch-config;
 has Gnome::Gtk4::CssProvider $!css-provider;
-#has Hash $!image-map;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Str:D :$!config-directory ) {
+submethod BUILD ( Str:D :$*config-directory ) {
 #  $!action-refs = %();
 #  $!variables = %();
-#note "$?LINE $!config-directory";
+#note "$?LINE $*config-directory";
 
-  die "configuration directory not found" unless $!config-directory.IO ~~ :d;
-
-  mkdir $!config-directory ~ '/Images', 0o700
-        unless ($!config-directory ~ '/Images').IO.e;
+  mkdir $*config-directory ~ '/Images', 0o700
+        unless ($*config-directory ~ '/Images').IO.e;
   
   # It is supposed to copy files to a controllable location See also issue #5746
   # at https://github.com/rakudo/rakudo/issues/5746.
@@ -58,14 +51,14 @@ submethod BUILD ( Str:D :$!config-directory ) {
 #  for <
 #    brushed-dark.jpg brushed-copper.jpg
 #  > -> $i {
-    $png-file = [~] $!config-directory, '/Images/', $i;
+    $png-file = [~] $*config-directory, '/Images/', $i;
     %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
   }
 
   # Copy style sheet to data directory and load into program
-  my Str $css-file = $!config-directory ~ '/dispatcher.css';
+  my Str $css-file = $*config-directory ~ '/dispatcher.css';
   %?RESOURCES<dispatcher.css>.copy($css-file);
-  $css-file = $!config-directory ~ '/dispatcher-changes.css';
+  $css-file = $*config-directory ~ '/dispatcher-changes.css';
   %?RESOURCES<dispatcher-changes.css>.copy($css-file);
 
   $!css-provider .= new-cssprovider;
@@ -89,17 +82,17 @@ method instance (
 #-------------------------------------------------------------------------------
 method load-config ( ) {
   $!dispatch-config = load-yaml(
-    "$!config-directory/dispatch-config.yaml".IO.slurp
+    "$*config-directory/dispatch-config.yaml".IO.slurp
   );
 
   die "dispatch configuration not found" unless ?$!dispatch-config;
 
-  $*images = [~] $!config-directory, '/', $*images;
+  $*images = [~] $*config-directory, '/', $*images;
 
   # Set a few variables beforehand
   my SessionManager::Gui::Variables $variables .= instance;
   $variables.add( %(
-    :$!config-directory,
+    :$*config-directory,
     :home($*HOME),
   ));
 
@@ -213,7 +206,7 @@ method set-path ( Str $file = '' --> Str ) {
 #note "$?LINE $file, $file.index('/')";
   my Str $path = ($file.index('/') // -1) == 0
                   ?? $file
-                  !! [~] $!config-directory, '/', $file;
+                  !! [~] $*config-directory, '/', $file;
 
   note "Set icon to $path" if $*verbose;
 
