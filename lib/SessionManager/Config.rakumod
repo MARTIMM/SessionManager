@@ -56,11 +56,13 @@ submethod BUILD ( Str:D :$*config-directory ) {
   }
 
   # Copy style sheet to data directory and load into program
-  my Str $css-file = $*config-directory ~ '/dispatcher.css';
-  %?RESOURCES<dispatcher.css>.copy($css-file);
-  $css-file = $*config-directory ~ '/dispatcher-changes.css';
-  %?RESOURCES<dispatcher-changes.css>.copy($css-file);
-
+  my Str $css-file = $*config-directory ~ '/Config/manager.css';
+  %?RESOURCES<manager.css>.copy($css-file);
+  my $css-cnt = [~] '@import url("', $css-file, '")', "\n\n",
+                    %?RESOURCES<manager-changes.css>.slurp;
+  $css-file = $*config-directory ~ '/Config/manager-changes.css';
+  $css-file.IO.spurt($css-cnt);
+note $css-cnt;
   $!css-provider .= new-cssprovider;
   $!css-provider.load-from-path($css-file);
 
@@ -104,6 +106,8 @@ method load-config ( ) {
     }
   }
 
+  $variables.save;
+
   # Check and load separate session descriptions, variables are now possible
   if $!dispatch-config<part-references>:exists {
     my Hash $ref := $!dispatch-config<part-references>;
@@ -120,7 +124,10 @@ method load-config ( ) {
       $file = $variables.substitute-vars($file);
       $actions.add-from-yaml($file);
     }
+
+    $actions.save;
   }
+
 
   self.check-actions;
 }
