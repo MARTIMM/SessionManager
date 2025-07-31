@@ -2,10 +2,10 @@ use v6.d;
 
 use Test;
 
-use SessionManager::Variables;
+use SessionManager::Gui::Variables;
 
 #-------------------------------------------------------------------------------
-my SessionManager::Variables $v .= instance;
+my SessionManager::Gui::Variables $v .= instance;
 
 #-------------------------------------------------------------------------------
 lives-ok

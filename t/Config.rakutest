@@ -2,7 +2,7 @@ use v6.d;
 
 use Test;
 
-use SessionManager::Variables;
+use SessionManager::Gui::Variables;
 use SessionManager::Actions;
 use SessionManager::Config;
 use SessionManager::ActionData;

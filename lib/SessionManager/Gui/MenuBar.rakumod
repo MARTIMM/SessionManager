@@ -3,7 +3,7 @@ use v6.d;
 use NativeCall;
 
 use SessionManager::Gui::Edit::Action;
-use SessionManager::Gui::Edit::Variable;
+use SessionManager::Gui::Variables;
 
 use Gnome::Gio::Menu:api<2>;
 use Gnome::Gio::MenuItem:api<2>;
@@ -23,13 +23,13 @@ has $!main is required;
 
 has Array $!menus;
 has SessionManager::Gui::Edit::Action $!action-edit;
-has SessionManager::Gui::Edit::Variable $!variable-edit;
+has SessionManager::Gui::Variables $!variable-edit;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( :$!main ) {
   $!application = $!main.application;
   $!action-edit .= new;
-  $!variable-edit .= new;
+  $!variable-edit .= instance;
 
   $!bar .= new-menu;
   $!menus = [

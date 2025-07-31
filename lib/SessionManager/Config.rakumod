@@ -1,6 +1,6 @@
 use v6.d;
 
-use SessionManager::Variables;
+use SessionManager::Gui::Variables;
 use SessionManager::ActionData;
 use SessionManager::Actions;
 
@@ -96,7 +96,7 @@ method load-config ( ) {
   $*images = [~] $!config-directory, '/', $*images;
 
   # Set a few variables beforehand
-  my SessionManager::Variables $variables .= instance;
+  my SessionManager::Gui::Variables $variables .= instance;
   $variables.add( %(
     :$!config-directory,
     :home($*HOME),

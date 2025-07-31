@@ -1,13 +1,13 @@
 use v6.d;
 
 use Test;
-use SessionManager::Variables;
+use SessionManager::Gui::Variables;
 use SessionManager::ActionData;
 
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
-my SessionManager::Variables $v .= instance;
+my SessionManager::Gui::Variables $v .= instance;
 
 #-------------------------------------------------------------------------------
 my SessionManager::ActionData $ad;

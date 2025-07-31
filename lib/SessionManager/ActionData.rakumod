@@ -1,7 +1,7 @@
 
 use v6.d;
 
-use SessionManager::Variables;
+use SessionManager::Gui::Variables;
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ has Str $.picture;
 has Str $.overlay-picture;
 
 has Hash $!temp-variables;
-has SessionManager::Variables $!variables;
+has SessionManager::Gui::Variables $!variables;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {
