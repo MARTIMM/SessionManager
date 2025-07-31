@@ -1,0 +1,51 @@
+#!/usr/bin/env -S rakudo -Ilib
+
+use v6.d;
+
+#%*ENV<IGNORE_GNOME_DEPRECATION_MESSAGES> = 1;
+
+use SessionManager::Gui::Application;
+
+#-------------------------------------------------------------------------------
+# Initialize global variables
+
+my Version $*manager-version = v0.5.0;
+my Bool $*verbose = False;
+
+my $*dispatch-testing = False;
+
+my Str $*images = 'Images';
+
+my Str $*config-directory;
+
+my SessionManager::Gui::Application $dispatcher .= new;
+
+usage() if my $ecode = $dispatcher.go-ahead;
+
+
+
+exit($ecode);
+
+sub usage ( ) {
+  note Q:q:to/EOUSAGE/;
+
+    The session manager program is used to setup a session. A session can
+    be seen as a programming task in a project or composing a piece of
+    music. In all those sessions, it might need an editor, start tests,
+    servers, or browsers and file managers.
+
+    The program will only start one instance per user.
+
+    Usage;
+      sessionmanager [options] <config directory>
+    
+    Options:
+      --help -h           Show this information.
+      --legacy            Show older version layout.
+      --version           Show the current version of the program.
+      --verbose -v        Show more information while running.
+
+    Arguments
+      config directory    Directory where configuration is found.
+  EOUSAGE
+}
