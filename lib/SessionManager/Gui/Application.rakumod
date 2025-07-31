@@ -33,7 +33,7 @@ use SessionManager::Gui::MenuBar;
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
 
 constant Grid = Gnome::Gtk4::Grid;
-constant LocalOptions = [<version>];
+constant LocalOptions = [<version h help>];
 constant RemoteOptions = [ |<v verbose legacy> ];
 
 has Gnome::Gtk4::Application $.application;
@@ -99,6 +99,11 @@ method local-options ( N-Object $no-vd --> Int ) {
     $exit-code = 0;
   }
 
+  if $o<h>:exists or $o<help>:exists {
+    # When set to 1, the main program will always show the help message
+    $exit-code = 1;
+  }
+
   $exit-code
 }
 
@@ -110,6 +115,10 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   my Array $args = $cl.get-arguments;
   my Capture $o = get-options-from( $args[1..*-1], |RemoteOptions);
 #note "$?LINE ", $args[1..*-1];
+
+  if $o<h>:exists or $o<help>:exists {
+    return 0;
+  }
 
   if $o<v>:exists or $o<verbose>:exists {
     $*verbose = True;
@@ -125,12 +134,17 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   for $args[1..*-1] -> $a {
     if $a !~~ m/^ '-' / {
       $config-directory = $a;
+
+      if $config-directory.IO !~~ :d {
+        note "\nConfiguration directory '$config-directory' not found";
+        return 1;
+      }
       last;
     }
   }
 
   if !$config-directory {
-    note "You must specify a sesion directory";
+    note "\nYou must specify a sesion directory";
     return 1;
   }
 
