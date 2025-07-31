@@ -3,9 +3,9 @@ use v6.d;
 use YAMLish;
 
 #-------------------------------------------------------------------------------
-unit class SessionManager::Variables;
+unit class SessionManager::Gui::Variables;
 
-my SessionManager::Variables $instance;
+my SessionManager::Gui::Variables $instance;
 
 has Hash $!variables;
 has Hash $!temporary;
@@ -20,7 +20,7 @@ submethod BUILD ( ) {
 method new ( ) { !!! }
 
 #-------------------------------------------------------------------------------
-method instance ( --> SessionManager::Variables ) {
+method instance ( --> SessionManager::Gui::Variables ) {
   $instance //= self.bless;
 
   $instance
