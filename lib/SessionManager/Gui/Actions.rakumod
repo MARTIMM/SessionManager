@@ -14,6 +14,8 @@ use GnomeTools::Gtk::DropDown;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Actions;
 
+constant ConfigPath = '/Config/actions.yaml';
+
 #-------------------------------------------------------------------------------
 my $instance;
 
@@ -64,6 +66,12 @@ method add-from-yaml ( Str:D $path ) {
   die "File $path not found or unreadable" unless $path.IO.r;
 
   self.add-actions(load-yaml($path.IO.slurp));
+}
+
+#-------------------------------------------------------------------------------
+method save ( ) {
+#  ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($!data-ids));
+  note "$?LINE ", $!data-ids;
 }
 
 #-------------------------------------------------------------------------------
