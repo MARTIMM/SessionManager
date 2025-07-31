@@ -15,22 +15,21 @@
   "provides": {
     "SessionManager::Gui::Edit::Action":
       "lib/SessionManager/Gui/Edit/Action.rakumod",
-    "SessionManager::Gui::Edit::Variable":
-      "lib/SessionManager/Gui/Edit/Variable.rakumod",
 
     "SessionManager::Gui::Application":
       "lib/SessionManager/Gui/Application.rakumod",
     "SessionManager::Gui::MenuBar": "lib/SessionManager/Gui/MenuBar.rakumod",
     "SessionManager::Gui::Session": "lib/SessionManager/Gui/Session.rakumod",
     "SessionManager::Gui::Toolbar": "lib/SessionManager/Gui/Toolbar.rakumod",
+    "SessionManager::Gui::Variables":
+      "lib/SessionManager/Gui/Variables.rakumod",
 
     "SessionManager::ActionData": "lib/SessionManager/ActionData.rakumod",
     "SessionManager::Actions": "lib/SessionManager/Actions.rakumod",
     "SessionManager::Command": "lib/SessionManager/Command.rakumod",
     "SessionManager::Config": "lib/SessionManager/Config.rakumod",
     "SessionManager::RunActionCommand":
-      "lib/SessionManager/RunActionCommand.rakumod",
-    "SessionManager::Variables": "lib/SessionManager/Variables.rakumod"
+      "lib/SessionManager/RunActionCommand.rakumod"
   },
 
   "depends": [
