@@ -4,7 +4,7 @@
 
   "authors": [ "Marcel Timmerman" ],
   "author": "Marcel Timmerman",
-  "auth": "cpan:MARTIMM",
+  "auth": "fez:MARTIMM",
 
   "version": "0.5.0",
   "tags": [ "desktop", "kde", "gnome", "tool" ],
@@ -36,9 +36,11 @@
   "resources": [
     "brushed-dark.jpg", "brushed-light.jpg",
     "diamond-steel-floor.jpg", "brushed-copper.jpg",
+    "mozaic.jpg", "bookmark.png", "fastforward.png",
     "config-icon.jpg",
-    "dispatch-icon.png", "dispatcher.css", "dispatcher-changes.css",
-    "mozaic.jpg", "bookmark.png", "fastforward.png"
+    "dispatch-icon.png",
+
+    "manager.css", "manager-changes.css"
   ],
 
   "source-url": "git://github.com/MARTIMM/SessionManager.git"
