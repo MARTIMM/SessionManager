@@ -21,8 +21,8 @@ unit class SessionManager::Config;
 #-------------------------------------------------------------------------------
 my $instance;
 
-constant APP_ID is export = 'io.github.martimm.dispatcher';
-constant DATA_DIR is export = [~] $*HOME, '/.config/', APP_ID;
+constant APP_ID is export = 'io.github.martimm.session-manager';
+#constant DATA_DIR is export = [~] $*HOME, '/.config/', APP_ID;
 
 has Bool $.legacy = False;
 has Str $.config-directory;
@@ -34,14 +34,15 @@ has Gnome::Gtk4::CssProvider $!css-provider;
 #has Hash $!image-map;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Str :$!config-directory = DATA_DIR ) {
+submethod BUILD ( Str:D :$!config-directory ) {
 #  $!action-refs = %();
 #  $!variables = %();
 #note "$?LINE $!config-directory";
 
   die "configuration directory not found" unless $!config-directory.IO ~~ :d;
 
-  mkdir DATA_DIR ~ '/Images', 0o700 unless (DATA_DIR ~ '/Images').IO.e;
+  mkdir $!config-directory ~ '/Images', 0o700
+        unless ($!config-directory ~ '/Images').IO.e;
   
   # It is supposed to copy files to a controllable location See also issue #5746
   # at https://github.com/rakudo/rakudo/issues/5746.
@@ -57,14 +58,14 @@ submethod BUILD ( Str :$!config-directory = DATA_DIR ) {
 #  for <
 #    brushed-dark.jpg brushed-copper.jpg
 #  > -> $i {
-    $png-file = [~] DATA_DIR, '/Images/', $i;
+    $png-file = [~] $!config-directory, '/Images/', $i;
     %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
   }
 
   # Copy style sheet to data directory and load into program
-  my Str $css-file = DATA_DIR ~ '/dispatcher.css';
+  my Str $css-file = $!config-directory ~ '/dispatcher.css';
   %?RESOURCES<dispatcher.css>.copy($css-file);
-  $css-file = DATA_DIR ~ '/dispatcher-changes.css';
+  $css-file = $!config-directory ~ '/dispatcher-changes.css';
   %?RESOURCES<dispatcher-changes.css>.copy($css-file);
 
   $!css-provider .= new-cssprovider;
