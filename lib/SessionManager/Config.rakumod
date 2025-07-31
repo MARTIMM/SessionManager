@@ -95,7 +95,7 @@ method load-config ( ) {
 
   $*images = [~] $!config-directory, '/', $*images;
 
-  # Set a few variable before hand
+  # Set a few variables beforehand
   my SessionManager::Variables $variables .= instance;
   $variables.add( %(
     :$!config-directory,
