@@ -33,6 +33,8 @@ use SessionManager::Gui::MenuBar;
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
 
 constant Grid = Gnome::Gtk4::Grid;
+constant LocalOptions = [<version>];
+constant RemoteOptions = [ |<v verbose legacy> ];
 
 has Gnome::Gtk4::Application $.application;
 has Gnome::Gtk4::ApplicationWindow $.app-window;
@@ -91,7 +93,7 @@ method local-options ( N-Object $no-vd --> Int ) {
   CATCH { default { .message.note; $exit-code = 1; return $exit-code; } }
 
   # Local options which do not need a config file or primary instance
-  my $o = get-options( |$*local-options, |$*remote-options);
+  my $o = get-options( |LocalOptions, |RemoteOptions);
   if $o<version> {
     say "Version of dispatcher is $*manager-version";
     $exit-code = 0;
@@ -106,7 +108,7 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   my Array $cmd-list = [];
 
   my Array $args = $cl.get-arguments;
-  my Capture $o = get-options-from( $args[1..*-1], |$*remote-options);
+  my Capture $o = get-options-from( $args[1..*-1], |RemoteOptions);
 #note "$?LINE ", $args[1..*-1];
 
   if $o<v>:exists or $o<verbose>:exists {
