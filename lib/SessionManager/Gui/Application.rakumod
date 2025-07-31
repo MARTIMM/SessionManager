@@ -93,7 +93,7 @@ method local-options ( N-Object $no-vd --> Int ) {
   # Local options which do not need a config file or primary instance
   my $o = get-options( |$*local-options, |$*remote-options);
   if $o<version> {
-    say "Version of dispatcher is $*dispatcher-version";
+    say "Version of dispatcher is $*manager-version";
     $exit-code = 0;
   }
 
@@ -107,21 +107,29 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
 
   my Array $args = $cl.get-arguments;
   my Capture $o = get-options-from( $args[1..*-1], |$*remote-options);
-#note "$?LINE $args.gist()";
+#note "$?LINE ", $args[1..*-1];
 
   if $o<v>:exists or $o<verbose>:exists {
     $*verbose = True;
   }
 
   # Modify image map. Default is at <config>/Images.
-  $*images = $o<images> if ? $o<images>;
+#  $*images = $o<images> if ? $o<images>;
 
   # Modify parts map. Default is at <config>/Parts.
   #$*parts = $o<parts> if ? $o<parts>;
 
   my Str $config-directory;
-  if ? $o<config> {
-    $config-directory = $o.<config> // Str;
+  for $args[1..*-1] -> $a {
+    if $a !~~ m/^ '-' / {
+      $config-directory = $a;
+      last;
+    }
+  }
+
+  if !$config-directory {
+    note "You must specify a sesion directory";
+    return 1;
   }
 
   my SessionManager::Config $config .= instance(:$config-directory);

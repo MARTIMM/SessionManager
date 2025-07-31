@@ -9,9 +9,10 @@ use SessionManager::Gui::Application;
 #-------------------------------------------------------------------------------
 # Initialize global variables
 
-my Str $*dispatcher-version = '0.4.6';
+my Version $*manager-version = v0.5.0;
 my Array $*local-options = [<version>];
-my Array $*remote-options = [ |<config=s v verbose images=s legacy> ];
+#my Array $*remote-options = [ |<config=s v verbose images=s legacy> ];
+my Array $*remote-options = [ |<v verbose legacy> ];
 my Bool $*verbose = False;
 
 my $*dispatch-testing = False;
