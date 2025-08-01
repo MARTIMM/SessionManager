@@ -32,6 +32,8 @@ use SessionManager::Gui::MenuBar;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
 
+constant APP_ID is export = 'io.github.martimm.session-manager';
+
 constant Grid = Gnome::Gtk4::Grid;
 constant LocalOptions = [<version h help>];
 constant RemoteOptions = [ |<v verbose legacy> ];
