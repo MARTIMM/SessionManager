@@ -76,7 +76,6 @@ method save ( ) {
   }
 
   ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($raw-actions));
-#  note "$?LINE ", $!data-ids;
 }
 
 #-------------------------------------------------------------------------------
