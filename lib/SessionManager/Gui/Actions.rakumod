@@ -70,8 +70,13 @@ method add-from-yaml ( Str:D $path ) {
 
 #-------------------------------------------------------------------------------
 method save ( ) {
-#  ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($!data-ids));
-  note "$?LINE ", $!data-ids;
+  my Hash $raw-actions = %();
+  for $!data-ids.keys -> $id {
+    $raw-actions{$id} = $!data-ids{$id}.raw-action;
+  }
+
+  ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($raw-actions));
+#  note "$?LINE ", $!data-ids;
 }
 
 #-------------------------------------------------------------------------------
