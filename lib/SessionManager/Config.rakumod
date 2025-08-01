@@ -1,8 +1,8 @@
 use v6.d;
 
 use SessionManager::Gui::Variables;
-use SessionManager::ActionData;
 use SessionManager::Gui::Actions;
+use SessionManager::ActionData;
 
 use Gnome::Gtk4::StyleContext:api<2>;
 use Gnome::Gtk4::CssProvider:api<2>;
@@ -27,14 +27,14 @@ has Hash $!dispatch-config;
 has Gnome::Gtk4::CssProvider $!css-provider;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Str:D :$*config-directory ) {
+submethod BUILD ( ) {
 #  $!action-refs = %();
 #  $!variables = %();
-#note "$?LINE $*config-directory";
+note "$?LINE $*config-directory";
 
   mkdir $*config-directory ~ '/Images', 0o700
         unless ($*config-directory ~ '/Images').IO.e;
-  
+
   # It is supposed to copy files to a controllable location See also issue #5746
   # at https://github.com/rakudo/rakudo/issues/5746.
   my Str $png-file;
@@ -60,7 +60,7 @@ submethod BUILD ( Str:D :$*config-directory ) {
                     %?RESOURCES<manager-changes.css>.slurp;
   $css-file = $*config-directory ~ '/Config/manager-changes.css';
   $css-file.IO.spurt($css-cnt);
-note $css-cnt;
+#note $css-cnt;
   $!css-provider .= new-cssprovider;
   $!css-provider.load-from-path($css-file);
 
@@ -71,10 +71,8 @@ note $css-cnt;
 method new ( ) { !!! }
 
 #-------------------------------------------------------------------------------
-method instance (
-  Str :$config-directory --> SessionManager::Config
-) {
-  $instance //= self.bless(:$config-directory);
+method instance ( --> SessionManager::Config ) {
+  $instance //= self.bless;
 
   $instance
 }
@@ -104,7 +102,7 @@ method load-config ( ) {
     }
   }
 
-  $variables.save;
+#  $variables.save;
 
   # Check and load separate session descriptions, variables are now possible
   if $!dispatch-config<part-references>:exists {
@@ -124,8 +122,7 @@ method load-config ( ) {
     }
   }
 
-  self.check-actions;
-  $actions.save;
+#  self.check-actions;
 }
 
 #-------------------------------------------------------------------------------
