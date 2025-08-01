@@ -56,7 +56,7 @@ submethod BUILD ( ) {
   $!application.register-signal( self, 'local-options', 'handle-local-options');
   $!application.register-signal( self, 'remote-options', 'command-line');
   $!application.register-signal( self, 'startup', 'startup');
-#  $!application.register-signal( self, 'shutdown', 'shutdown');
+  $!application.register-signal( self, 'shutdown', 'shutdown');
 
   # Save when an interrupt arrives
   signal(SIGINT).tap( {
@@ -118,10 +118,6 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   my Capture $o = get-options-from( $args[1..*-1], |RemoteOptions);
 #note "$?LINE ", $args[1..*-1];
 
-  if $o<h>:exists or $o<help>:exists {
-    return 0;
-  }
-
   if $o<v>:exists or $o<verbose>:exists {
     $*verbose = True;
   }
@@ -132,27 +128,29 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   # Modify parts map. Default is at <config>/Parts.
   #$*parts = $o<parts> if ? $o<parts>;
 
-  my Str $config-directory;
-  for $args[1..*-1] -> $a {
-    if $a !~~ m/^ '-' / {
-      $config-directory = $a;
+  unless ?$!app-window and $!app-window.is-valid {
+#  my Str $config-directory;
+    for $args[1..*-1] -> $a {
+      if $a !~~ m/^ '-' / {
+        $*config-directory = $a;
 
-      if $config-directory.IO !~~ :d {
-        note "\nConfiguration directory '$config-directory' not found";
+        if $*config-directory.IO !~~ :d {
+          note "\nConfiguration directory '$*config-directory' not found";
+          return 1;
+        }
+        last;
+      }
+
+      if !$*config-directory {
+        note "\nYou must specify a sesion directory";
         return 1;
       }
-      last;
+
+      my SessionManager::Config $config .= instance;
+
+      $config.set-legacy(?$o<legacy>);
     }
   }
-
-  if !$config-directory {
-    note "\nYou must specify a sesion directory";
-    return 1;
-  }
-
-  my SessionManager::Config $config .= instance(:$config-directory);
-
-  $config.set-legacy(?$o<legacy>);
 
   # finish up
   if $cl.get-is-remote {
@@ -226,16 +224,22 @@ method setup-window ( ) {
 }
 
 #-------------------------------------------------------------------------------
-# Handled after pressing the close button added by the desktop manager
-method exit-program ( ) {
-  self.quit;
+method shutdown ( ) {
+note "$?LINE shutdown";
+
+  # save changed config
+  my SessionManager::Gui::Actions $actions .= instance;
+  my SessionManager::Gui::Variables $variables .= instance;
+  $actions.save;
+  $variables.save;
 }
 
 
-
-
 =finish
+
 #-------------------------------------------------------------------------------
-method shutdown ( ) {
-  # save changed config?
+# Handled after pressing the close button added by the desktop manager
+method exit-program ( ) {
+
+  self.quit;
 }
