@@ -21,8 +21,6 @@ unit class SessionManager::Config;
 #-------------------------------------------------------------------------------
 my $instance;
 
-constant APP_ID is export = 'io.github.martimm.session-manager';
-
 has Bool $.legacy = False;
 
 has Hash $!dispatch-config;
@@ -58,7 +56,7 @@ submethod BUILD ( Str:D :$*config-directory ) {
   # Copy style sheet to data directory and load into program
   my Str $css-file = $*config-directory ~ '/Config/manager.css';
   %?RESOURCES<manager.css>.copy($css-file);
-  my $css-cnt = [~] '@import url("', $css-file, '")', "\n\n",
+  my $css-cnt = [~] '@import url("', $css-file, '");', "\n\n",
                     %?RESOURCES<manager-changes.css>.slurp;
   $css-file = $*config-directory ~ '/Config/manager-changes.css';
   $css-file.IO.spurt($css-cnt);
@@ -117,19 +115,17 @@ method load-config ( ) {
     }
   }
 
+  my SessionManager::Gui::Actions $actions .= instance;
   # Check and load separate action descriptions
   if $!dispatch-config<action-references>:exists {
-    my SessionManager::Gui::Actions $actions .= instance;
     for @($!dispatch-config<action-references>) -> $file is copy {
       $file = $variables.substitute-vars($file);
       $actions.add-from-yaml($file);
     }
-
-    $actions.save;
   }
 
-
   self.check-actions;
+  $actions.save;
 }
 
 #-------------------------------------------------------------------------------
