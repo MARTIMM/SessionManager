@@ -35,8 +35,11 @@ has Str $.overlay-picture;
 has Hash $!temp-variables;
 has SessionManager::Gui::Variables $!variables;
 
+# For save keeping
+has Hash $.raw-action;
+
 #-------------------------------------------------------------------------------
-submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {
+submethod BUILD ( Str :$!id = '', Hash:D :$!raw-action ) {
   $!supplier .= new;
   $!supply = $!supplier.Supply;
 
@@ -47,54 +50,41 @@ submethod BUILD ( Str :$!id = '', Hash:D :$raw-action ) {
   $!variables .= instance;
 
   # Get tooltip text
-  $!tooltip = $!variables.substitute-vars($raw-action<t>) if ? $raw-action<t>;
+  $!tooltip = $!variables.substitute-vars($!raw-action<t>) if ? $!raw-action<t>;
 
   # Set path to work directory
-  $!workdir = $!variables.substitute-vars($raw-action<p>) if ? $raw-action<p>;
+  $!workdir = $!variables.substitute-vars($!raw-action<p>) if ? $!raw-action<p>;
 
   # Set environment as a Hash
-  $!env = $raw-action<e> if ? $raw-action<e>;
+  $!env = $!raw-action<e> if ? $!raw-action<e>;
 
   # Script to run before command can run
-  $!script = $!variables.substitute-vars($raw-action<s>) if ? $raw-action<s>;
+  $!script = $!variables.substitute-vars($!raw-action<s>) if ? $!raw-action<s>;
 
   # Set command to run
-  if ? $raw-action<c> {
-    $!cmd = $!variables.substitute-vars($raw-action<c>);
-    $!cmd-logging = False;    # $raw-action<co><l>
-    $!cmd-finish-wait = 10;   # $raw-action<co><w>
-    $!cmd-background = True;  # $raw-action<co><b>
-    if ?$raw-action<co> {
-      if $raw-action<co><l>.defined {
-        $!cmd-logging = ? $raw-action<co><l>;
+  if ? $!raw-action<c> {
+    $!cmd = $!variables.substitute-vars($!raw-action<c>);
+    $!cmd-logging = False;    # $!raw-action<co><l>
+    $!cmd-finish-wait = 10;   # $!raw-action<co><w>
+    $!cmd-background = True;  # $!raw-action<co><b>
+    if ?$!raw-action<co> {
+      if $!raw-action<co><l>.defined {
+        $!cmd-logging = ? $!raw-action<co><l>;
         $!cmd-background = False;
       }
 
-      $!cmd-finish-wait = $raw-action<co><w> if $raw-action<co><w>.defined;
-#      $!cmd-background = ? $raw-action<co><b> if $raw-action<co><b>.defined;
+      $!cmd-finish-wait = $!raw-action<co><w> if $!raw-action<co><w>.defined;
+#      $!cmd-background = ? $!raw-action<co><b> if $!raw-action<co><b>.defined;
     }
   }
 
   # Set icon on the button.
-  $!picture = $!variables.substitute-vars($raw-action<i>)
-    if ? $raw-action<i>;
+  $!picture = $!variables.substitute-vars($!raw-action<i>)
+    if ? $!raw-action<i>;
 
   # Set overlay icon over the button
-  $!overlay-picture = $!variables.substitute-vars($raw-action<o>)
-    if ? $raw-action<o>;
-
-  # Set temporary variables as a Hash
-  $!temp-variables = $raw-action<v> if ? $raw-action<v>;
-
-  # If there is no tooltip, try making it from command
-  if ! $!tooltip and ? $!cmd {
-    my Str $tooltip = $!cmd;
-    $tooltip ~~ s/ \s .* $//;
-    $!tooltip = $tooltip;
-  }
-
-  # ID from raw hash has precedence over call argument
-  $!id = $raw-action<id> if ? $raw-action<id>;
+  $!overlay-picture = $!variables.substitute-vars($!raw-action<o>)
+    if ? $!raw-action<o>;
 
   # If there is no ID, generate an MD5 from the tooltip or a random number
   $!id = sha256-hex($!tooltip // rand.Str) unless ? $!id;
