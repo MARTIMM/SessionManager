@@ -140,16 +140,16 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
         }
         last;
       }
-
-      if !$*config-directory {
-        note "\nYou must specify a sesion directory";
-        return 1;
-      }
-
-      my SessionManager::Config $config .= instance;
-
-      $config.set-legacy(?$o<legacy>);
     }
+
+    if !$*config-directory {
+      note "\nYou must specify a sesion directory";
+      return 1;
+    }
+
+    my SessionManager::Config $config .= instance;
+
+    $config.set-legacy(?$o<legacy>);
   }
 
   # finish up
