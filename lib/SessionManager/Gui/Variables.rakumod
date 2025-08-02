@@ -102,10 +102,10 @@ method variables-add ( N-Object $parameter ) {
   note "$?LINE";
 
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Add Variable')
+    :dialog-header('Add Variable'), :add-statusbar
   ) {
     my GnomeTools::Gtk::DropDown $variables-dd .= new;
-    $variables-dd.set-selection($!variables.keys);
+    $variables-dd.set-selection($!variables.keys.sort);
 
     .add-content( 'Check if variable exists', $variables-dd);
     .add-content( 'New variable', my Entry $vname .= new-entry);
@@ -124,10 +124,10 @@ method do-add-variable (
 ) {
   my Bool $sts-ok = False;
 
-  my Str $variable = $vname.get-buffer.get-text;
-  my Str $spec = $vspec.get-buffer.get-text;
+  my Str $variable = $vname.get-text;
+  my Str $spec = $vspec.get-text;
 
-  if $variable ~~ any($!variables.keys) {
+  if $variable ~~ any(|$!variables.keys) {
     $dialog.set-status("Variable '$variable' already defined");
   }
 
