@@ -76,14 +76,14 @@ method make-menu (
 
     when 'Variables' {
       self.bind-action(
-        $menu, $menu-name, $!variable-edit, 'Add',
+        $menu, $menu-name, $!variable-edit, 'Add Modify',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
-      self.bind-action(
-        $menu, $menu-name, $!variable-edit, 'Modify'
+#      self.bind-action(
+#        $menu, $menu-name, $!variable-edit, 'Modify'
 #        , :icon<application-exit>,
 #        :tooltip('Quit application')
-      );
+#      );
       self.bind-action(
         $menu, $menu-name, $!variable-edit, 'Delete'
 #        , :icon<application-exit>,
