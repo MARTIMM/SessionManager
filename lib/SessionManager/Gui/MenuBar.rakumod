@@ -59,14 +59,14 @@ method make-menu (
 
     when 'Actions' {
       self.bind-action(
-        $menu, $menu-name, $!action-edit, 'Create',
+        $menu, $menu-name, $!action-edit, 'Create Modify',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
-      self.bind-action(
-        $menu, $menu-name, $!action-edit, 'Modify'
+#      self.bind-action(
+#        $menu, $menu-name, $!action-edit, 'Modify'
 #        , :icon<application-exit>,
 #        :tooltip('Quit application')
-      );
+#      );
       self.bind-action(
         $menu, $menu-name, $!action-edit, 'Delete'
 #        , :icon<application-exit>,
