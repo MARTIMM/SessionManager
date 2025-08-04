@@ -18,14 +18,13 @@ use Gnome::Gtk4::T-enums:api<2>;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Variables;
 
+constant ConfigPath = '/Config/variables.yaml';
+
 constant Entry = Gnome::Gtk4::Entry;
-#constant EntryBuffer = Gnome::Gtk4::EntryBuffer;
 constant ListBox = Gnome::Gtk4::ListBox;
 constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
-
-constant ConfigPath = '/Config/variables.yaml';
 
 my SessionManager::Gui::Variables $instance;
 
@@ -107,8 +106,6 @@ method substitute-vars ( Str $t --> Str ) {
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
 method variables-add-modify ( N-Object $parameter ) {
-  note "$?LINE";
-
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Add Variable'), :add-statusbar
   ) {
@@ -132,7 +129,14 @@ method variables-add-modify ( N-Object $parameter ) {
     .add-content( 'New variable', my Entry $vname .= new-entry);
     .add-content( 'New specification', my Entry $vspec .= new-entry);
 
-    .add-button( self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec);
+    .add-button(
+      self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec
+    );
+
+    .add-button(
+      self, 'do-modify-variable', 'Modify', :$dialog, :$vname, :$vspec
+    );
+
     .add-button( $dialog, 'destroy-dialog', 'Cancel');
 
     $variables-lb.register-signal(
@@ -144,24 +148,45 @@ method variables-add-modify ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
-method do-add-modify-variable (
+method do-add-variable (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$vname, Entry :$vspec
 ) {
   my Bool $sts-ok = False;
 
   my Str $variable = $vname.get-text;
-  my Str $spec = $vspec.get-text;
 
-#`{{
-  if $variable ~~ any(|$!variables.keys) {
+  if !$variable {
+    $dialog.set-status("No variable name specified");
+  }
+
+  elsif $variable ~~ any(|$!variables.keys) {
     $dialog.set-status("Variable '$variable' already defined");
   }
 
   else {
-}}
-    $!variables{$variable} = $spec;
+    $!variables{$variable} = $vspec.get-text;
     $sts-ok = True;
-#  }
+  }
+
+  $dialog.destroy-dialog if $sts-ok;
+}
+
+#-------------------------------------------------------------------------------
+method do-modify-variable (
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname, Entry :$vspec
+) {
+  my Bool $sts-ok = False;
+
+  my Str $variable = $vname.get-text;
+
+  if !$variable {
+    $dialog.set-status("No variable name specified");
+  }
+
+  else {
+    $!variables{$variable} = $vspec.get-text;
+    $sts-ok = True;
+  }
 
   $dialog.destroy-dialog if $sts-ok;
 }
@@ -172,13 +197,6 @@ method set-entry( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
   $vname.set-text($l.get-text);
   $vspec.set-text($!variables{$l.get-text});
 }
-
-#`{{
-#-------------------------------------------------------------------------------
-method variables-modify ( N-Object $parameter ) {
-  note "$?LINE";
-}
-}}
 
 #-------------------------------------------------------------------------------
 method variables-delete ( N-Object $parameter ) {
