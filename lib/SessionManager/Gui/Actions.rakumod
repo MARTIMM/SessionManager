@@ -11,10 +11,23 @@ use Gnome::N::N-Object:api<2>;
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 
+use Gnome::Gtk4::ScrolledWindow:api<2>;
+use Gnome::Gtk4::ListBox:api<2>;
+use Gnome::Gtk4::ListBoxRow:api<2>;
+use Gnome::Gtk4::Label:api<2>;
+use Gnome::Gtk4::Entry:api<2>;
+use Gnome::Gtk4::T-enums:api<2>;
+
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Actions;
 
 constant ConfigPath = '/Config/actions.yaml';
+
+constant Entry = Gnome::Gtk4::Entry;
+constant ListBox = Gnome::Gtk4::ListBox;
+constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
+constant Label = Gnome::Gtk4::Label;
+constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 
 #-------------------------------------------------------------------------------
 my $instance;
@@ -102,13 +115,42 @@ method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method actions-create ( N-Object $parameter ) {
+method actions-create-modify ( N-Object $parameter ) {
   note "$?LINE";
-
+#`{{
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Create Action')
+    :dialog-header('Add Variable'), :add-statusbar
   ) {
+    #my GnomeTools::Gtk::DropDown $variables-dd .= new;
+    #$variables-dd.set-selection($!variables.keys.sort);
+    my ListBox $variables-lb .= new-listbox;
+    for $!variables.keys.sort -> $v {
+      with my Label $l .= new-with-mnemonic($v) {
+        .set-justify(GTK_JUSTIFY_LEFT);
+        .set-halign(GTK_ALIGN_START);
+      }
+      $variables-lb.append($l);
+    }
 
+    with my ScrolledWindow $sw .= new-scrolledwindow {
+      .set-child($variables-lb);
+      .set-size-request( 400, 200);
+    }
+
+    .add-content( 'Actions list', $sw);
+    .add-content( 'New variable', my Entry $vname .= new-entry);
+    .add-content( 'New specification', my Entry $vspec .= new-entry);
+
+    .add-button( self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec);
+    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+
+    $variables-lb.register-signal(
+      self, 'set-entry', 'row-selected', :$vname, :$vspec
+    );
+
+    .show-dialog;
+  }
+}}
     
 #`{{
     my Str $current-root = $!config.get-current-root;
@@ -143,8 +185,6 @@ method actions-create ( N-Object $parameter ) {
     .add-button( $dialog, 'destroy-dialog', 'Cancel');
 }}
 
-    .show-dialog;
-  }
 }
 
 #-------------------------------------------------------------------------------
@@ -180,11 +220,14 @@ method do-create-action (
   $dialog.destroy-dialog if $sts-ok;
 }
 
-
+#`{{
 #-------------------------------------------------------------------------------
-method actions-modify ( N-Object $parameter ) {
-  note "$?LINE";
+method set-entry( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
+  my Label() $l = $row.get-child;
+  $vname.set-text($l.get-text);
+  $vspec.set-text($!variables{$l.get-text});
 }
+}}
 
 #-------------------------------------------------------------------------------
 method actions-delete ( N-Object $parameter ) {
