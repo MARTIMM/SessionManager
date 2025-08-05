@@ -117,15 +117,14 @@ method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
 #-------------------------------------------------------------------------------
 method actions-create-modify ( N-Object $parameter ) {
   note "$?LINE";
-#`{{
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Add Variable'), :add-statusbar
   ) {
     #my GnomeTools::Gtk::DropDown $variables-dd .= new;
     #$variables-dd.set-selection($!variables.keys.sort);
     my ListBox $variables-lb .= new-listbox;
-    for $!variables.keys.sort -> $v {
-      with my Label $l .= new-with-mnemonic($v) {
+    for $!data-ids.keys.sort -> $id {
+      with my Label $l .= new-with-mnemonic($id) {
         .set-justify(GTK_JUSTIFY_LEFT);
         .set-halign(GTK_ALIGN_START);
       }
@@ -138,18 +137,35 @@ method actions-create-modify ( N-Object $parameter ) {
     }
 
     .add-content( 'Actions list', $sw);
-    .add-content( 'New variable', my Entry $vname .= new-entry);
-    .add-content( 'New specification', my Entry $vspec .= new-entry);
+    .add-content( 'Action id', my Entry $action-id .= new-entry);
+    .add-content( 'Title', my Entry $aspec-title .= new-entry);
+    .add-content( 'Command', my Entry $aspec-cmd .= new-entry);
+    .add-content( 'Path', my Entry $aspec-path .= new-entry);
+    .add-content( 'Wait', my Entry $aspec-wait .= new-entry);
+    .add-content( 'Logging', my Entry $aspec-log .= new-entry);
+    .add-content( 'Icon', my Entry $aspec-icon .= new-entry);
+    .add-content( 'Picture', my Entry $aspec-pic .= new-entry);
+#    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
+#    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
+#    .add-content( '', my Entry $aspec- .= new-entry);
 
-    .add-button( self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec);
+    .add-button( self, 'do-create-act', 'Create', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
+      :$aspec-icon, :$aspec-pic
+    );
+    .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
+      :$aspec-icon, :$aspec-pic
+    );
     .add-button( $dialog, 'destroy-dialog', 'Cancel');
 
     $variables-lb.register-signal(
-      self, 'set-entry', 'row-selected', :$vname, :$vspec
+      self, 'set-data', 'row-selected', :$dialog, :$action-id, :$aspec-title, 
+      :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
+      :$aspec-icon, :$aspec-pic
     );
 
     .show-dialog;
   }
+#`{{
 }}
     
 #`{{
@@ -188,13 +204,37 @@ method actions-create-modify ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
-method do-create-action (
-  GnomeTools::Gtk::Dialog :$dialog,
-  GnomeTools::Gtk::DropDown :$container-dd,
-  GnomeTools::Gtk::DropDown :$roots-dd
+method do-create-act (
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
+  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
+  Entry :$aspec-icon, Entry :$aspec-pic
 ) {
   my Bool $sts-ok = False;
   my Str $root-dir;
+
+  if !$action-id {
+    $dialog.set-status('An action id may not be empty');
+  }
+
+  else {
+    $sts-ok = True;
+  }
+  
+  $dialog.destroy-dialog if $sts-ok;
+}
+
+#-------------------------------------------------------------------------------
+method do-modify-act (
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
+  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
+  Entry :$aspec-icon, Entry :$aspec-pic
+) {
+  my Bool $sts-ok = False;
+  my Str $root-dir;
+
+  $dialog.destroy-dialog if $sts-ok;
+}
+
 
 
 #`{{
@@ -217,17 +257,15 @@ method do-create-action (
   }
 }}
 
-  $dialog.destroy-dialog if $sts-ok;
-}
-
-#`{{
 #-------------------------------------------------------------------------------
-method set-entry( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
+method set-data( ListBoxRow() $row, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
+  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
+  Entry :$aspec-icon, Entry :$aspec-pic) {
   my Label() $l = $row.get-child;
-  $vname.set-text($l.get-text);
-  $vspec.set-text($!variables{$l.get-text});
+  my Str $id = $action-id.set-text($l.get-text);
+
+#  .set-text($!variables{$l.get-text});
 }
-}}
 
 #-------------------------------------------------------------------------------
 method actions-delete ( N-Object $parameter ) {
