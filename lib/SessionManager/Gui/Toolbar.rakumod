@@ -25,6 +25,8 @@ use Gnome::Glib::T-error:api<2>;
 
 use Gnome::N::N-Object:api<2>;
 
+use GnomeTools::Gtk::Theming;
+
 #use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
@@ -48,6 +50,8 @@ constant Overlay = Gnome::Gtk4::Overlay;
 constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
 constant Texture = Gnome::Gdk4::Texture;
 
+has GnomeTools::Gtk::Theming $!theme;
+
 #-------------------------------------------------------------------------------
 submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
 
@@ -57,7 +61,7 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
 
   with self {
     .set-orientation($orientation);
-    $config.set-css( .get-style-context, 'session-toolbar');
+    $!theme.add-css-class( self, 'session-toolbar');
     .set-spacing(10);
 #    .set-vexpand-set(True);
 #    .set-vexpand(True);
@@ -73,6 +77,8 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
 
     self.append($session.session-button);
   }
+
+  $!theme .= new;
 
 #`{{
   # Then a series of session buttons

@@ -2,6 +2,8 @@ use v6.d;
 
 use NativeCall;
 
+use GnomeTools::Gtk::Theming;
+
 use SessionManager::Gui::Variables;
 use SessionManager::Config;
 use SessionManager::RunActionCommand;
@@ -64,13 +66,17 @@ has Str $!session-name;
 has Hash $!manage-session;
 has Grid $!session-manager-box;
 
+has GnomeTools::Gtk::Theming $!theme;
+
 has Mu $!app-window;
 
 #-------------------------------------------------------------------------------
 submethod BUILD (
   Str:D :$!session-name, Hash:D :$!manage-session,
   Grid :$!session-manager-box, Mu :$!app-window
-) { }
+) {
+  $!theme .= new;
+}
 
 #-------------------------------------------------------------------------------
 method session-button ( --> Widget ) {
@@ -78,8 +84,8 @@ method session-button ( --> Widget ) {
   my Widget $widget;
 
   my SessionManager::Config $config .= instance;
-#  my SSessionManager::Gui::Variables $v .= instance;
-#  $config.set-css( self.get-style-context, 'session-toolbar');
+#  my SessionManager::Gui::Variables $v .= instance;
+#  $!theme.add-css-class( self, 'session-toolbar');
 
   if $config.legacy {
     $widget = self.legacy-button(
@@ -89,11 +95,10 @@ method session-button ( --> Widget ) {
 
   else {
     with my Button $button .= new-button {
+      $!theme.add-css-class( $button, 'session-button');
       .set-label($!manage-session<title>);
   #    .set-child($picture);
   #    .set-tooltip-text("Session\n$!manage-session<title>");
-      $config.set-css( .get-style-context, 'session-button');
-
       .register-signal(
         self, 'session-actions', 'clicked',
         :$!session-name, :$!manage-session
@@ -216,7 +221,7 @@ method session-actions (
           $widget, $command.tooltip, $command.overlay-picture
         );
         $widget.register-signal( self, 'setup-run', 'clicked', :$id, :$command);
-        $config.set-css( $widget.get-style-context, 'session-action-button');
+        $!theme.add-css-class( $widget, 'session-action-button');
       }
 
       $session-buttons.append($widget);
@@ -490,7 +495,7 @@ method legacy-button (
   with my Button $button .= new-button {
     .set-child($picture);
     .set-tooltip-text($!manage-session<title>);
-    $config.set-css( .get-style-context, 'session-toolbar-button');
+    $!theme.add-css-class( $button, 'session-toolbar-button');
     .register-signal( self, $method, 'clicked', :$command, |%options);
   }
 
@@ -526,7 +531,7 @@ method legacy-button (
       .set-halign(GTK_ALIGN_END);
       .set-valign(GTK_ALIGN_END);
 
-      $config.set-css( .get-style-context, 'overlay-pic');
+      $!theme.add-css-class( $picture, 'overlay-pic');
     }
   }
 

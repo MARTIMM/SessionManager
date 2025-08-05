@@ -4,9 +4,11 @@ use SessionManager::Gui::Variables;
 use SessionManager::Gui::Actions;
 use SessionManager::ActionData;
 
-use Gnome::Gtk4::StyleContext:api<2>;
-use Gnome::Gtk4::CssProvider:api<2>;
-use Gnome::Gtk4::T-styleprovider:api<2>;
+#use Gnome::Gtk4::StyleContext:api<2>;
+#use Gnome::Gtk4::CssProvider:api<2>;
+#use Gnome::Gtk4::T-styleprovider:api<2>;
+
+use GnomeTools::Gtk::Theming;
 
 use Gnome::N::N-Object:api<2>;
 #use Gnome::N::X:api<2>;
@@ -24,7 +26,9 @@ my $instance;
 has Bool $.legacy = False;
 
 has Hash $!dispatch-config;
-has Gnome::Gtk4::CssProvider $!css-provider;
+#has Gnome::Gtk4::CssProvider $!css-provider;
+
+has GnomeTools::Gtk::Theming $!theme;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -54,15 +58,17 @@ note "$?LINE $*config-directory";
   }
 
   # Copy style sheet to data directory and load into program
-  my Str $css-file = $*config-directory ~ '/Config/manager.css';
-  %?RESOURCES<manager.css>.copy($css-file);
-  my $css-cnt = [~] '@import url("', $css-file, '");', "\n\n",
+  my Str $css-path = $*config-directory ~ '/Config/manager.css';
+  %?RESOURCES<manager.css>.copy($css-path);
+  my $css-cnt = [~] '@import url("', $css-path, '");', "\n\n",
                     %?RESOURCES<manager-changes.css>.slurp;
-  $css-file = $*config-directory ~ '/Config/manager-changes.css';
-  $css-file.IO.spurt($css-cnt);
+  $css-path = $*config-directory ~ '/Config/manager-changes.css';
+  $css-path.IO.spurt($css-cnt);
 #note $css-cnt;
-  $!css-provider .= new-cssprovider;
-  $!css-provider.load-from-path($css-file);
+#  $!css-provider .= new-cssprovider;
+#  $!css-provider.load-from-path($css-path);
+
+  $!theme .= new(:$css-path);
 
   self.load-config;
 }
@@ -162,6 +168,7 @@ method check-session-entries ( Array $raw-entries --> Array ) {
   $raw-entries
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method set-css ( N-Object $context, Str:D $css-class ) {
   return unless ?$css-class;
@@ -172,6 +179,7 @@ method set-css ( N-Object $context, Str:D $css-class ) {
   );
   $style-context.add-class($css-class);
 }
+}}
 
 #-------------------------------------------------------------------------------
 method set-legacy ( Bool $!legacy ) { }
