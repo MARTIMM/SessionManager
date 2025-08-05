@@ -126,8 +126,8 @@ method variables-add-modify ( N-Object $parameter ) {
     }
 
     .add-content( 'Variable list', $sw);
-    .add-content( 'New variable', my Entry $vname .= new-entry);
-    .add-content( 'New specification', my Entry $vspec .= new-entry);
+    .add-content( 'Variable name', my Entry $vname .= new-entry);
+    .add-content( 'Specification', my Entry $vspec .= new-entry);
 
     .add-button(
       self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec
@@ -140,7 +140,7 @@ method variables-add-modify ( N-Object $parameter ) {
     .add-button( $dialog, 'destroy-dialog', 'Cancel');
 
     $variables-lb.register-signal(
-      self, 'set-entry', 'row-selected', :$vname, :$vspec
+      self, 'set-data', 'row-selected', :$vname, :$vspec
     );
 
     .show-dialog;
@@ -192,7 +192,7 @@ method do-modify-variable (
 }
 
 #-------------------------------------------------------------------------------
-method set-entry( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
+method set-data( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
   my Label() $l = $row.get-child;
   $vname.set-text($l.get-text);
   $vspec.set-text($!variables{$l.get-text});
