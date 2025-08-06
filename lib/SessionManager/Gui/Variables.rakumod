@@ -30,6 +30,7 @@ my SessionManager::Gui::Variables $instance;
 
 has Hash $!variables;
 has Hash $!temporary;
+has Str $!original-name;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -107,7 +108,7 @@ method substitute-vars ( Str $t --> Str ) {
 #-------------------------------------------------------------------------------
 method variables-add-modify ( N-Object $parameter ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Add Variable'), :add-statusbar
+    :dialog-header('Modify Variable'), :add-statusbar
   ) {
     #my GnomeTools::Gtk::DropDown $variables-dd .= new;
     #$variables-dd.set-selection($!variables.keys.sort);
@@ -130,6 +131,10 @@ method variables-add-modify ( N-Object $parameter ) {
     .add-content( 'Specification', my Entry $vspec .= new-entry);
 
     .add-button(
+      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$vspec
+    );
+
+    .add-button(
       self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec
     );
 
@@ -145,6 +150,30 @@ method variables-add-modify ( N-Object $parameter ) {
 
     .show-dialog;
   }
+}
+
+#-------------------------------------------------------------------------------
+method do-rename-variable (
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname, Entry :$vspec
+) {
+  my Bool $sts-ok = False;
+
+  my Str $variable = $vname.get-text;
+
+  if !$variable {
+    $dialog.set-status("No variable name specified");
+  }
+
+  elsif $variable ~~ any(|$!variables.keys) {
+    $dialog.set-status("Variable '$variable' already defined");
+  }
+
+  else {
+    $!variables{$variable} = $!variables{$!original-name}:delete;
+    $sts-ok = True;
+  }
+
+  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
@@ -193,7 +222,9 @@ method do-modify-variable (
 
 #-------------------------------------------------------------------------------
 method set-data( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
+
   my Label() $l = $row.get-child;
+  $!original-name = $l.get-text;
   $vname.set-text($l.get-text);
   $vspec.set-text($!variables{$l.get-text});
 }
