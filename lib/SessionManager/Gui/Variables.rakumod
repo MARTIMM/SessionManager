@@ -170,7 +170,13 @@ method do-rename-variable (
 
   else {
     $!variables{$variable} = $!variables{$!original-name}:delete;
-    $sts-ok = True;
+    for $!variables.keys -> $variable-name {
+      my Str $on = $!original-name;
+      $!variables{$variable-name} ~~ s:g/ '$' $on /\$$variable/;
+    }
+    $dialog.set-status(
+      "Renamed successfully also in variables list and actions"
+    );
   }
 
   $dialog.destroy-dialog if $sts-ok;

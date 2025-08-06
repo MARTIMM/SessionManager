@@ -113,10 +113,18 @@ method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
 }
 
 #-------------------------------------------------------------------------------
+# Substitute changed variable in the raw actions Hash.
+method subst-vars ( Str $original-var, Str $new-var ) {
+  for $!data-ids.keys -> $id {
+    $!data-ids{$id}.subst-vars( $original-var, $new-var);
+  }
+}
+
+#-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method actions-create-modify ( N-Object $parameter ) {
-  note "$?LINE";
+method actions-create-modify ( N-Object $parameter, :$extra-data ) {
+  note "$?LINE ", $extra-data // '-';
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Add Variable'), :add-statusbar
   ) {

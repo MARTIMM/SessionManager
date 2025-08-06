@@ -207,3 +207,11 @@ note "$?LINE $!run-log";
     }
   }
 }
+
+#-------------------------------------------------------------------------------
+# Substitute changed variable in the raw actions Hash.
+method subst-vars ( Str $original-var, Str $new-var ) {
+  for $!raw-action.keys -> $type {
+    $!raw-action{$type} ~~ s:g/ '$' $original-var /\$$new-var/;
+  }
+}
