@@ -123,8 +123,8 @@ method subst-vars ( Str $original-var, Str $new-var ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method actions-create-modify ( N-Object $parameter, :$extra-data ) {
-  note "$?LINE ", $extra-data // '-';
+method actions-create-modify ( N-Object $parameter ) {
+  note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Add Variable'), :add-statusbar
   ) {
