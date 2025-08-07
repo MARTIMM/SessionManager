@@ -141,7 +141,7 @@ method actions-create-modify ( N-Object $parameter ) {
 
     with my ScrolledWindow $sw .= new-scrolledwindow {
       .set-child($variables-lb);
-      .set-size-request( 400, 200);
+      .set-size-request( 900, 200);
     }
 
     .add-content( 'Actions list', $sw);
@@ -266,13 +266,17 @@ method do-modify-act (
 }}
 
 #-------------------------------------------------------------------------------
-method set-data( ListBoxRow() $row, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
-  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
-  Entry :$aspec-icon, Entry :$aspec-pic) {
+method set-data(
+  ListBoxRow() $row, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
+  Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-path, Entry
+  :$aspec-wait, Entry :$aspec-log, Entry :$aspec-icon, Entry :$aspec-pic
+) {
   my Label() $l = $row.get-child;
-  my Str $id = $action-id.set-text($l.get-text);
+  my Str $id = $l.get-text;
+  $action-id.set-text($id);
 
-#  .set-text($!variables{$l.get-text});
+  my Hash $action-object = $!data-ids{$id}.raw-action;
+  $aspec-cmd.set-text($action-object<c>);
 }
 
 #-------------------------------------------------------------------------------
