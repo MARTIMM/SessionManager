@@ -72,33 +72,34 @@ method substitute-vars ( Str $t --> Str ) {
 
   my Str $text = $t;
 
-  while $text ~~ m/ '$' $<variable-name> = [<alpha> | \d | '-']+ / {
+  while $text ~~ m/ '$' $<variable-name> = <[\w-]>+ / {
     my Str $name = $/<variable-name>.Str;
-
+#note "$?LINE $name";
     # Look in the variables Hash
     if $!variables{$name}:exists {
-      $text ~~ s:g/ '$' $name /$!variables{$name}/;
+      $text ~~ s:g/ '$' $name (<-[\w-]>?) /$!variables{$name}$0/;
     }
 
     # Look in the temporary Hash
     elsif $!temporary{$name}:exists {
-      $text ~~ s:g/ '$' $name /$!temporary{$name}/;
+      $text ~~ s:g/ '$' $name (<-[\w-]>?) /$!temporary{$name}$0/;
     }
 
     # Look in the environment
     elsif %*ENV{$name}:exists {
-      $text ~~ s:g/ '$' $name /%*ENV{$name}/;
+      $text ~~ s:g/ '$' $name (<-[\w-]>?) /%*ENV{$name}$0/;
     }
 
     # Fail and block variable by substituting $ for __
     else {
       note "No substitution yet or variable \$$name" if $*verbose;
-      $text ~~ s:g/ '$' $name /___$name/;
+      $text ~~ s:g/ '$' $name (<-[\w-]>?) /___$name$0/;
     }
+#note "$?LINE $text";
   }
 
   # Not substituted names are replaced by the original variable format
-  $text ~~ s:g/ '___' ([<alpha> | <[0..9]> | '-']+) /\$$0/;
+  $text ~~ s:g/ '___' (<[\w-]>+) /\$$0/;
 
   $text
 }
@@ -106,7 +107,9 @@ method substitute-vars ( Str $t --> Str ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method variables-add-modify ( N-Object $parameter ) {
+method variables-add-modify (
+  N-Object $parameter, :extra-data($actions-object)
+) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Variable'), :add-statusbar
   ) {
@@ -131,7 +134,8 @@ method variables-add-modify ( N-Object $parameter ) {
     .add-content( 'Specification', my Entry $vspec .= new-entry);
 
     .add-button(
-      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$vspec
+      self, 'do-rename-variable', 'Rename',
+      :$dialog, :$vname, :$vspec, :$actions-object
     );
 
     .add-button(
@@ -154,7 +158,8 @@ method variables-add-modify ( N-Object $parameter ) {
 
 #-------------------------------------------------------------------------------
 method do-rename-variable (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname, Entry :$vspec
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
+  Entry :$vspec, :$actions-object
 ) {
   my Bool $sts-ok = False;
 
@@ -172,8 +177,10 @@ method do-rename-variable (
     $!variables{$variable} = $!variables{$!original-name}:delete;
     for $!variables.keys -> $variable-name {
       my Str $on = $!original-name;
-      $!variables{$variable-name} ~~ s:g/ '$' $on /\$$variable/;
+      $!variables{$variable-name} ~~ s:g/ '$' $on  (<-[\w-]>) /\$$variable$0/;
+      $actions-object.subst-vars( $!original-name, $variable);
     }
+
     $dialog.set-status(
       "Renamed successfully also in variables list and actions"
     );
