@@ -195,7 +195,7 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
         }
       }
 
-note "$?LINE $!run-log";
+#note "$?LINE $!run-log";
       $script-name.IO.unlink;
 
       # Remove environment variables
