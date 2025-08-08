@@ -268,15 +268,22 @@ method do-modify-act (
 #-------------------------------------------------------------------------------
 method set-data(
   ListBoxRow() $row, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
-  Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-path, Entry
-  :$aspec-wait, Entry :$aspec-log, Entry :$aspec-icon, Entry :$aspec-pic
+  Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-path,
+  Entry :$aspec-wait, Entry :$aspec-log, Entry :$aspec-icon,
+  Entry :$aspec-pic
 ) {
   my Label() $l = $row.get-child;
   my Str $id = $l.get-text;
   $action-id.set-text($id);
 
   my Hash $action-object = $!data-ids{$id}.raw-action;
-  $aspec-cmd.set-text($action-object<c>);
+  $aspec-title.set-text($action-object<t>) if ?$action-object<t>;
+  $aspec-cmd.set-text($action-object<c>) if ?$action-object<c>;
+  $aspec-path.set-text($action-object<p>) if ?$action-object<p>;
+  $aspec-wait.set-text($action-object<co><w>) if ?$action-object<co><w>;
+  $aspec-log.set-text($action-object<co><l>) if ?$action-object<co><l>;
+  $aspec-icon.set-text($action-object<o>) if ?$action-object<o>;
+  $aspec-pic.set-text($action-object<i>) if ?$action-object<i>;
 }
 
 #-------------------------------------------------------------------------------
