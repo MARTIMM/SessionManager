@@ -157,9 +157,14 @@ method actions-create-modify ( N-Object $parameter ) {
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
+    .add-button( self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
+      :$aspec-icon, :$aspec-pic
+    );
+
     .add-button( self, 'do-create-act', 'Create', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
     );
+
     .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
     );
@@ -212,16 +217,46 @@ method actions-create-modify ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
+method do-rename-act (
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
+  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
+  Entry :$aspec-icon, Entry :$aspec-pic
+) {
+  my Bool $sts-ok = False;
+  my Str $id = $action-id.get-text;
+
+  if !$id {
+    $dialog.set-status('An action id may not be empty');
+  }
+
+  elsif $id ~~ any(|$!data-ids.keys) {
+    $dialog.set-status('This action id is already defined');
+  }
+
+  else {
+    #!!!!!!!!
+    $dialog.set-status('Renamed successfully');
+#    $sts-ok = True;
+  }
+
+  $dialog.destroy-dialog if $sts-ok;
+}
+
+#-------------------------------------------------------------------------------
 method do-create-act (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
   Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
   my Bool $sts-ok = False;
-  my Str $root-dir;
+  my Str $id = $action-id.get-text;
 
-  if !$action-id {
+  if !$id {
     $dialog.set-status('An action id may not be empty');
+  }
+
+  elsif $id ~~ any(|$!data-ids.keys) {
+    $dialog.set-status('This action id is already defined');
   }
 
   else {
@@ -238,7 +273,6 @@ method do-modify-act (
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
   my Bool $sts-ok = False;
-  my Str $root-dir;
 
   $dialog.destroy-dialog if $sts-ok;
 }
