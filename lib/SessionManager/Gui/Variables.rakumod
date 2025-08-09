@@ -179,6 +179,7 @@ method do-rename-variable (
       my Str $on = $!original-name;
       $!variables{$variable-name} ~~ s:g/ '$' $on  (<-[\w-]>) /\$$variable$0/;
       $actions-object.subst-vars( $!original-name, $variable);
+      $!original-name = $variable;
     }
 
     $dialog.set-status(
