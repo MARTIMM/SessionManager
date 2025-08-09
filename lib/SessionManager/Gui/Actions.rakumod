@@ -33,7 +33,8 @@ constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 my $instance;
 
 has Hash $!data-ids;
-
+has Str $!original-id;
+has ListBoxRow $!original-row;
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   $!data-ids = %();
@@ -222,7 +223,6 @@ method do-rename-act (
   Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
-  my Bool $sts-ok = False;
   my Str $id = $action-id.get-text;
 
   if !$id {
@@ -234,12 +234,22 @@ method do-rename-act (
   }
 
   else {
-    #!!!!!!!!
-    $dialog.set-status('Renamed successfully');
-#    $sts-ok = True;
+    #TODO Rename references in sessions
+
+    # Change the row in the listbox
+    with my Label $l .= new-with-mnemonic($id) {
+      .set-justify(GTK_JUSTIFY_LEFT);
+      .set-halign(GTK_ALIGN_START);
+    }
+    $!original-row.set-child($l);
+
+    # Set original
+    $!original-id = $id;
+
+    $dialog.set-status('Renamed everything successfully');
   }
 
-  $dialog.destroy-dialog if $sts-ok;
+  # Keep dialog open for other edits}
 }
 
 #-------------------------------------------------------------------------------
@@ -306,8 +316,12 @@ method set-data(
   Entry :$aspec-wait, Entry :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic
 ) {
+  # Needed to rename content of row
+  $!original-row = $row;
+
   my Label() $l = $row.get-child;
   my Str $id = $l.get-text;
+  $!original-id = $id;
   $action-id.set-text($id);
 
   my Hash $action-object = $!data-ids{$id}.raw-action;
