@@ -178,20 +178,18 @@ method do-rename-variable (
       my Str $on = $!original-name;
       $!variables{$variable-name} ~~ s:g/ '$' $on  (<-[\w-]>) /\$$variable$0/;
       $actions-object.subst-vars( $!original-name, $variable);
-
-      # Change the row in the listbox
-      with my Label $l .= new-with-mnemonic($variable) {
-        .set-justify(GTK_JUSTIFY_LEFT);
-        .set-halign(GTK_ALIGN_START);
-      }
-      $!original-row.set-child($l);
-
-      $!original-name = $variable;
     }
 
-    $dialog.set-status(
-      "Renamed successfully also in variable list and actions"
-    );
+    # Change the row in the listbox
+    with my Label $l .= new-with-mnemonic($variable) {
+      .set-justify(GTK_JUSTIFY_LEFT);
+      .set-halign(GTK_ALIGN_START);
+    }
+    $!original-row.set-child($l);
+
+    $!original-name = $variable;
+
+    $dialog.set-status("Renamed successfully everything");
   }
 
   # Keep dialog open for other edits
