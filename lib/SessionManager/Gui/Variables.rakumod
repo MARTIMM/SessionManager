@@ -161,8 +161,6 @@ method do-rename-variable (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
   Entry :$vspec, :$actions-object
 ) {
-  my Bool $sts-ok = False;
-
   my Str $variable = $vname.get-text;
 
   if !$variable {
@@ -187,8 +185,8 @@ method do-rename-variable (
     );
   }
 
-  $dialog.destroy-dialog if $sts-ok;
-}
+  # Keep dialog open for other edits
+ }
 
 #-------------------------------------------------------------------------------
 method do-add-variable (
