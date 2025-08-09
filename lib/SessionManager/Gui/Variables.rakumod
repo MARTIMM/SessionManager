@@ -31,6 +31,7 @@ my SessionManager::Gui::Variables $instance;
 has Hash $!variables;
 has Hash $!temporary;
 has Str $!original-name;
+has ListBoxRow $!original-row;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -158,8 +159,8 @@ method variables-add-modify (
 
 #-------------------------------------------------------------------------------
 method do-rename-variable (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
-  Entry :$vspec, :$actions-object
+  GnomeTools::Gtk::Dialog :$dialog, ListBoxRow() :$row,
+  Entry :$vname, Entry :$vspec, :$actions-object
 ) {
   my Str $variable = $vname.get-text;
 
@@ -177,11 +178,19 @@ method do-rename-variable (
       my Str $on = $!original-name;
       $!variables{$variable-name} ~~ s:g/ '$' $on  (<-[\w-]>) /\$$variable$0/;
       $actions-object.subst-vars( $!original-name, $variable);
+
+      # Change the row in the listbox
+      with my Label $l .= new-with-mnemonic($variable) {
+        .set-justify(GTK_JUSTIFY_LEFT);
+        .set-halign(GTK_ALIGN_START);
+      }
+      $!original-row.set-child($l);
+
       $!original-name = $variable;
     }
 
     $dialog.set-status(
-      "Renamed successfully also in variables list and actions"
+      "Renamed successfully also in variable list and actions"
     );
   }
 
@@ -234,6 +243,9 @@ method do-modify-variable (
 
 #-------------------------------------------------------------------------------
 method set-data( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
+
+  # Needed to rename content of row
+  $!original-row = $row;
 
   my Label() $l = $row.get-child;
   $!original-name = $l.get-text;
