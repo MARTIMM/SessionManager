@@ -163,6 +163,7 @@ Config -* Application
 Application *-- Toolbar
 Toolbar *-- "*" Session
 Config --* Toolbar
+Sessions *- Session
 Session *- "*" CommandButton
 Session *-- Actions
 
