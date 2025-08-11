@@ -4,6 +4,7 @@ use NativeCall;
 
 use SessionManager::Config;
 use SessionManager::Gui::Session;
+use SessionManager::Gui::Sessions;
 
 #use Gnome::Gtk4::ApplicationWindow:api<2>;
 #use Gnome::Gtk4::ScrolledWindow:api<2>;
@@ -68,10 +69,11 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
 #    .set-valign(GTK_ALIGN_FILL);
   }
 
-  my Hash $sessions = $config.get-sessions;
-  for $sessions.keys.sort -> $session-name {
+  my SessionManager::Gui::Sessions $sessions .= instance;
+  my Hash $ss = $sessions.get-sessions;
+  for $ss.keys.sort -> $session-name {
     my SessionManager::Gui::Session $session .= new(
-      :$session-name, :manage-session($sessions{$session-name}),
+      :$session-name, :manage-session($ss{$session-name}),
       :$session-manager-box, :$app-window
     );
 

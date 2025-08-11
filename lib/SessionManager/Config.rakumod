@@ -2,6 +2,7 @@ use v6.d;
 
 use SessionManager::Gui::Variables;
 use SessionManager::Gui::Actions;
+use SessionManager::Gui::Sessions;
 use SessionManager::ActionData;
 
 #use Gnome::Gtk4::StyleContext:api<2>;
@@ -32,8 +33,6 @@ has GnomeTools::Gtk::Theming $!theme;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
-#  $!action-refs = %();
-#  $!variables = %();
 note "$?LINE $*config-directory";
 
   mkdir $*config-directory ~ '/Images', 0o700
@@ -41,6 +40,8 @@ note "$?LINE $*config-directory";
 
   # It is supposed to copy files to a controllable location See also issue #5746
   # at https://github.com/rakudo/rakudo/issues/5746.
+  # Are used in the css file and must be accessable in a known path. Rest can
+  # be retrieved from the resources.
   my Str $png-file;
   for <
     diamond-steel-floor.jpg brushed-light.jpg brushed-dark.jpg
@@ -48,11 +49,6 @@ note "$?LINE $*config-directory";
     bookmark.png fastforward.png
   > -> $i {
 
-  # Are used in the css file and must be accessable in a known path. Rest can
-  # be retrieved from the resources.
-#  for <
-#    brushed-dark.jpg brushed-copper.jpg
-#  > -> $i {
     $png-file = [~] $*config-directory, '/Images/', $i;
     %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
   }
@@ -64,10 +60,6 @@ note "$?LINE $*config-directory";
                     %?RESOURCES<manager-changes.css>.slurp;
   $css-path = $*config-directory ~ '/Config/manager-changes.css';
   $css-path.IO.spurt($css-cnt);
-#note $css-cnt;
-#  $!css-provider .= new-cssprovider;
-#  $!css-provider.load-from-path($css-path);
-
   $!theme .= new(:$css-path);
 
   self.load-config;
@@ -108,19 +100,25 @@ method load-config ( ) {
     }
   }
 
-#  $variables.save;
 
-  # Check and load separate session descriptions, variables are now possible
+  # Check session descriptions from config, variables are now possible
+  my SessionManager::Gui::Sessions $sessions .= instance;
+  for $!dispatch-config<sessions>.keys -> $name {
+    $sessions.add-session( $name, $!dispatch-config<sessions>{$name});
+  }
+
+  # Check and load separate session descriptions
   if $!dispatch-config<part-references>:exists {
     my Hash $ref := $!dispatch-config<part-references>;
     for $ref.kv -> $name, $file is copy {
       $file = $variables.substitute-vars($file);
       $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
+      $sessions.load-session( $name, $file);
     }
   }
 
-  my SessionManager::Gui::Actions $actions .= instance;
   # Check and load separate action descriptions
+  my SessionManager::Gui::Actions $actions .= instance;
   if $!dispatch-config<action-references>:exists {
     for @($!dispatch-config<action-references>) -> $file is copy {
       $file = $variables.substitute-vars($file);
@@ -139,13 +137,16 @@ method check-actions ( ) {
 
 #  $!dispatch-config<toolbar> =
 #    self.check-session-entries($!dispatch-config<toolbar>);
+  my SessionManager::Gui::Sessions $sessions .= instance;
 
-  for $!dispatch-config<sessions>.keys -> $name {
-    my Hash $sessions = $!dispatch-config<sessions>{$name};
+#  for $!dispatch-config<sessions>.keys -> $name {
+#    my Hash $sessions = $!dispatch-config<sessions>{$name};
+  for $sessions.get-session-names -> $name {
+    my Hash $session = $sessions.get-session($name);
     for 1 .. 10 -> $level {
-      last unless $sessions{'group' ~ $level}<actions>:exists;
-      $sessions{'group' ~ $level}<actions> =
-        self.check-session-entries($sessions{'group' ~ $level}<actions>);
+      last unless $session{'group' ~ $level}<actions>:exists;
+      $session{'group' ~ $level}<actions> =
+        self.check-session-entries($session{'group' ~ $level}<actions>);
     }
   }
 }
@@ -205,11 +206,6 @@ method get-window-title ( --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
-method get-sessions ( --> Hash ) {
-  $!dispatch-config<sessions> // %()
-}
-
-#-------------------------------------------------------------------------------
 method set-path ( Str $file = '' --> Str ) {
 #note "$?LINE $file, $file.index('/')";
   my Str $path = ($file.index('/') // -1) == 0
@@ -222,6 +218,13 @@ method set-path ( Str $file = '' --> Str ) {
 }
 
 =finish
+
+#-------------------------------------------------------------------------------
+method get-sessions ( --> Hash ) {
+  my SessionManager::Gui::Sessions $sessions .= instance;
+  $sessions.get-sessions
+  #$!dispatch-config<sessions> // %()
+}
 
 #-------------------------------------------------------------------------------
 method get-session-title ( Str $name --> Str ) {
