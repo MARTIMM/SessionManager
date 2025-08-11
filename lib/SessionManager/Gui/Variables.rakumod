@@ -19,14 +19,13 @@ use Gnome::Gtk4::T-enums:api<2>;
 unit class SessionManager::Gui::Variables;
 
 constant ConfigPath = '/Config/variables.yaml';
+my SessionManager::Gui::Variables $instance;
 
 constant Entry = Gnome::Gtk4::Entry;
 constant ListBox = Gnome::Gtk4::ListBox;
 constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
-
-my SessionManager::Gui::Variables $instance;
 
 has Hash $!variables;
 has Hash $!temporary;
