@@ -4,6 +4,7 @@ use NativeCall;
 
 use SessionManager::Gui::Actions;
 use SessionManager::Gui::Variables;
+use SessionManager::Gui::Sessions;
 
 use Gnome::Gio::Menu:api<2>;
 use Gnome::Gio::MenuItem:api<2>;
@@ -24,16 +25,19 @@ has $!main is required;
 has Array $!menus;
 has SessionManager::Gui::Actions $!action-edit;
 has SessionManager::Gui::Variables $!variable-edit;
+has SessionManager::Gui::Sessions $!session-edit;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( :$!main ) {
   $!application = $!main.application;
   $!action-edit .= instance;
   $!variable-edit .= instance;
+  $!session-edit .= instance;
 
   $!bar .= new-menu;
   $!menus = [
     self.make-menu( :menu-name<File>, :shortcut),
+    self.make-menu( :menu-name<Sessions>, :shortcut),
     self.make-menu( :menu-name<Actions>, :shortcut),
     self.make-menu( :menu-name<Variables>, :shortcut),
   ];
@@ -57,16 +61,25 @@ method make-menu (
       );
     }
 
+    when 'Sessions' {
+      self.bind-action(
+        $menu, $menu-name, $!session-edit, 'Create Modify',
+#        :icon<view-refresh>, :tooltip('Refresh sidebar')
+      );
+
+      self.bind-action(
+        $menu, $menu-name, $!session-edit, 'Delete'
+#        , :icon<application-exit>,
+#        :tooltip('Quit application')
+      );
+    }
+
     when 'Actions' {
       self.bind-action(
         $menu, $menu-name, $!action-edit, 'Create Modify',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
-#      self.bind-action(
-#        $menu, $menu-name, $!action-edit, 'Modify'
-#        , :icon<application-exit>,
-#        :tooltip('Quit application')
-#      );
+
       self.bind-action(
         $menu, $menu-name, $!action-edit, 'Delete'
 #        , :icon<application-exit>,
@@ -80,11 +93,7 @@ method make-menu (
         :extra-data($!action-edit),
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
-#      self.bind-action(
-#        $menu, $menu-name, $!variable-edit, 'Modify'
-#        , :icon<application-exit>,
-#        :tooltip('Quit application')
-#      );
+
       self.bind-action(
         $menu, $menu-name, $!variable-edit, 'Delete'
 #        , :icon<application-exit>,
