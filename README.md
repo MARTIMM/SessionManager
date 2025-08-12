@@ -21,9 +21,10 @@ In the case of a programming task;
   * start a filemanager with tabs opened to directories
   * start a reader with some language documentation, etcetera
 
-There is only one dispatcher instance running. All other instances started later will communicate with the main running program. This might replace the current view with another depending on provided configuration.
+There is only one session manager instance running. All other instances started later will communicate with the main running program. This might replace the current view with another depending on provided configuration.
 
-The default config directory will be at `~/.config/io.github.martimm.dispatcher` where also some program images and style files are stored.
+<!--
+The default config directory will be at `~/.config/io.github.martimm.sessionmanager` where also some program images and style files are stored.
 
 Example useage;
 ```
