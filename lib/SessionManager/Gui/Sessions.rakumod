@@ -16,6 +16,7 @@ unit class SessionManager::Gui::Sessions;
 constant ConfigPath = '/Config/sessions.yaml';
 my SessionManager::Gui::Sessions $instance;
 
+constant Dialog = GnomeTools::Gtk::Dialog;
 constant DropDown = GnomeTools::Gtk::DropDown;
 constant Entry = Gnome::Gtk4::Entry;
 
@@ -72,49 +73,46 @@ method save ( ) {
 method sessions-create-modify (
   N-Object $parameter, :extra-data($actions-object)
 ) {
-  with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Modify Variable'), :add-statusbar
+  with my Dialog $dialog .= new(
+    :dialog-header('Modify Session'), :add-statusbar
   ) {
     my DropDown $groups-dd .= new;
+    my DropDown $sessions-dd .= new;
     my Entry $grouptitle-e .= new-entry;
     my Entry $sessiontitle-e .= new-entry;
 
-    # Fill the sessions list
-    my DropDown $sessions-dd .= new;
-    $sessions-dd.set-selection($!sessions.keys.sort);
+    # Trap changes in the sessions list
     $sessions-dd.trap-dropdown-changes(
       self, 'set-grouplist', :$sessions-dd, :$groups-dd,
       :$sessiontitle-e, :$grouptitle-e
     );
 
-    # Get the currently selected sessions name
-    my Str $session-name = $sessions-dd.get-text;
-
-    # Set title text
-    $sessiontitle-e.set-text($!sessions{$session-name}<title> // '');
-note "$?LINE Session name: $session-name, ";
-
-#    self.set-grouplist( N-Object, :$sessions-dd, :$groups-dd, :$grouptitle-e);
+    # Trap changes in the group list
     $groups-dd.trap-dropdown-changes(
-      self, 'set-group-title', :$groups-dd, :$grouptitle-e
+      self, 'set-grouptitle', :$sessions-dd, :$groups-dd, :$grouptitle-e
     );
 
-#    $sessions-dd.register-signal( self, 'set-groups', 'selected', :$groups-dd);
-#!!!!!!!!!!!!!!!!!!!!!!!!!    
-#    $sessions-dd.set-selection($!$sessions.keys.sort);
-    .add-content( 'Session title', $sessiontitle-e);
-    .add-content( 'Session list', $sessions-dd);
-    .add-content( 'Group title', $grouptitle-e);
-    .add-content( 'Groups in session', $groups-dd);
-#`{{
-    .add-content( 'Groups list', my Entry $vname .= new-entry);
-    .add-content( 'Actions list', my Entry $vspec .= new-entry);
+    # Fill the sessions list. Triggers the .set-grouplist() and
+    # .set-grouptitle() call back routines.
+    $sessions-dd.set-selection($!sessions.keys.sort);
+
+    # Add entries and dropdown widgets
+    .add-content( 'Current session', $sessions-dd, :2columns);
+    .add-content( 'Session title', $sessiontitle-e), :2columns;
+    .add-content( 'Current group', $groups-dd, :2columns);
+    .add-content( 'Group title', $grouptitle-e, :2columns);
+
+    # Add buttons
+#    .add-button(
+#      self, 'save-sessiontitle', 'Set session title',
+#      :$dialog, :$sessiontitle-e, :$sessions-dd
+#    );
 
     .add-button(
-      self, 'do-rename-session', 'Rename',
-      :$dialog, :$vname, :$vspec, :$actions-object
+      self, 'save-session', 'Save session',
+      :$dialog, :$sessions-dd, :$groups-dd, :$sessiontitle-e, :$grouptitle-e
     );
-  }}
+
     .add-button(
       self, 'do-add-session', 'Add', :$dialog,
     );
@@ -127,11 +125,9 @@ note "$?LINE Session name: $session-name, ";
       self, 'do-add-group', 'Add Group', :$dialog, 
     );
 
-    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+    .add-button( $dialog, 'destroy-dialog', 'Done');
 
-    $sessions-dd.register-signal(
-      self, 'set-data', 'row-selected',
-    );
+#    $sessions-dd.register-signal( self, 'set-data', 'row-selected');
 
     .show-dialog;
   }
@@ -143,13 +139,12 @@ method set-grouplist (
   Entry :$sessiontitle-e, Entry :$grouptitle-e
 ) {
   my Str $session-name = $sessions-dd.get-text;
-note "$?LINE Session name: $session-name, ", $!sessions{$session-name}.keys.grep(/group/);
   $groups-dd.set-selection($!sessions{$session-name}.keys.grep(/^group/).sort);
-  $grouptitle-e.set-text(
-    $!sessions{$session-name}{$groups-dd.get-text}<title> // ''
-  );
 
-    $sessiontitle-e.set-text($!sessions{$session-name}<title> // '');
+  my Str $group-name = $groups-dd.get-text;
+  $grouptitle-e.set-text($!sessions{$session-name}{$group-name}<title> // '');
+
+  $sessiontitle-e.set-text($!sessions{$session-name}<title> // '');
 }
 
 #------------------------------------------------------------------------------
@@ -157,8 +152,20 @@ method set-grouptitle (
   N-Object $, DropDown :$sessions-dd, DropDown :$groups-dd, Entry :$grouptitle-e
 ) {
   my Str $session-name = $sessions-dd.get-text;
-note "$?LINE S name: $session-name, ", $!sessions{$session-name}.keys.grep(/group/);
-   $grouptitle-e.set-text($!sessions{$session-name}<title>//'');
+  my Str $group-name = $groups-dd.get-text;
+  $grouptitle-e.set-text($!sessions{$session-name}{$group-name}<title> // '');
+}
+
+#-------------------------------------------------------------------------------
+method save-session (
+  Dialog :$dialog, DropDown :$sessions-dd, DropDown :$groups-dd,
+  Entry :$sessiontitle-e, Entry :$grouptitle-e,
+) {
+  my Str $session-name = $sessions-dd.get-text;
+  $!sessions{$session-name}<title> = $sessiontitle-e.get-text;
+
+  my Str $group-name = $groups-dd.get-text;
+  $!sessions{$session-name}{$group-name}<title> = $grouptitle-e.get-text;
 }
 
 #-------------------------------------------------------------------------------
