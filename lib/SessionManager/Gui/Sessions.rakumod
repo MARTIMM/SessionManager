@@ -2,10 +2,13 @@ v6.d;
 
 use YAMLish;
 
+use SessionManager::Gui::Actions;
+
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 
 use Gnome::Gtk4::Entry:api<2>;
+#use Gnome::Gtk4::ScrolledWindow:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -19,6 +22,8 @@ my SessionManager::Gui::Sessions $instance;
 constant Dialog = GnomeTools::Gtk::Dialog;
 constant DropDown = GnomeTools::Gtk::DropDown;
 constant Entry = Gnome::Gtk4::Entry;
+constant Actions = SessionManager::Gui::Actions;
+#constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 
 has Hash $!sessions;
 
@@ -73,6 +78,8 @@ method save ( ) {
 method sessions-create-modify (
   N-Object $parameter, :extra-data($actions-object)
 ) {
+  my Actions $actions .= instance;
+
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session'), :add-statusbar
   ) {
@@ -101,6 +108,10 @@ method sessions-create-modify (
     .add-content( 'Session title', $sessiontitle-e), :2columns;
     .add-content( 'Current group', $groups-dd, :2columns);
     .add-content( 'Group title', $grouptitle-e, :2columns);
+    .add-content(
+      'Actions list',
+       $actions.scrollable-list( self, 'select-action'),
+       :2columns, :2rows);
 
     # Add buttons
 #    .add-button(
@@ -166,6 +177,13 @@ method save-session (
 
   my Str $group-name = $groups-dd.get-text;
   $!sessions{$session-name}{$group-name}<title> = $grouptitle-e.get-text;
+}
+
+#-------------------------------------------------------------------------------
+method select-action (
+#  Dialog :$dialog, DropDown :$sessions-dd, DropDown :$groups-dd,
+#  Entry :$sessiontitle-e, Entry :$grouptitle-e,
+) {
 }
 
 #-------------------------------------------------------------------------------
