@@ -127,7 +127,7 @@ method subst-vars ( Str $original-var, Str $new-var ) {
 method actions-create-modify ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Add Variable'), :add-statusbar
+    :dialog-header('Modify Action'), :add-statusbar
   ) {
     #my GnomeTools::Gtk::DropDown $variables-dd .= new;
     #$variables-dd.set-selection($!variables.keys.sort);
@@ -145,7 +145,7 @@ method actions-create-modify ( N-Object $parameter ) {
       .set-size-request( 900, 200);
     }
 
-    .add-content( 'Actions list', $sw);
+    .add-content( 'Current actions', $sw);
     .add-content( 'Action id', my Entry $action-id .= new-entry);
     .add-content( 'Title', my Entry $aspec-title .= new-entry);
     .add-content( 'Command', my Entry $aspec-cmd .= new-entry);
@@ -157,6 +157,13 @@ method actions-create-modify ( N-Object $parameter ) {
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
+
+    # Set placeholder texts when optional
+    $aspec-path.set-placeholder-text('optional');
+    $aspec-wait.set-placeholder-text('optional');
+    $aspec-log.set-placeholder-text('optional');
+    $aspec-icon.set-placeholder-text('optional');
+    $aspec-pic.set-placeholder-text('optional');
 
     .add-button( self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
@@ -328,8 +335,8 @@ method set-data(
   $aspec-title.set-text($action-object<t>) if ?$action-object<t>;
   $aspec-cmd.set-text($action-object<c>) if ?$action-object<c>;
   $aspec-path.set-text($action-object<p>) if ?$action-object<p>;
-  $aspec-wait.set-text($action-object<co><w>) if ?$action-object<co><w>;
-  $aspec-log.set-text($action-object<co><l>) if ?$action-object<co><l>;
+  $aspec-wait.set-text($action-object<w>) if ?$action-object<w>;
+  $aspec-log.set-text($action-object<l>) if ?$action-object<l>;
   $aspec-icon.set-text($action-object<o>) if ?$action-object<o>;
   $aspec-pic.set-text($action-object<i>) if ?$action-object<i>;
 }
