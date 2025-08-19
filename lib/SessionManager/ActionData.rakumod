@@ -64,18 +64,16 @@ submethod BUILD ( Str :$!id = '', Hash:D :$!raw-action ) {
   # Set command to run
   if ? $!raw-action<c> {
     $!cmd = $!variables.substitute-vars($!raw-action<c>);
-    $!cmd-logging = False;    # $!raw-action<co><l>
-    $!cmd-finish-wait = 10;   # $!raw-action<co><w>
-    $!cmd-background = True;  # $!raw-action<co><b>
-    if ?$!raw-action<co> {
-      if $!raw-action<co><l>.defined {
-        $!cmd-logging = ? $!raw-action<co><l>;
-        $!cmd-background = False;
-      }
-
-      $!cmd-finish-wait = $!raw-action<co><w> if $!raw-action<co><w>.defined;
-#      $!cmd-background = ? $!raw-action<co><b> if $!raw-action<co><b>.defined;
+    $!cmd-logging = False;    # $!raw-action<l>
+    $!cmd-finish-wait = 10;   # $!raw-action<w>
+    $!cmd-background = True;  # $!raw-action<b>
+    if $!raw-action<l>.defined {
+      $!cmd-logging = ? $!raw-action<l>;
+      $!cmd-background = False;
     }
+
+    $!cmd-finish-wait = $!raw-action<w> if $!raw-action<w>.defined;
+#    $!cmd-background = ? $!raw-action<b> if $!raw-action<b>.defined;
   }
 
   # Set icon on the button.
