@@ -129,34 +129,14 @@ method actions-create-modify ( N-Object $parameter ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Action'), :add-statusbar
   ) {
-    #my GnomeTools::Gtk::DropDown $variables-dd .= new;
-    #$variables-dd.set-selection($!variables.keys.sort);
-    my ListBox $variables-lb .= new-listbox;
-    for $!data-ids.keys.sort -> $id {
-      with my Label $l .= new-with-mnemonic($id) {
-        .set-justify(GTK_JUSTIFY_LEFT);
-        .set-halign(GTK_ALIGN_START);
-      }
-      $variables-lb.append($l);
-    }
-
-    with my ScrolledWindow $sw .= new-scrolledwindow {
-      .set-child($variables-lb);
-      .set-size-request( 900, 200);
-    }
-
-    .add-content( 'Current actions', $sw);
-    .add-content( 'Action id', my Entry $action-id .= new-entry);
-    .add-content( 'Title', my Entry $aspec-title .= new-entry);
-    .add-content( 'Command', my Entry $aspec-cmd .= new-entry);
-    .add-content( 'Path', my Entry $aspec-path .= new-entry);
-    .add-content( 'Wait', my Entry $aspec-wait .= new-entry);
-    .add-content( 'Logging', my Entry $aspec-log .= new-entry);
-    .add-content( 'Icon', my Entry $aspec-icon .= new-entry);
-    .add-content( 'Picture', my Entry $aspec-pic .= new-entry);
-#    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
-#    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
-#    .add-content( '', my Entry $aspec- .= new-entry);
+    my Entry $action-id .= new-entry;
+    my Entry $aspec-title .= new-entry;
+    my Entry $aspec-cmd .= new-entry;
+    my Entry $aspec-path .= new-entry;
+    my Entry $aspec-wait .= new-entry;
+    my Entry $aspec-log .= new-entry;
+    my Entry $aspec-icon .= new-entry;
+    my Entry $aspec-pic .= new-entry;
 
     # Set placeholder texts when optional
     $aspec-path.set-placeholder-text('optional');
@@ -164,6 +144,25 @@ method actions-create-modify ( N-Object $parameter ) {
     $aspec-log.set-placeholder-text('optional');
     $aspec-icon.set-placeholder-text('optional');
     $aspec-pic.set-placeholder-text('optional');
+
+    my ScrolledWindow $sw = self.scrollable-list(
+      self, 'set-data',
+      :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
+      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
+    );
+
+    .add-content( 'Current actions', $sw);
+    .add-content( 'Action id', $action-id);
+    .add-content( 'Title', $aspec-title);
+    .add-content( 'Command', $aspec-cmd);
+    .add-content( 'Path', $aspec-path);
+    .add-content( 'Wait', $aspec-wait);
+    .add-content( 'Logging', $aspec-log);
+    .add-content( 'Icon', $aspec-icon);
+    .add-content( 'Picture', $aspec-pic);
+#    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
+#    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
+#    .add-content( '', my Entry $aspec- .= new-entry);
 
     .add-button( self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
@@ -177,17 +176,15 @@ method actions-create-modify ( N-Object $parameter ) {
       :$aspec-icon, :$aspec-pic
     );
     .add-button( $dialog, 'destroy-dialog', 'Cancel');
-
+#`{{
     $variables-lb.register-signal(
       self, 'set-data', 'row-selected', :$dialog, :$action-id, :$aspec-title, 
       :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
     );
-
+}}
     .show-dialog;
   }
-#`{{
-}}
     
 #`{{
     my Str $current-root = $!config.get-current-root;
@@ -346,3 +343,23 @@ method actions-delete ( N-Object $parameter ) {
   note "$?LINE";
 }
 
+#-------------------------------------------------------------------------------
+method scrollable-list ( $object, $method, *%options --> ScrolledWindow ) {
+
+  my ListBox $list-lb .= new-listbox;
+  for $!data-ids.keys.sort -> $id {
+    with my Label $l .= new-with-mnemonic($id) {
+      .set-justify(GTK_JUSTIFY_LEFT);
+      .set-halign(GTK_ALIGN_START);
+    }
+    $list-lb.append($l);
+    $list-lb.register-signal( $object, $method, 'row-selected', |%options);
+  }
+
+  with my ScrolledWindow $sw .= new-scrolledwindow {
+    .set-child($list-lb);
+    .set-size-request( 850, 300);
+  }
+  
+  $sw
+}
