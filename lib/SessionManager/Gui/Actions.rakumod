@@ -344,9 +344,13 @@ method actions-delete ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
-method scrollable-list ( $object, $method, *%options --> ScrolledWindow ) {
+method scrollable-list (
+  $object, $method, Bool :$multi = False, *%options --> ScrolledWindow
+) {
 
   my ListBox $list-lb .= new-listbox;
+  $list-lb.set-selection-mode(GTK_SELECTION_MULTIPLE) if $multi;
+
   for $!data-ids.keys.sort -> $id {
     with my Label $l .= new-with-mnemonic($id) {
       .set-justify(GTK_JUSTIFY_LEFT);
