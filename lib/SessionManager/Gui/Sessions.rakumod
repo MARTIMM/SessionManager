@@ -9,6 +9,8 @@ use GnomeTools::Gtk::DropDown;
 
 use Gnome::Gtk4::Entry:api<2>;
 #use Gnome::Gtk4::ScrolledWindow:api<2>;
+use Gnome::Gtk4::ListBox:api<2>;
+use Gnome::Gtk4::ListBoxRow:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -24,6 +26,7 @@ constant DropDown = GnomeTools::Gtk::DropDown;
 constant Entry = Gnome::Gtk4::Entry;
 constant Actions = SessionManager::Gui::Actions;
 #constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 
 has Hash $!sessions;
 
@@ -110,7 +113,7 @@ method sessions-create-modify (
     .add-content( 'Group title', $grouptitle-e, :2columns);
     .add-content(
       'Actions list',
-       $actions.scrollable-list( self, 'select-action'),
+       $actions.scrollable-list( self, 'select-action', :multi),
        :2columns, :2rows);
 
     # Add buttons
@@ -181,6 +184,7 @@ method save-session (
 
 #-------------------------------------------------------------------------------
 method select-action (
+  ListBoxRow() $row, 
 #  Dialog :$dialog, DropDown :$sessions-dd, DropDown :$groups-dd,
 #  Entry :$sessiontitle-e, Entry :$grouptitle-e,
 ) {
