@@ -6,11 +6,12 @@ use SessionManager::Gui::Actions;
 
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
+use GnomeTools::Gtk::ListBox;
 
 use Gnome::Gtk4::Entry:api<2>;
-#use Gnome::Gtk4::ScrolledWindow:api<2>;
-use Gnome::Gtk4::ListBox:api<2>;
-use Gnome::Gtk4::ListBoxRow:api<2>;
+use Gnome::Gtk4::ScrolledWindow:api<2>;
+#use Gnome::Gtk4::ListBox:api<2>;
+#use Gnome::Gtk4::ListBoxRow:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -25,8 +26,9 @@ constant Dialog = GnomeTools::Gtk::Dialog;
 constant DropDown = GnomeTools::Gtk::DropDown;
 constant Entry = Gnome::Gtk4::Entry;
 constant Actions = SessionManager::Gui::Actions;
-#constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
-constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
+constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+#constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
+constant ListBox = GnomeTools::Gtk::ListBox;
 
 has Hash $!sessions;
 
@@ -106,15 +108,15 @@ method sessions-create-modify (
     # .set-grouptitle() call back routines.
     $sessions-dd.set-selection($!sessions.keys.sort);
 
+    my ListBox $actions-list .= new(:multi);
+    my ScrolledWindow $sw = $actions-list.set-list((|$actions.get-ids));
+
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, :2columns);
     .add-content( 'Session title', $sessiontitle-e), :2columns;
     .add-content( 'Current group', $groups-dd, :2columns);
     .add-content( 'Group title', $grouptitle-e, :2columns);
-    .add-content(
-      'Actions list',
-       $actions.scrollable-list( self, 'select-action', :multi),
-       :2columns, :2rows);
+    .add-content( 'Actions list', $sw, :2rows);
 
     # Add buttons
 #    .add-button(
@@ -184,7 +186,7 @@ method save-session (
 
 #-------------------------------------------------------------------------------
 method select-action (
-  ListBoxRow() $row, 
+#  ListBoxRow() $row, 
 #  Dialog :$dialog, DropDown :$sessions-dd, DropDown :$groups-dd,
 #  Entry :$sessiontitle-e, Entry :$grouptitle-e,
 ) {

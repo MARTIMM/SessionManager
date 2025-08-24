@@ -367,3 +367,8 @@ method scrollable-list (
   
   $sw
 }
+
+#-------------------------------------------------------------------------------
+method get-ids ( --> Seq ) {
+  $!data-ids.keys.sort
+}
