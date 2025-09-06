@@ -7,7 +7,7 @@
   "auth": "fez:MARTIMM",
 
   "version": "0.5.1",
-  "tags": [ "desktop", "kde", "gnome", "tool" ],
+  "tags": [ "desktop", "kde", "gnome", "gtk", "tool" ],
   
   "license": "Artistic-2.0",
   "raku-version": "6.d",
