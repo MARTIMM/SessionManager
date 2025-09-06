@@ -37,7 +37,7 @@ constant APP_ID is export = 'io.github.martimm.session-manager';
 
 constant Grid = Gnome::Gtk4::Grid;
 constant LocalOptions = [<version h help>];
-constant RemoteOptions = [ |<v verbose legacy> ];
+constant RemoteOptions = [ |<v verbose legacy m load-manual-build-config> ];
 
 has Gnome::Gtk4::Application $.application;
 has Gnome::Gtk4::ApplicationWindow $.app-window;
@@ -148,7 +148,11 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
       return 1;
     }
 
-    my SessionManager::Config $config .= instance;
+    my Bool $load-manual-build-config = False;
+    if $o<m>:exists or $o<load-manual-build-config>:exists {
+      $load-manual-build-config = $o<load-manual-build-config>.Bool;
+    }
+    my SessionManager::Config $config .= instance(:$load-manual-build-config);
 
     $config.set-legacy(?$o<legacy>);
   }
