@@ -1,0 +1,125 @@
+@import url("/home/marcel/Languages/Raku/Projects/SessionManager/xt/ExampleSetup/Config/manager.css");
+
+
+/*--[Changes]-----------------------------------------------------------------*/
+/*
+.container-grid {
+  border-image-width: 0px;
+  border-image-source: none;
+}
+*/
+
+/*
+.session-frame {
+  background-image: url('/home/marcel/.config/io.github.martimm.dispatcher/Images/brushed-copper.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  padding-top: 10px;
+}
+*/
+
+.session-button {
+  background-image: none;
+
+  border-top:     2px solid rgb(254, 174, 246);
+  border-left:    2px solid rgb(254, 174, 246);
+  border-right:   2px solid rgb(147, 3, 119);
+  border-bottom:  2px solid rgb(147, 3, 119);
+  border-radius: 20px;
+}
+
+.session-toolbar {
+  /*
+  background-image: url('/home/marcel/.config/io.github.martimm.dispatcher/Images/brushed-dark.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  */
+  padding: 10px;
+  margin: 0px;
+}
+
+.session-action-button {
+  background-image: none;
+
+  border-top:     2px solid rgb(185, 180, 255);
+  border-left:    2px solid rgb(185, 180, 255);
+  border-right:   2px solid rgb(9, 0, 135);
+  border-bottom:  2px solid rgb(9, 0, 135);
+  border-radius: 20px;
+}
+
+.session-frame-label {
+  color: rgb(71, 0, 71);
+  background-color: rgba(255, 209, 255, 0.3);
+  font-weight: bold;
+  font-size: 14pt;
+  border-radius: 10px;
+
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.group-session-label {
+  /* Bug: Fails to change width and height properly */
+  transform: rotate(-90deg);
+
+  color: rgb(71, 0, 71);
+  background-color: rgba(255, 209, 255, 0.3);
+  font-weight: bold;
+  font-size: 14pt;
+  border-radius: 10px;
+
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+
+  padding: 0px;
+
+}
+
+/*
+.session-toolbar-button {
+  background-image: none;
+  background-color: transparent;
+  }
+  */
+  
+/*
+.session-button {
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  
+  background-image: none;
+  background: transparent;
+  
+  border-top: 5px solid rgb(254, 174, 246);
+  border-left: 5px solid rgb(254, 174, 246);
+  border-right: 5px solid rgb(147, 3, 119);
+  border-bottom: 5px solid rgb(147, 3, 119);
+  border-radius: 20px;
+  
+  padding: 5px;
+  margin: 0px;
+}
+*/
+
+.overlay-pic {
+
+  border-top: 5px solid rgb(254, 174, 246);
+  border-left: 5px solid rgb(254, 174, 246);
+  border-right: 5px solid rgb(147, 3, 119);
+  border-bottom: 5px solid rgb(147, 3, 119);
+  border-radius: 10px;
+
+  padding: 0px;
+
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+

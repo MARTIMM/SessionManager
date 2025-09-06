@@ -1,0 +1,13 @@
+shell: /usr/bin/tcsh
+
+theme:
+  title: Environment starter
+
+  icon-size: [ 200, 200]
+  window-size: [ 1000, 200]
+  log-window-size: [ 900, 1300]
+
+part-references: {}
+action-references: {}
+variable-references: {}
+sessions: {}
