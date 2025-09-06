@@ -177,9 +177,7 @@ method actions-create-modify ( N-Object $parameter ) {
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
-    .add-button( self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
-      :$aspec-icon, :$aspec-pic
-    );
+    .add-button( self, 'do-rename-act', 'Rename', :$dialog, :$action-id );
 
     .add-button( self, 'do-create-act', 'Create', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
@@ -199,7 +197,7 @@ method actions-create-modify ( N-Object $parameter ) {
 }}
     .show-dialog;
   }
-    
+
 #`{{
     my Str $current-root = $!config.get-current-root;
 
@@ -236,11 +234,7 @@ method actions-create-modify ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
-method do-rename-act (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
-  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
-  Entry :$aspec-icon, Entry :$aspec-pic
-) {
+method do-rename-act ( GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id ) {
   my Str $id = $action-id.get-text;
 
   if !$id {
