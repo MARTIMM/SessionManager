@@ -45,10 +45,10 @@ note "$?LINE $*config-directory";
   my Str $png-file;
   for <
     diamond-steel-floor.jpg brushed-light.jpg brushed-dark.jpg
-    config-icon.jpg brushed-copper.jpg mozaic.jpg dispatch-icon.png
+    config-icon.jpg brushed-copper.jpg mozaic.jpg
     bookmark.png fastforward.png
   > -> $i {
-
+note "$?LINE $i";
     $png-file = [~] $*config-directory, '/Images/', $i;
     %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
   }
@@ -56,7 +56,7 @@ note "$?LINE $*config-directory";
   # Copy style sheet to data directory and load into program
   my Str $css-path = $*config-directory ~ '/Config/manager.css';
   %?RESOURCES<manager.css>.copy($css-path);
-  my $css-cnt = [~] '@import url("', $css-path, '");', "\n\n",
+  my $css-cnt = [~] '@import url("', $css-path.IO.absolute, '");', "\n\n",
                     %?RESOURCES<manager-changes.css>.slurp;
   $css-path = $*config-directory ~ '/Config/manager-changes.css';
   $css-path.IO.spurt($css-cnt);
@@ -77,11 +77,28 @@ method instance ( *%options --> SessionManager::Config ) {
 
 #-------------------------------------------------------------------------------
 method load-config ( Bool :$load-manual-build-config = False ) {
+  if "$*config-directory/dispatch-config.yaml".IO !~~ :r {
+    "$*config-directory/dispatch-config.yaml".IO.spurt(Q:q:to/EOD/);
+      shell: /usr/bin/tcsh
+
+      theme:
+        title: Environment starter
+
+        icon-size: [ 200, 200]
+        window-size: [ 1000, 200]
+        log-window-size: [ 900, 1300]
+
+      part-references: {}
+      action-references: {}
+      variable-references: {}
+      sessions: {}
+      EOD
+  }
+
   $!dispatch-config = load-yaml(
     "$*config-directory/dispatch-config.yaml".IO.slurp
   );
 
-  die "dispatch configuration not found" unless ?$!dispatch-config;
 
   $*images = [~] $*config-directory, '/', $*images;
 
