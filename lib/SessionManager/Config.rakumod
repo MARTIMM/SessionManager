@@ -32,7 +32,7 @@ has Hash $!dispatch-config;
 has GnomeTools::Gtk::Theming $!theme;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( ) {
+submethod BUILD ( Bool :$load-manual-build-config = False ) {
 note "$?LINE $*config-directory";
 
   mkdir $*config-directory ~ '/Images', 0o700
@@ -62,21 +62,21 @@ note "$?LINE $*config-directory";
   $css-path.IO.spurt($css-cnt);
   $!theme .= new(:$css-path);
 
-  self.load-config;
+  self.load-config(:$load-manual-build-config);
 }
 
 #-------------------------------------------------------------------------------
 method new ( ) { !!! }
 
 #-------------------------------------------------------------------------------
-method instance ( --> SessionManager::Config ) {
-  $instance //= self.bless;
+method instance ( *%options --> SessionManager::Config ) {
+  $instance //= self.bless(|%options);
 
   $instance
 }
 
 #-------------------------------------------------------------------------------
-method load-config ( Bool :$load-manual-build-config = False) {
+method load-config ( Bool :$load-manual-build-config = False ) {
   $!dispatch-config = load-yaml(
     "$*config-directory/dispatch-config.yaml".IO.slurp
   );
