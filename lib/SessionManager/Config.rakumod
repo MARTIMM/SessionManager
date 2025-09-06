@@ -76,7 +76,7 @@ method instance ( --> SessionManager::Config ) {
 }
 
 #-------------------------------------------------------------------------------
-method load-config ( ) {
+method load-config ( Bool :$load-manual-build-config = False) {
   $!dispatch-config = load-yaml(
     "$*config-directory/dispatch-config.yaml".IO.slurp
   );
@@ -85,46 +85,50 @@ method load-config ( ) {
 
   $*images = [~] $*config-directory, '/', $*images;
 
-  # Set a few variables beforehand
   my SessionManager::Gui::Variables $variables .= instance;
-  $variables.add( %(
-    :$*config-directory,
-    :home($*HOME),
-  ));
-
-  # First! Check and load variables
-  if $!dispatch-config<variable-references>:exists {
-    for @($!dispatch-config<variable-references>) -> $file is copy {
-      $file = $variables.substitute-vars($file);
-      $variables.add-from-yaml($file);
-    }
-  }
-
-
-  # Check session descriptions from config, variables are now possible
-  my SessionManager::Gui::Sessions $sessions .= instance;
-  for $!dispatch-config<sessions>.keys -> $name {
-    $sessions.add-session( $name, $!dispatch-config<sessions>{$name});
-  }
-
-  # Check and load separate session descriptions
-  if $!dispatch-config<part-references>:exists {
-    my Hash $ref := $!dispatch-config<part-references>;
-    for $ref.kv -> $name, $file is copy {
-      $file = $variables.substitute-vars($file);
-      $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
-      $sessions.load-session( $name, $file);
-    }
-  }
-
-  # Check and load separate action descriptions
   my SessionManager::Gui::Actions $actions .= instance;
-  if $!dispatch-config<action-references>:exists {
-    for @($!dispatch-config<action-references>) -> $file is copy {
-      $file = $variables.substitute-vars($file);
-      $actions.add-from-yaml($file);
+  my SessionManager::Gui::Sessions $sessions .= instance;
+
+  # Set a few variables beforehand
+  if $load-manual-build-config {
+    $variables.add(%( :$*config-directory, :home($*HOME)));
+
+    # First! Check and load variables
+    if $!dispatch-config<variable-references>:exists {
+      for @($!dispatch-config<variable-references>) -> $file is copy {
+        $file = $variables.substitute-vars($file);
+        $variables.add-from-yaml($file);
+      }
+    }
+
+
+    # Check session descriptions from config, variables are now possible
+    for $!dispatch-config<sessions>.keys -> $name {
+      $sessions.add-session( $name, $!dispatch-config<sessions>{$name});
+    }
+
+    # Check and load separate session descriptions
+    if $!dispatch-config<part-references>:exists {
+      my Hash $ref := $!dispatch-config<part-references>;
+      for $ref.kv -> $name, $file is copy {
+        $file = $variables.substitute-vars($file);
+        $!dispatch-config<sessions>{$name} = load-yaml($file.IO.slurp);
+        $sessions.load-session( $name, $file);
+      }
+    }
+
+    # Check and load separate action descriptions
+    if $!dispatch-config<action-references>:exists {
+      for @($!dispatch-config<action-references>) -> $file is copy {
+        $file = $variables.substitute-vars($file);
+        $actions.add-from-yaml($file);
+      }
     }
   }
+
+  $variables.load;
+  $actions.load;
+  $sessions.load;
 
   self.check-actions;
 }
