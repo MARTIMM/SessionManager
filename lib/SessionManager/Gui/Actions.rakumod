@@ -93,6 +93,19 @@ method save ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method load ( ) {
+  if ($*config-directory ~ ConfigPath).IO.r {
+    my Hash $raw-actions = load-yaml(
+      ($*config-directory ~ ConfigPath).IO.slurp
+    );
+
+    for $raw-actions.keys -> $id {
+      self.add-action( $raw-actions{$id}, :$id);
+    }
+  }
+}
+
+#-------------------------------------------------------------------------------
 method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
   if $!data-ids{$id}:exists {
     $!data-ids{$id}
@@ -175,7 +188,8 @@ method actions-create-modify ( N-Object $parameter ) {
     .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
     );
-    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+
+    .add-button( $dialog, 'destroy-dialog', 'Done');
 #`{{
     $variables-lb.register-signal(
       self, 'set-data', 'row-selected', :$dialog, :$action-id, :$aspec-title, 
@@ -245,10 +259,13 @@ method do-rename-act (
       .set-justify(GTK_JUSTIFY_LEFT);
       .set-halign(GTK_ALIGN_START);
     }
+    # Change the id of the row in the list
     $!original-row.set-child($l);
 
     # Set original
     $!original-id = $id;
+    my Hash $oid = $!data-ids{$!original-id}:delete;
+    $!data-ids{$id} = $oid;
 
     $dialog.set-status('Renamed everything successfully');
   }

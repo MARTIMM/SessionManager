@@ -65,6 +65,13 @@ method save ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method load ( ) {
+  if ($*config-directory ~ ConfigPath).IO.r {
+    $!variables = load-yaml(($*config-directory ~ ConfigPath).IO.slurp);
+  }
+}
+
+#-------------------------------------------------------------------------------
 method set-temporary ( Hash:D $!temporary ) { }
 
 #-------------------------------------------------------------------------------

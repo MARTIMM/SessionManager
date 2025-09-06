@@ -78,6 +78,13 @@ method save ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method load ( ) {
+  if ($*config-directory ~ ConfigPath).IO.r {
+    $!sessions = load-yaml(($*config-directory ~ ConfigPath).IO.slurp);
+  }
+}
+
+#-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
 method sessions-create-modify (
@@ -113,7 +120,7 @@ method sessions-create-modify (
 
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, :2columns);
-    .add-content( 'Session title', $sessiontitle-e), :2columns;
+    .add-content( 'Session title', $sessiontitle-e, :2columns);
     .add-content( 'Current group', $groups-dd, :2columns);
     .add-content( 'Group title', $grouptitle-e, :2columns);
     .add-content( 'Actions list', $sw, :2rows);
