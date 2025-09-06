@@ -1,3 +1,7 @@
+* 2025-09-06 0.5.1
+  * WIP: sessions, actions and variables edit.
+  * Save confirations in separate files and load at start of program.
+  * Add option to load editable user configs. Now skipped by default.
 
 * 2025-07-30 0.5.0
   * Available on github.
