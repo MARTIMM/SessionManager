@@ -39,10 +39,13 @@ has SessionManager::Gui::Variables $!variables;
 has Hash $.raw-action;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Str :$!id = '', Hash:D :$!raw-action ) {
+submethod BUILD ( ) {
   $!supplier .= new;
   $!supply = $!supplier.Supply;
+}
 
+#-------------------------------------------------------------------------------
+method init-action ( Str :$!id = '', Hash:D :$!raw-action ) {
   $!run-in-group = False;
   $!running = False;
   $!shell = '/usr/bin/bash';
