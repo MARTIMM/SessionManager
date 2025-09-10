@@ -10,10 +10,12 @@ use Gnome::N::N-Object:api<2>;
 
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
+use GnomeTools::Gtk::ListBox;
 
 use Gnome::Gtk4::ScrolledWindow:api<2>;
-use Gnome::Gtk4::ListBox:api<2>;
-use Gnome::Gtk4::ListBoxRow:api<2>;
+use Gnome::Gtk4::Switch:api<2>;
+#use Gnome::Gtk4::ListBox:api<2>;
+#use Gnome::Gtk4::ListBoxRow:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
@@ -24,8 +26,9 @@ unit class SessionManager::Gui::Actions;
 constant ConfigPath = '/Config/actions.yaml';
 
 constant Entry = Gnome::Gtk4::Entry;
-constant ListBox = Gnome::Gtk4::ListBox;
-constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
+constant Switch = Gnome::Gtk4::Switch;
+constant ListBox = GnomeTools::Gtk::ListBox;
+#constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 
@@ -34,7 +37,7 @@ my $instance;
 
 has Hash $!data-ids;
 has Str $!original-id;
-has ListBoxRow $!original-row;
+#has ListBoxRow $!original-row;
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   $!data-ids = %();
@@ -147,37 +150,39 @@ method actions-create-modify ( N-Object $parameter ) {
     my Entry $aspec-cmd .= new-entry;
     my Entry $aspec-path .= new-entry;
     my Entry $aspec-wait .= new-entry;
-    my Entry $aspec-log .= new-entry;
+    my Switch $aspec-log .= new-switch;
     my Entry $aspec-icon .= new-entry;
     my Entry $aspec-pic .= new-entry;
 
     # Set placeholder texts when optional
     $aspec-path.set-placeholder-text('optional');
     $aspec-wait.set-placeholder-text('optional');
-    $aspec-log.set-placeholder-text('optional');
     $aspec-icon.set-placeholder-text('optional');
     $aspec-pic.set-placeholder-text('optional');
-
-    my ScrolledWindow $sw = self.scrollable-list(
-      self, 'set-data',
+    
+    my ListBox $listbox;
+    my ScrolledWindow $scrolled-listbox;
+    ( $listbox, $scrolled-listbox) = self.scrollable-list(
       :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
       :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
     );
 
-    .add-content( 'Current actions', $sw);
-    .add-content( 'Action id', $action-id);
-    .add-content( 'Title', $aspec-title);
-    .add-content( 'Command', $aspec-cmd);
-    .add-content( 'Path', $aspec-path);
-    .add-content( 'Wait', $aspec-wait);
+    .add-content( 'Current actions', $scrolled-listbox, :4columns);
+    .add-content( 'Action id', $action-id, :4columns);
+    .add-content( 'Title', $aspec-title, :4columns);
+    .add-content( 'Command', $aspec-cmd, :4columns);
+    .add-content( 'Path', $aspec-path, :4columns);
+    .add-content( 'Wait', $aspec-wait, :4columns);
     .add-content( 'Logging', $aspec-log);
-    .add-content( 'Icon', $aspec-icon);
-    .add-content( 'Picture', $aspec-pic);
+    .add-content( 'Icon', $aspec-icon, :4columns);
+    .add-content( 'Picture', $aspec-pic, :4columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
-    .add-button( self, 'do-rename-act', 'Rename', :$dialog, :$action-id );
+    .add-button(
+      self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$listbox
+    );
 
     .add-button( self, 'do-create-act', 'Create', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
@@ -234,7 +239,9 @@ method actions-create-modify ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
-method do-rename-act ( GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id ) {
+method do-rename-act (
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, ListBox :$listbox
+) {
   my Str $id = $action-id.get-text;
 
   if !$id {
@@ -254,30 +261,32 @@ method do-rename-act ( GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id ) {
       .set-halign(GTK_ALIGN_START);
     }
     # Change the id of the row in the list
-    $!original-row.set-child($l);
+#    $!original-row.set-child($l);
 
     # Set original
-    $!original-id = $id;
-    my Hash $oid = $!data-ids{$!original-id}:delete;
-    $!data-ids{$id} = $oid;
+    $!original-id = $listbox.get-selection[0];
+note "$?LINE $!original-id, $!data-ids.keys()";
+note "$?LINE $!data-ids.gist()";
+    my SessionManager::ActionData $adata = $!data-ids{$!original-id}:delete;
+    $!data-ids{$id} = $adata;
 
     $dialog.set-status('Renamed everything successfully');
   }
 
-  # Keep dialog open for other edits}
+  # Keep dialog open for other edits
 }
 
 #-------------------------------------------------------------------------------
 method do-create-act (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
-  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
+  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
   my Bool $sts-ok = False;
   my Str $id = $action-id.get-text;
 
   if !$id {
-    $dialog.set-status('An action id may not be empty');
+    $dialog.set-status('The action id may not be empty');
   }
 
   elsif $id ~~ any(|$!data-ids.keys) {
@@ -285,6 +294,15 @@ method do-create-act (
   }
 
   else {
+    my Hash $raw-actions = %();
+    $raw-actions<t> = $aspec-title.get-text;
+    $raw-actions<c> = $aspec-cmd.get-text;
+    $raw-actions<o> = $aspec-icon.get-text;
+    $raw-actions<i> = $aspec-pic.get-text;
+    $raw-actions<l> = $aspec-log.get-state;
+    $raw-actions<w> = $aspec-wait.get-text.Int;
+    $raw-actions<p> = $aspec-path.get-text;
+    self.add-action( $raw-actions, :$id);
     $sts-ok = True;
   }
   
@@ -294,7 +312,7 @@ method do-create-act (
 #-------------------------------------------------------------------------------
 method do-modify-act (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
-  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Entry :$aspec-log,
+  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
   my Bool $sts-ok = False;
@@ -326,15 +344,16 @@ method do-modify-act (
 
 #-------------------------------------------------------------------------------
 method set-data(
-  ListBoxRow() $row, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
+  Label() $l, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
   Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-path,
-  Entry :$aspec-wait, Entry :$aspec-log, Entry :$aspec-icon,
+  Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic
 ) {
   # Needed to rename content of row
-  $!original-row = $row;
+#  $!original-row = $row;
+note "$?LINE";
 
-  my Label() $l = $row.get-child;
+#  my Label() $l = $row.get-child;
   my Str $id = $l.get-text;
   $!original-id = $id;
   $action-id.set-text($id);
@@ -344,10 +363,12 @@ method set-data(
   $aspec-cmd.set-text($action-object<c>) if ?$action-object<c>;
   $aspec-path.set-text($action-object<p>) if ?$action-object<p>;
   $aspec-wait.set-text($action-object<w>) if ?$action-object<w>;
-  $aspec-log.set-text($action-object<l>) if ?$action-object<l>;
+  $aspec-log.set-state($action-object<l>.Bool) if ?$action-object<l>;
   $aspec-icon.set-text($action-object<o>) if ?$action-object<o>;
   $aspec-pic.set-text($action-object<i>) if ?$action-object<i>;
 }
+#`{{
+}}
 
 #-------------------------------------------------------------------------------
 method actions-delete ( N-Object $parameter ) {
@@ -355,13 +376,17 @@ method actions-delete ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
-method scrollable-list (
-  $object, $method, Bool :$multi = False, *%options --> ScrolledWindow
-) {
+method scrollable-list ( Bool :$multi = False, *%options ) {
 
-  my ListBox $list-lb .= new-listbox;
+note "$?LINE";
+  my $object = self;
+  my ListBox $list-lb .= new(
+    :$object, :method<set-data>, :$multi, |%options
+  );
+  my ScrolledWindow $sw = $list-lb.set-list($!data-ids.keys.sort.List);
+
+#`{{
   $list-lb.set-selection-mode(GTK_SELECTION_MULTIPLE) if $multi;
-
   for $!data-ids.keys.sort -> $id {
     with my Label $l .= new-with-mnemonic($id) {
       .set-justify(GTK_JUSTIFY_LEFT);
@@ -375,8 +400,10 @@ method scrollable-list (
     .set-child($list-lb);
     .set-size-request( 850, 300);
   }
-  
+
   $sw
+}}
+  ( $list-lb, $sw)
 }
 
 #-------------------------------------------------------------------------------
