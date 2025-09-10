@@ -1,3 +1,34 @@
+
+# Available in program
+
+* Variables
+  * [x] Storage in <root>/Config/variables.yaml
+  * [x] Add variable
+  * [ ] Rename variable
+    * [ ] With rename change its use in this and other configurations
+  * [ ] Modify variable data
+  * [ ] Remove variable
+    * [ ] Before remove check its use in this and other configurations
+
+* Actions:
+  * [x] Storage in <root>/Config/actions.yaml
+  * [x] Add action
+  * [x] Rename action id
+    * [ ] With rename change its use in other configurations
+  * [ ] Modify action data
+  * [ ] Remove action
+    * [ ] Before remove check its use in sessions configuration
+
+* Sessions
+  * [x] Storage in <root>/Config/sessions.yaml
+  * [ ] Add session
+  * [ ] Add actions to a group
+  * [x] Rename session
+  * [ ] Remove session
+
+
+---
+# Progress
 * 2025-09-06 0.5.1
   * WIP: sessions, actions and variables edit.
   * Save confirations in separate files and load at start of program.
