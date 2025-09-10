@@ -56,7 +56,8 @@ method instance ( --> SessionManager::Gui::Actions ) {
 #-------------------------------------------------------------------------------
 method add-action ( Hash:D $raw-action, Str :$id = '' --> Str ) {
   my SessionManager::ActionData $action-data;
-  $action-data .= new( :$raw-action, :$id);
+  $action-data .= new;
+  $action-data.init-action( :$raw-action, :$id);
   $!data-ids{$action-data.id} = $action-data;
   $action-data.id
 }
@@ -184,12 +185,14 @@ method actions-create-modify ( N-Object $parameter ) {
       self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$listbox
     );
 
-    .add-button( self, 'do-create-act', 'Create', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
+    .add-button( self, 'do-create-act', 'Create', :$dialog, :$action-id,
+      :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
     );
 
-    .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
-      :$aspec-icon, :$aspec-pic
+    .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$listbox,
+      :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait,
+      :$aspec-log, :$aspec-icon, :$aspec-pic
     );
 
     .add-button( $dialog, 'destroy-dialog', 'Done');
@@ -265,8 +268,6 @@ method do-rename-act (
 
     # Set original
     $!original-id = $listbox.get-selection[0];
-note "$?LINE $!original-id, $!data-ids.keys()";
-note "$?LINE $!data-ids.gist()";
     my SessionManager::ActionData $adata = $!data-ids{$!original-id}:delete;
     $!data-ids{$id} = $adata;
 
@@ -294,53 +295,50 @@ method do-create-act (
   }
 
   else {
-    my Hash $raw-actions = %();
-    $raw-actions<t> = $aspec-title.get-text;
-    $raw-actions<c> = $aspec-cmd.get-text;
-    $raw-actions<o> = $aspec-icon.get-text;
-    $raw-actions<i> = $aspec-pic.get-text;
-    $raw-actions<l> = $aspec-log.get-state;
-    $raw-actions<w> = $aspec-wait.get-text.Int;
-    $raw-actions<p> = $aspec-path.get-text;
-    self.add-action( $raw-actions, :$id);
+    my Hash $raw-action = %();
+    $raw-action<t> = $aspec-title.get-text;
+    $raw-action<c> = $aspec-cmd.get-text;
+    $raw-action<o> = $aspec-icon.get-text;
+    $raw-action<i> = $aspec-pic.get-text;
+    $raw-action<l> = $aspec-log.get-state;
+    $raw-action<w> = $aspec-wait.get-text.Int;
+    $raw-action<p> = $aspec-path.get-text;
+    self.add-action( $raw-action, :$id);
     $sts-ok = True;
   }
-  
-  $dialog.destroy-dialog if $sts-ok;
+
+#  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
 method do-modify-act (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
-  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
+  GnomeTools::Gtk::Dialog :$dialog, ListBox :$listbox,
+  Entry :$action-id, Entry :$aspec-title, Entry :$aspec-cmd,
+  Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
   my Bool $sts-ok = False;
 
-  $dialog.destroy-dialog if $sts-ok;
+  # In case id is changed, modification only changes the data, not the id.
+  # To change id, rename the data.
+  my Str $original-id = $listbox.get-selection[0];
+  $action-id.set-text($original-id);
+
+  my Hash $raw-action = %();
+  $raw-action<t> = $aspec-title.get-text;
+  $raw-action<c> = $aspec-cmd.get-text;
+  $raw-action<o> = $aspec-icon.get-text;
+  $raw-action<i> = $aspec-pic.get-text;
+  $raw-action<l> = $aspec-log.get-state;
+  $raw-action<w> = $aspec-wait.get-text.Int;
+  $raw-action<p> = $aspec-path.get-text;
+
+  my SessionManager::ActionData $action-data = $!data-ids{$original-id};
+  $action-data.init-action( :$raw-action, :id($original-id));
+  $sts-ok = True;
+
+#  $dialog.destroy-dialog if $sts-ok;
 }
-
-
-
-#`{{
-  if $*multiple-roots {
-    $root-dir = $roots-dd.get-dropdown-text;
-  }
-
-  else {
-    $root-dir = $!config.get-current-root;
-  }
-
-  my Str $container = $container-dd.get-dropdown-text;
-  if not $!config.delete-container( $container, $root-dir) {
-    $dialog.set-status("Container $container not empty");
-  }
-
-  else {
-    $!sidebar.fill-sidebar;
-    $sts-ok = True;
-  }
-}}
 
 #-------------------------------------------------------------------------------
 method set-data(
@@ -355,7 +353,7 @@ note "$?LINE";
 
 #  my Label() $l = $row.get-child;
   my Str $id = $l.get-text;
-  $!original-id = $id;
+#  $!original-id = $id;
   $action-id.set-text($id);
 
   my Hash $action-object = $!data-ids{$id}.raw-action;
