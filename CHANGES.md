@@ -15,7 +15,7 @@
   * [x] Add action
   * [x] Rename action id
     * [ ] With rename change its use in other configurations
-  * [ ] Modify action data
+  * [x] Modify action data
   * [ ] Remove action
     * [ ] Before remove check its use in sessions configuration
 
