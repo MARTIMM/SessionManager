@@ -1,18 +1,18 @@
 ---
-"t1sdfsdf": 
-  "c": "kls  kjhfdgh"
+"DHome": 
+  "c": "dolphin $Ex1Path"
   "i": ""
   "l": 1
   "o": ""
-  "p": "lksdf  gjdfg"
-  "t": "111111111111111lsjkd lghj"
+  "p": "$Ex1Path"
+  "t": "File list of $Ex1Path"
   "w": 0
-"t2": 
-  "c": "klskjhfdgh"
+"kHome": 
+  "c": "konsole --workdir $Ex1Path"
   "i": ""
   "l": 1
   "o": ""
-  "p": "lksdfgjdfg"
-  "t": "lsjkdfgklghj"
+  "p": "$Ex1Path"
+  "t": "Open console to $Ex1Path"
   "w": 0
 ...

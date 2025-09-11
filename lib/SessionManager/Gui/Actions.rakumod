@@ -141,7 +141,7 @@ method subst-vars ( Str $original-var, Str $new-var ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method actions-create-modify ( N-Object $parameter ) {
+method actions-create ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Action'), :add-statusbar
@@ -181,17 +181,127 @@ method actions-create-modify ( N-Object $parameter ) {
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
-    .add-button(
-      self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$listbox
-    );
-
     .add-button( self, 'do-create-act', 'Create', :$dialog, :$action-id,
       :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
       :$aspec-icon, :$aspec-pic
     );
 
+    .add-button( $dialog, 'destroy-dialog', 'Done');
+
+    .show-dialog;
+  }
+
+#`{{
+    my Str $current-root = $!config.get-current-root;
+
+    # Make a string list to be used in a combobox (dropdown)
+    my GnomeTools::Gtk::DropDown $container-dd .= new;
+    $container-dd.fill-containers(
+      $!config.get-current-container, $current-root, :skip-default
+    );
+
+    my GnomeTools::Gtk::DropDown $roots-dd;
+    if $*multiple-roots {
+      $roots-dd .= new;
+      $roots-dd.fill-roots($!config.get-current-root);
+
+      # Show dropdown
+      .add-content( 'Select a root', $roots-dd);
+
+      # Set a handler on the container list to change the category list
+      # when an item is selected.
+      $roots-dd.trap-root-changes( $container-dd, :skip-default);
+    }
+
+    # Show entry for input
+    .add-content( 'Select container to delete', $container-dd);
+
+    # Buttons to delete the container or cancel
+    .add-button(
+      self, 'do-container-delete', 'Delete',
+      :$dialog, :$container-dd, :$roots-dd
+    );
+    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+}}
+
+}
+
+#-------------------------------------------------------------------------------
+method do-create-act (
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
+  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
+  Entry :$aspec-icon, Entry :$aspec-pic
+) {
+  my Bool $sts-ok = False;
+  my Str $id = $action-id.get-text;
+
+  if !$id {
+    $dialog.set-status('The action id may not be empty');
+  }
+
+  elsif $id ~~ any(|$!data-ids.keys) {
+    $dialog.set-status('This action id is already defined');
+  }
+
+  else {
+    my Hash $raw-action = %();
+    $raw-action<t> = $aspec-title.get-text;
+    $raw-action<c> = $aspec-cmd.get-text;
+    $raw-action<o> = $aspec-icon.get-text;
+    $raw-action<i> = $aspec-pic.get-text;
+    $raw-action<l> = $aspec-log.get-state;
+    $raw-action<w> = $aspec-wait.get-text.Int;
+    $raw-action<p> = $aspec-path.get-text;
+    self.add-action( $raw-action, :$id);
+    $sts-ok = True;
+  }
+
+#  $dialog.destroy-dialog if $sts-ok;
+}
+
+#-------------------------------------------------------------------------------
+method actions-modify ( N-Object $parameter ) {
+  note "$?LINE ";
+  with my GnomeTools::Gtk::Dialog $dialog .= new(
+    :dialog-header('Modify Action'), :add-statusbar
+  ) {
+    my Entry $action-id .= new-entry;
+    my Entry $aspec-title .= new-entry;
+    my Entry $aspec-cmd .= new-entry;
+    my Entry $aspec-path .= new-entry;
+    my Entry $aspec-wait .= new-entry;
+    my Switch $aspec-log .= new-switch;
+    my Entry $aspec-icon .= new-entry;
+    my Entry $aspec-pic .= new-entry;
+
+    # Set placeholder texts when optional
+    $aspec-path.set-placeholder-text('optional');
+    $aspec-wait.set-placeholder-text('optional');
+    $aspec-icon.set-placeholder-text('optional');
+    $aspec-pic.set-placeholder-text('optional');
+    
+    my ListBox $listbox;
+    my ScrolledWindow $scrolled-listbox;
+    ( $listbox, $scrolled-listbox) = self.scrollable-list(
+      :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
+      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
+    );
+
+    .add-content( 'Current actions', $scrolled-listbox, :4columns);
+    .add-content( 'Action id', $action-id, :4columns);
+    .add-content( 'Title', $aspec-title, :4columns);
+    .add-content( 'Command', $aspec-cmd, :4columns);
+    .add-content( 'Path', $aspec-path, :4columns);
+    .add-content( 'Wait', $aspec-wait, :4columns);
+    .add-content( 'Logging', $aspec-log);
+    .add-content( 'Icon', $aspec-icon, :4columns);
+    .add-content( 'Picture', $aspec-pic, :4columns);
+#    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
+#    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
+#    .add-content( '', my Entry $aspec- .= new-entry);
+
     .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$listbox,
-      :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait,
+      :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait,
       :$aspec-log, :$aspec-icon, :$aspec-pic
     );
 
@@ -203,6 +313,107 @@ method actions-create-modify ( N-Object $parameter ) {
       :$aspec-icon, :$aspec-pic
     );
 }}
+    .show-dialog;
+  }
+
+#`{{
+    my Str $current-root = $!config.get-current-root;
+
+    # Make a string list to be used in a combobox (dropdown)
+    my GnomeTools::Gtk::DropDown $container-dd .= new;
+    $container-dd.fill-containers(
+      $!config.get-current-container, $current-root, :skip-default
+    );
+
+    my GnomeTools::Gtk::DropDown $roots-dd;
+    if $*multiple-roots {
+      $roots-dd .= new;
+      $roots-dd.fill-roots($!config.get-current-root);
+
+      # Show dropdown
+      .add-content( 'Select a root', $roots-dd);
+
+      # Set a handler on the container list to change the category list
+      # when an item is selected.
+      $roots-dd.trap-root-changes( $container-dd, :skip-default);
+    }
+
+    # Show entry for input
+    .add-content( 'Select container to delete', $container-dd);
+
+    # Buttons to delete the container or cancel
+    .add-button(
+      self, 'do-container-delete', 'Delete',
+      :$dialog, :$container-dd, :$roots-dd
+    );
+    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+}}
+
+}
+
+#-------------------------------------------------------------------------------
+method do-modify-act (
+  GnomeTools::Gtk::Dialog :$dialog, ListBox :$listbox,
+  Entry :$aspec-title, Entry :$aspec-cmd,
+  Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
+  Entry :$aspec-icon, Entry :$aspec-pic
+) {
+  my Bool $sts-ok = False;
+
+  my Hash $raw-action = %();
+  $raw-action<t> = $aspec-title.get-text;
+  $raw-action<c> = $aspec-cmd.get-text;
+  $raw-action<o> = $aspec-icon.get-text;
+  $raw-action<i> = $aspec-pic.get-text;
+  $raw-action<l> = $aspec-log.get-state;
+  $raw-action<w> = $aspec-wait.get-text.Int;
+  $raw-action<p> = $aspec-path.get-text;
+
+  my Str $original-id = $listbox.get-selection[0];
+  my SessionManager::ActionData $action-data = $!data-ids{$original-id};
+  $action-data.init-action( :$raw-action, :id($original-id));
+  $sts-ok = True;
+
+#  $dialog.destroy-dialog if $sts-ok;
+}
+
+#-------------------------------------------------------------------------------
+method actions-rename-id ( N-Object $parameter ) {
+  note "$?LINE ";
+  with my GnomeTools::Gtk::Dialog $dialog .= new(
+    :dialog-header('Modify Action'), :add-statusbar
+  ) {
+    my Entry $action-id .= new-entry;
+    my Entry $aspec-title .= new-entry;
+    my Entry $aspec-cmd .= new-entry;
+    my Entry $aspec-path .= new-entry;
+    my Entry $aspec-wait .= new-entry;
+    my Switch $aspec-log .= new-switch;
+    my Entry $aspec-icon .= new-entry;
+    my Entry $aspec-pic .= new-entry;
+
+    # Set placeholder texts when optional
+    $aspec-path.set-placeholder-text('optional');
+    $aspec-wait.set-placeholder-text('optional');
+    $aspec-icon.set-placeholder-text('optional');
+    $aspec-pic.set-placeholder-text('optional');
+    
+    my ListBox $listbox;
+    my ScrolledWindow $scrolled-listbox;
+    ( $listbox, $scrolled-listbox) = self.scrollable-list(
+      :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
+      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
+    );
+
+    .add-content( 'Current actions', $scrolled-listbox, :4columns);
+    .add-content( 'Action id', $action-id, :4columns);
+
+    .add-button(
+      self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$listbox
+    );
+
+    .add-button( $dialog, 'destroy-dialog', 'Done');
+
     .show-dialog;
   }
 
@@ -275,69 +486,6 @@ method do-rename-act (
   }
 
   # Keep dialog open for other edits
-}
-
-#-------------------------------------------------------------------------------
-method do-create-act (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
-  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
-  Entry :$aspec-icon, Entry :$aspec-pic
-) {
-  my Bool $sts-ok = False;
-  my Str $id = $action-id.get-text;
-
-  if !$id {
-    $dialog.set-status('The action id may not be empty');
-  }
-
-  elsif $id ~~ any(|$!data-ids.keys) {
-    $dialog.set-status('This action id is already defined');
-  }
-
-  else {
-    my Hash $raw-action = %();
-    $raw-action<t> = $aspec-title.get-text;
-    $raw-action<c> = $aspec-cmd.get-text;
-    $raw-action<o> = $aspec-icon.get-text;
-    $raw-action<i> = $aspec-pic.get-text;
-    $raw-action<l> = $aspec-log.get-state;
-    $raw-action<w> = $aspec-wait.get-text.Int;
-    $raw-action<p> = $aspec-path.get-text;
-    self.add-action( $raw-action, :$id);
-    $sts-ok = True;
-  }
-
-#  $dialog.destroy-dialog if $sts-ok;
-}
-
-#-------------------------------------------------------------------------------
-method do-modify-act (
-  GnomeTools::Gtk::Dialog :$dialog, ListBox :$listbox,
-  Entry :$action-id, Entry :$aspec-title, Entry :$aspec-cmd,
-  Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
-  Entry :$aspec-icon, Entry :$aspec-pic
-) {
-  my Bool $sts-ok = False;
-
-  # In case id is changed, modification only changes the data, not the id.
-  # To change id, rename the data.
-  my Str $original-id = $listbox.get-selection[0];
-  $action-id.set-text($original-id);
-
-  my Hash $raw-action = %();
-  $raw-action<t> = $aspec-title.get-text;
-  $raw-action<c> = $aspec-cmd.get-text;
-  $raw-action<o> = $aspec-icon.get-text;
-  $raw-action<i> = $aspec-pic.get-text;
-  $raw-action<l> = $aspec-log.get-state;
-  $raw-action<w> = $aspec-wait.get-text.Int;
-  $raw-action<p> = $aspec-path.get-text;
-
-  my SessionManager::ActionData $action-data = $!data-ids{$original-id};
-  $action-data.init-action( :$raw-action, :id($original-id));
-  $sts-ok = True;
-
-#  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
