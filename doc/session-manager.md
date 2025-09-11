@@ -30,6 +30,36 @@ The purpose of this program is that it can quickly setup an environment for some
 
 * Editing of actions, variables and sessions. To make it more simple, the directory names `Actions`, `Parts` and `Images` are fixed. The sessions entry point is in the file `sessions.yaml`. In this file are only `Part` references and some basic configs for themes and other minor settings.
 
+# Configuration editing
+
+* Variables
+  * [x] Storage in <root>/Config/variables.yaml
+  * [x] Add variable
+  * [ ] Rename variable
+    * [ ] With rename change its use in this and other configurations
+  * [ ] Modify variable data
+  * [ ] Remove variable
+    * [ ] Before remove check its use in this and other configurations
+
+* Actions:
+  * [x] Storage in <root>/Config/actions.yaml
+  * [x] Add action
+  * [x] Rename action id
+    * [ ] With rename change its use in other configurations
+  * [x] Modify action data
+  * [ ] Remove action
+    * [ ] Before remove check its use in sessions configuration
+
+* Sessions
+  * [x] Storage in <root>/Config/sessions.yaml
+  * [ ] Add session
+  * [ ] Add session group
+  * [ ] Delete session group
+  * [ ] Add actions to a group
+  * [ ] Remove actions from a group
+  * [ ] Rename session
+  * [ ] Remove session
+
 ### Application workings
 
   ```plantuml
