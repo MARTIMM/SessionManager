@@ -87,7 +87,146 @@ method load ( ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method sessions-create-modify (
+method sessions-create-group (
+  N-Object $parameter, :extra-data($actions-object)
+) {
+  my Actions $actions .= instance;
+
+  with my Dialog $dialog .= new(
+    :dialog-header('Modify Session'), :add-statusbar
+  ) {
+    my DropDown $groups-dd .= new;
+    my DropDown $sessions-dd .= new;
+    my Entry $grouptitle-e .= new-entry;
+    my Entry $sessiontitle-e .= new-entry;
+
+    # Trap changes in the sessions list
+    $sessions-dd.trap-dropdown-changes(
+      self, 'set-grouplist', :$sessions-dd, :$groups-dd,
+      :$sessiontitle-e, :$grouptitle-e
+    );
+
+    # Trap changes in the group list
+    $groups-dd.trap-dropdown-changes(
+      self, 'set-grouptitle', :$sessions-dd, :$groups-dd, :$grouptitle-e
+    );
+
+    # Fill the sessions list. Triggers the .set-grouplist() and
+    # .set-grouptitle() call back routines.
+    $sessions-dd.set-selection($!sessions.keys.sort);
+
+    my ListBox $actions-list .= new(:multi);
+    my ScrolledWindow $sw = $actions-list.set-list((|$actions.get-ids));
+
+    # Add entries and dropdown widgets
+    .add-content( 'Current session', $sessions-dd, :2columns);
+    .add-content( 'Session title', $sessiontitle-e, :2columns);
+    .add-content( 'Current group', $groups-dd, :2columns);
+    .add-content( 'Group title', $grouptitle-e, :2columns);
+    .add-content( 'Actions list', $sw, :2rows);
+
+    # Add buttons
+#    .add-button(
+#      self, 'save-sessiontitle', 'Set session title',
+#      :$dialog, :$sessiontitle-e, :$sessions-dd
+#    );
+
+    .add-button(
+      self, 'save-session', 'Save session',
+      :$dialog, :$sessions-dd, :$groups-dd, :$sessiontitle-e, :$grouptitle-e
+    );
+
+    .add-button(
+      self, 'do-add-session', 'Add', :$dialog,
+    );
+
+    .add-button(
+      self, 'do-modify-session', 'Modify', :$dialog, 
+    );
+
+    .add-button(
+      self, 'do-add-group', 'Add Group', :$dialog, 
+    );
+
+    .add-button( $dialog, 'destroy-dialog', 'Done');
+
+#    $sessions-dd.register-signal( self, 'set-data', 'row-selected');
+
+    .show-dialog;
+  }
+}
+#-------------------------------------------------------------------------------
+method sessions-create (
+  N-Object $parameter, :extra-data($actions-object)
+) {
+  my Actions $actions .= instance;
+
+  with my Dialog $dialog .= new(
+    :dialog-header('Modify Session'), :add-statusbar
+  ) {
+    my DropDown $groups-dd .= new;
+    my DropDown $sessions-dd .= new;
+    my Entry $grouptitle-e .= new-entry;
+    my Entry $sessiontitle-e .= new-entry;
+
+    # Trap changes in the sessions list
+    $sessions-dd.trap-dropdown-changes(
+      self, 'set-grouplist', :$sessions-dd, :$groups-dd,
+      :$sessiontitle-e, :$grouptitle-e
+    );
+
+    # Trap changes in the group list
+    $groups-dd.trap-dropdown-changes(
+      self, 'set-grouptitle', :$sessions-dd, :$groups-dd, :$grouptitle-e
+    );
+
+    # Fill the sessions list. Triggers the .set-grouplist() and
+    # .set-grouptitle() call back routines.
+    $sessions-dd.set-selection($!sessions.keys.sort);
+
+    my ListBox $actions-list .= new(:multi);
+    my ScrolledWindow $sw = $actions-list.set-list((|$actions.get-ids));
+
+    # Add entries and dropdown widgets
+    .add-content( 'Current session', $sessions-dd, :2columns);
+    .add-content( 'Session title', $sessiontitle-e, :2columns);
+    .add-content( 'Current group', $groups-dd, :2columns);
+    .add-content( 'Group title', $grouptitle-e, :2columns);
+    .add-content( 'Actions list', $sw, :2rows);
+
+    # Add buttons
+#    .add-button(
+#      self, 'save-sessiontitle', 'Set session title',
+#      :$dialog, :$sessiontitle-e, :$sessions-dd
+#    );
+
+    .add-button(
+      self, 'save-session', 'Save session',
+      :$dialog, :$sessions-dd, :$groups-dd, :$sessiontitle-e, :$grouptitle-e
+    );
+
+    .add-button(
+      self, 'do-add-session', 'Add', :$dialog,
+    );
+
+    .add-button(
+      self, 'do-modify-session', 'Modify', :$dialog, 
+    );
+
+    .add-button(
+      self, 'do-add-group', 'Add Group', :$dialog, 
+    );
+
+    .add-button( $dialog, 'destroy-dialog', 'Done');
+
+#    $sessions-dd.register-signal( self, 'set-data', 'row-selected');
+
+    .show-dialog;
+  }
+}
+
+#-------------------------------------------------------------------------------
+method sessions-modify (
   N-Object $parameter, :extra-data($actions-object)
 ) {
   my Actions $actions .= instance;
