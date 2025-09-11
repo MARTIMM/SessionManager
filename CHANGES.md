@@ -23,7 +23,7 @@
   * [x] Storage in <root>/Config/sessions.yaml
   * [ ] Add session
   * [ ] Add actions to a group
-  * [x] Rename session
+  * [ ] Rename session
   * [ ] Remove session
 
 
