@@ -497,7 +497,7 @@ method set-data(
 ) {
   # Needed to rename content of row
 #  $!original-row = $row;
-note "$?LINE";
+#note "$?LINE";
 
 #  my Label() $l = $row.get-child;
   my Str $id = $l.get-text;
@@ -518,13 +518,13 @@ note "$?LINE";
 
 #-------------------------------------------------------------------------------
 method actions-delete ( N-Object $parameter ) {
-  note "$?LINE";
+  note "$?LINE delete";
 }
 
 #-------------------------------------------------------------------------------
 method scrollable-list ( Bool :$multi = False, *%options ) {
 
-note "$?LINE";
+#note "$?LINE";
   my $object = self;
   my ListBox $list-lb .= new(
     :$object, :method<set-data>, :$multi, |%options
