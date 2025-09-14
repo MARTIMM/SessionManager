@@ -12,6 +12,7 @@ use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 #use Gnome::Gtk4::ListBox:api<2>;
 #use Gnome::Gtk4::ListBoxRow:api<2>;
+use Gnome::Gtk4::Label:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -24,11 +25,13 @@ my SessionManager::Gui::Sessions $instance;
 
 constant Dialog = GnomeTools::Gtk::Dialog;
 constant DropDown = GnomeTools::Gtk::DropDown;
-constant Entry = Gnome::Gtk4::Entry;
-constant Actions = SessionManager::Gui::Actions;
-constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
-#constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant ListBox = GnomeTools::Gtk::ListBox;
+
+constant Actions = SessionManager::Gui::Actions;
+
+constant Entry = Gnome::Gtk4::Entry;
+constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+constant Label = Gnome::Gtk4::Label;
 
 has Hash $!sessions;
 
@@ -87,7 +90,7 @@ method load ( ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method sessions-create-group (
+method sessions-add-rename (
   N-Object $parameter, :extra-data($actions-object)
 ) {
   my Actions $actions .= instance;
@@ -95,6 +98,34 @@ method sessions-create-group (
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session'), :add-statusbar
   ) {
+    my Entry $session-e .= new-entry;
+    my Entry $session-title-e .= new-entry;
+
+    # Setup the listbox to show the session ids and a scrolled
+    # window to hold the listbox.
+    my $object = self;
+    my ListBox $sessions_bx .= new(
+      :$object, :method<select-session>, :$session-e, :$session-title-e
+    );
+    my ScrolledWindow $sw = $sessions_bx.set-list([$!sessions.keys]);
+
+    # Add entries and dropdown widgets
+    .add-content( 'Session list', $sw);
+    .add-content( 'Session id', $session-e);
+    .add-content( 'Session title', $session-title-e);
+
+    # Add buttons
+    .add-button(
+      self, 'do-add-session', 'Add', :$dialog,
+      :$sessions_bx, :$session-e, :$session-title-e
+    );
+
+    .add-button(
+      self, 'do-rename-session', 'Rename', :$dialog,
+      :$sessions_bx, :$session-e, :$session-title-e
+    );
+
+#`{{
     my DropDown $groups-dd .= new;
     my DropDown $sessions-dd .= new;
     my Entry $grouptitle-e .= new-entry;
@@ -148,15 +179,51 @@ method sessions-create-group (
       self, 'do-add-group', 'Add Group', :$dialog, 
     );
 
-    .add-button( $dialog, 'destroy-dialog', 'Done');
 
 #    $sessions-dd.register-signal( self, 'set-data', 'row-selected');
+}}
+    .add-button( $dialog, 'destroy-dialog', 'Done');
 
     .show-dialog;
   }
 }
+
 #-------------------------------------------------------------------------------
-method sessions-create (
+method select-session (
+  Label() $session-id, Entry :$session-e, Entry :$session-title-e
+) {
+  my Str $sid = $session-id.get-text;
+  $session-e.set-text($sid);
+  $session-title-e.set-text($!sessions{$sid}<title>);
+}
+
+#-------------------------------------------------------------------------------
+method do-add-session (
+  Dialog :$dialog, ListBox :$sessions_bx,
+  Entry :$session-e, Entry :$session-title-e
+) {
+  my Str $sid = $session-e.get-text;
+  my Str $current-sid = $sessions_bx.get-selection[0];
+
+  if $sid eq $current-sid {
+    $dialog.set-status("$sid already defined");
+  }
+
+  else {
+    $!sessions{$sid}<title> = $session-title-e.get-text;
+    $sessions_bx.append-list($sid);
+  }
+}
+
+#-------------------------------------------------------------------------------
+method do-rename-session (
+  Dialog :$dialog, ListBox :$sessions_bx,
+  Entry :$current-session-e, Entry :$session-title-e
+) {
+}
+
+#-------------------------------------------------------------------------------
+method sessions-create-group (
   N-Object $parameter, :extra-data($actions-object)
 ) {
   my Actions $actions .= instance;
