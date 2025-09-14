@@ -63,6 +63,11 @@ method make-menu (
 
     when 'Sessions' {
       self.bind-action(
+        $menu, $menu-name, $!session-edit, 'Add/Rename',
+#        :icon<view-refresh>, :tooltip('Refresh sidebar')
+      );
+
+      self.bind-action(
         $menu, $menu-name, $!session-edit, 'Create Group',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
@@ -73,17 +78,7 @@ method make-menu (
       );
 
       self.bind-action(
-        $menu, $menu-name, $!session-edit, 'Create',
-#        :icon<view-refresh>, :tooltip('Refresh sidebar')
-      );
-
-      self.bind-action(
         $menu, $menu-name, $!session-edit, 'Modify',
-#        :icon<view-refresh>, :tooltip('Refresh sidebar')
-      );
-
-      self.bind-action(
-        $menu, $menu-name, $!session-edit, 'Rename id',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
 
@@ -145,7 +140,7 @@ method bind-action (
   # Make a method and action name
   my Str $method = [~] $menu-name, ' ', $entry-name;
   $method .= lc;
-  $method ~~ s:g/ \s+ /-/;
+  $method ~~ s:g/ <[\s/_]>+ /-/;
 
   my Str $action-name = 'app.' ~ $method;
 note "$?LINE $menu-name, '$entry-name', $method, $action-name";
