@@ -98,31 +98,49 @@ method sessions-add-rename (
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session'), :add-statusbar
   ) {
-    my Entry $session-e .= new-entry;
-    my Entry $session-title-e .= new-entry;
+    my Entry $sessionid-e .= new-entry;
+    my Entry $sessiontitle-e .= new-entry;
 
     # Setup the listbox to show the session ids and a scrolled
     # window to hold the listbox.
-    my $object = self;
-    my ListBox $sessions_bx .= new(
-      :$object, :method<select-session>, :$session-e, :$session-title-e
+#    my $object = self;
+#    my ListBox $sessions-bx .= new(
+#      :$object, :method<select-session>, :$sessionid-e, :$sessiontitle-e
+#    );
+#    my ScrolledWindow $sw = $sessions-bx.set-list([$!sessions.keys.sort]);
+
+    # Setup the dropdown to show the session ids and a scrolled
+    my DropDown $sessions-dd .= new;
+
+    my Array $a = [$!sessions.keys.sort];
+    if $a.elems {
+      $sessions-dd.set-selection($a);
+      $sessions-dd.select($a[0]);
+
+      $sessionid-e.set-text($a[0]);
+      $sessiontitle-e.set-text($!sessions{$a[0]}<title>);
+   }
+
+    # Trap changes in the sessions list
+    $sessions-dd.trap-dropdown-changes(
+      self, 'select-session', :$sessions-dd, :$sessionid-e,# :$groups-dd,
+      :$sessiontitle-e, #:$grouptitle-e
     );
-    my ScrolledWindow $sw = $sessions_bx.set-list([$!sessions.keys]);
 
     # Add entries and dropdown widgets
-    .add-content( 'Session list', $sw);
-    .add-content( 'Session id', $session-e);
-    .add-content( 'Session title', $session-title-e);
+    .add-content( 'Session list', $sessions-dd);
+    .add-content( 'Session id', $sessionid-e);
+    .add-content( 'Session title', $sessiontitle-e);
 
     # Add buttons
     .add-button(
       self, 'do-add-session', 'Add', :$dialog,
-      :$sessions_bx, :$session-e, :$session-title-e
+      :$sessions-dd, :$sessionid-e, :$sessiontitle-e
     );
 
     .add-button(
       self, 'do-rename-session', 'Rename', :$dialog,
-      :$sessions_bx, :$session-e, :$session-title-e
+      :$sessions-dd, :$sessionid-e, :$sessiontitle-e
     );
 
 #`{{
@@ -190,36 +208,48 @@ method sessions-add-rename (
 
 #-------------------------------------------------------------------------------
 method select-session (
-  Label() $session-id, Entry :$session-e, Entry :$session-title-e
+  N-Object $, DropDown :$sessions-dd,
+  Entry :$sessionid-e, Entry :$sessiontitle-e
 ) {
-  my Str $sid = $session-id.get-text;
-  $session-e.set-text($sid);
-  $session-title-e.set-text($!sessions{$sid}<title>);
+note $?LINE;
+  my Str $sid = $sessions-dd.get-text;
+  $sessionid-e.set-text($sid);
+  $sessiontitle-e.set-text($!sessions{$sid}<title>);
 }
 
 #-------------------------------------------------------------------------------
 method do-add-session (
-  Dialog :$dialog, ListBox :$sessions_bx,
-  Entry :$session-e, Entry :$session-title-e
+  Dialog :$dialog, DropDown :$sessions-dd,
+  Entry :$sessionid-e, Entry :$sessiontitle-e
 ) {
-  my Str $sid = $session-e.get-text;
-  my Str $current-sid = $sessions_bx.get-selection[0];
+  my Str $sid = $sessionid-e.get-text;
+  my Str $current-sid = $sessions-dd.get-text;
 
   if $sid eq $current-sid {
     $dialog.set-status("$sid already defined");
   }
 
   else {
-    $!sessions{$sid}<title> = $session-title-e.get-text;
-    $sessions_bx.append-list($sid);
+    $!sessions{$sid}<title> = $sessiontitle-e.get-text;
+    $sessions-dd.add-selection($sid);
+    $sessions-dd.select($sid);
   }
 }
 
 #-------------------------------------------------------------------------------
 method do-rename-session (
-  Dialog :$dialog, ListBox :$sessions_bx,
-  Entry :$current-session-e, Entry :$session-title-e
+  Dialog :$dialog, DropDown :$sessions-dd, Entry :$sessionid-e
 ) {
+  my Str $sid = $sessionid-e.get-text;
+  my Str $current-sid = $sessions-dd.get-text;
+  if $sid eq $current-sid {
+    $dialog.set-status("$sid already defined");
+  }
+
+  else {
+    $!sessions{$sid} = $!sessions{$current-sid}:delete;
+    $dialog.set-status("$current-sid successfully renamed to $sid");
+  }
 }
 
 #-------------------------------------------------------------------------------
