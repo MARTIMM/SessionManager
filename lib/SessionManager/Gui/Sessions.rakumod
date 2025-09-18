@@ -233,6 +233,7 @@ method do-add-session (
     $!sessions{$sid}<title> = $sessiontitle-e.get-text;
     $sessions-dd.add-selection($sid);
     $sessions-dd.select($sid);
+    $dialog.set-status("$sid successfully added");
   }
 }
 
@@ -253,7 +254,7 @@ method do-rename-session (
 }
 
 #-------------------------------------------------------------------------------
-method sessions-create-group (
+method sessions-add-rename-group (
   N-Object $parameter, :extra-data($actions-object)
 ) {
   my Actions $actions .= instance;
@@ -264,12 +265,12 @@ method sessions-create-group (
     my DropDown $groups-dd .= new;
     my DropDown $sessions-dd .= new;
     my Entry $grouptitle-e .= new-entry;
-    my Entry $sessiontitle-e .= new-entry;
+    my Label $sessiontitle-l .= new-label;
 
     # Trap changes in the sessions list
     $sessions-dd.trap-dropdown-changes(
       self, 'set-grouplist', :$sessions-dd, :$groups-dd,
-      :$sessiontitle-e, :$grouptitle-e
+      :$sessiontitle-l, :$grouptitle-e
     );
 
     # Trap changes in the group list
@@ -281,15 +282,15 @@ method sessions-create-group (
     # .set-grouptitle() call back routines.
     $sessions-dd.set-selection($!sessions.keys.sort);
 
-    my ListBox $actions-list .= new(:multi);
-    my ScrolledWindow $sw = $actions-list.set-list((|$actions.get-ids));
+#    my ListBox $actions-list .= new(:multi);
+#    my ScrolledWindow $sw = $actions-list.set-list([|$actions.get-ids.sort]);
 
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, :2columns);
-    .add-content( 'Session title', $sessiontitle-e, :2columns);
+    .add-content( 'Session title', $sessiontitle-l, :2columns);
     .add-content( 'Current group', $groups-dd, :2columns);
     .add-content( 'Group title', $grouptitle-e, :2columns);
-    .add-content( 'Actions list', $sw, :2rows);
+#    .add-content( 'Actions list', $sw, :2rows);
 
     # Add buttons
 #    .add-button(
@@ -297,6 +298,7 @@ method sessions-create-group (
 #      :$dialog, :$sessiontitle-e, :$sessions-dd
 #    );
 
+#`{{
     .add-button(
       self, 'save-session', 'Save session',
       :$dialog, :$sessions-dd, :$groups-dd, :$sessiontitle-e, :$grouptitle-e
@@ -309,9 +311,15 @@ method sessions-create-group (
     .add-button(
       self, 'do-modify-session', 'Modify', :$dialog, 
     );
+}}
+    .add-button(
+      self, 'do-add-group', 'Add Group',
+      :$dialog, :$sessions-dd, :$groups-dd, :$grouptitle-e, 
+    );
 
     .add-button(
-      self, 'do-add-group', 'Add Group', :$dialog, 
+      self, 'do-change-group', 'Change Group',
+      :$dialog, :$sessions-dd, :$groups-dd, :$grouptitle-e, 
     );
 
     .add-button( $dialog, 'destroy-dialog', 'Done');
@@ -320,6 +328,44 @@ method sessions-create-group (
 
     .show-dialog;
   }
+}
+
+#-------------------------------------------------------------------------------
+method do-add-group (
+  Dialog :$dialog, DropDown :$sessions-dd,
+  DropDown :$groups-dd, Entry :$grouptitle-e,
+) {
+  my Str $sessionid = $sessions-dd.get-text;
+
+  for 1..6 -> $group-count {
+    my Str $new-group = "group$group-count";
+    next if $!sessions{$sessionid}{$new-group}:exists;
+
+    $!sessions{$sessionid}{}<title> = $grouptitle-e.get-text;
+    $dialog.set-status("$new-group is succesfully added");
+    $groups-dd.add-selection($new-group);
+    $groups-dd.select($new-group);
+    last;
+
+    NEXT {
+      if $group-count > 5 {
+        $dialog.set-status("maximum number of groups");
+        last;
+      }
+    }
+  }
+}
+
+#-------------------------------------------------------------------------------
+method do-change-group (
+  Dialog :$dialog, DropDown :$sessions-dd,
+  DropDown :$groups-dd, Entry :$grouptitle-e,
+) {
+  my Str $sessionid = $sessions-dd.get-text;
+  my Str $group = $groups-dd.get-text;
+
+  $!sessions{$sessionid}{$group}<title> = $grouptitle-e.get-text;
+  $dialog.set-status("$group is succesfully changed");
 }
 
 #-------------------------------------------------------------------------------
@@ -395,24 +441,38 @@ method sessions-modify (
 #-------------------------------------------------------------------------------
 method set-grouplist (
   N-Object $, DropDown :$sessions-dd, DropDown :$groups-dd,
-  Entry :$sessiontitle-e, Entry :$grouptitle-e
+  Label :$sessiontitle-l, Entry :$grouptitle-e
 ) {
-  my Str $session-name = $sessions-dd.get-text;
-  $groups-dd.set-selection($!sessions{$session-name}.keys.grep(/^group/).sort);
+  my Str $sessionid = $sessions-dd.get-text;
+  $groups-dd.set-selection($!sessions{$sessionid}.keys.grep(/^group/).sort);
 
   my Str $group-name = $groups-dd.get-text;
-  $grouptitle-e.set-text($!sessions{$session-name}{$group-name}<title> // '');
+  $grouptitle-e.set-text($!sessions{$sessionid}{$group-name}<title> // '');
 
-  $sessiontitle-e.set-text($!sessions{$session-name}<title> // '');
+  $sessiontitle-l.set-text($!sessions{$sessionid}<title>);
+}
+
+#-------------------------------------------------------------------------------
+method set-grouplistX (
+  N-Object $, DropDown :$sessions-dd, DropDown :$groups-dd,
+  Entry :$sessiontitle-e, Entry :$grouptitle-e
+) {
+  my Str $sessionid = $sessions-dd.get-text;
+  $groups-dd.set-selection($!sessions{$sessionid}.keys.grep(/^group/).sort);
+
+  my Str $group-name = $groups-dd.get-text;
+  $grouptitle-e.set-text($!sessions{$sessionid}{$group-name}<title> // '');
+
+  $sessiontitle-e.set-text($!sessions{$sessionid}<title> // '');
 }
 
 #------------------------------------------------------------------------------
 method set-grouptitle (
   N-Object $, DropDown :$sessions-dd, DropDown :$groups-dd, Entry :$grouptitle-e
 ) {
-  my Str $session-name = $sessions-dd.get-text;
+  my Str $sessionid = $sessions-dd.get-text;
   my Str $group-name = $groups-dd.get-text;
-  $grouptitle-e.set-text($!sessions{$session-name}{$group-name}<title> // '');
+  $grouptitle-e.set-text($!sessions{$sessionid}{$group-name}<title> // '');
 }
 
 #-------------------------------------------------------------------------------
@@ -420,11 +480,11 @@ method save-session (
   Dialog :$dialog, DropDown :$sessions-dd, DropDown :$groups-dd,
   Entry :$sessiontitle-e, Entry :$grouptitle-e,
 ) {
-  my Str $session-name = $sessions-dd.get-text;
-  $!sessions{$session-name}<title> = $sessiontitle-e.get-text;
+  my Str $sessionid = $sessions-dd.get-text;
+  $!sessions{$sessionid}<title> = $sessiontitle-e.get-text;
 
   my Str $group-name = $groups-dd.get-text;
-  $!sessions{$session-name}{$group-name}<title> = $grouptitle-e.get-text;
+  $!sessions{$sessionid}{$group-name}<title> = $grouptitle-e.get-text;
 }
 
 #-------------------------------------------------------------------------------
