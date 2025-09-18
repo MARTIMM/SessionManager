@@ -33,7 +33,7 @@ has GnomeTools::Gtk::Theming $!theme;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Bool :$load-manual-build-config = False ) {
-note "$?LINE $*config-directory";
+#note "$?LINE $*config-directory";
 
   mkdir $*config-directory ~ '/Images', 0o700
         unless ($*config-directory ~ '/Images').IO.e;
@@ -48,7 +48,7 @@ note "$?LINE $*config-directory";
     config-icon.jpg brushed-copper.jpg mozaic.jpg
     bookmark.png fastforward.png
   > -> $i {
-note "$?LINE $i";
+#note "$?LINE $i";
     $png-file = [~] $*config-directory, '/Images/', $i;
     %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
   }
