@@ -26,3 +26,4 @@ docs-old/
 .bundle/
 xt/NewModules/*
 xt/Templates/*
+xt/ExampleSetup/*
