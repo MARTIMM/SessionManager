@@ -1,9 +1,31 @@
 ---
 "AI": 
+  "group1": 
+    "title": ""
+  "group2": 
+    "title": ""
+  "group3": 
+    "title": ""
+  "group4": 
+    "title": ""
+  "group5": 
+    "title": ""
+  "group6": 
+    "title": ""
   "title": "test sessie"
-"AI23": 
-  "title": "test sessie"
+"AI10": 
+  "group1": 
+    "title": "title of AI10"
+  "title": "AI test sessie"
+"AI23a": 
+  "group1": 
+    "title": "jhsgdf jhsgdf jhgsrwueit"
+  "title": ""
 "AI24": 
+  "": 
+    "title": "title van groep"
+  "group1": 
+    "title": ""
   "title": "test sessie"
 "Default": 
   "group1": 
