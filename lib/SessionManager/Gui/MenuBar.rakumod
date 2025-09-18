@@ -68,7 +68,7 @@ method make-menu (
       );
 
       self.bind-action(
-        $menu, $menu-name, $!session-edit, 'Create Group',
+        $menu, $menu-name, $!session-edit, 'Add/Rename Group',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
 
@@ -78,7 +78,7 @@ method make-menu (
       );
 
       self.bind-action(
-        $menu, $menu-name, $!session-edit, 'Modify',
+        $menu, $menu-name, $!session-edit, 'Add/Remove Actions',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
 
