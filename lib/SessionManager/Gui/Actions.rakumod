@@ -529,7 +529,7 @@ method scrollable-list ( Bool :$multi = False, *%options ) {
   my ListBox $list-lb .= new(
     :$object, :method<set-data>, :$multi, |%options
   );
-  my ScrolledWindow $sw = $list-lb.set-list($!data-ids.keys.sort.List);
+  my ScrolledWindow $sw = $list-lb.set-list([|$!data-ids.keys.sort]);
 
 #`{{
   $list-lb.set-selection-mode(GTK_SELECTION_MULTIPLE) if $multi;
