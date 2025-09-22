@@ -11,7 +11,7 @@ use GnomeTools::Gtk::ListBox;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 #use Gnome::Gtk4::ListBox:api<2>;
-#use Gnome::Gtk4::ListBoxRow:api<2>;
+use Gnome::Gtk4::ListBoxRow:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
@@ -26,6 +26,7 @@ my SessionManager::Gui::Sessions $instance;
 constant Dialog = GnomeTools::Gtk::Dialog;
 constant DropDown = GnomeTools::Gtk::DropDown;
 constant ListBox = GnomeTools::Gtk::ListBox;
+constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 
 constant Actions = SessionManager::Gui::Actions;
 
@@ -123,8 +124,7 @@ method sessions-add-rename (
 
     # Trap changes in the sessions list
     $sessions-dd.trap-dropdown-changes(
-      self, 'select-session', :$sessions-dd, :$sessionid-e,# :$groups-dd,
-      :$sessiontitle-e, #:$grouptitle-e
+      self, 'select-session', :$sessions-dd, :$sessionid-e, :$sessiontitle-e
     );
 
     # Add entries and dropdown widgets
@@ -369,7 +369,7 @@ method do-change-group (
 }
 
 #-------------------------------------------------------------------------------
-method sessions-modify (
+method sessions-add-remove-actions (
   N-Object $parameter, :extra-data($actions-object)
 ) {
   my Actions $actions .= instance;
@@ -380,12 +380,33 @@ method sessions-modify (
     my DropDown $groups-dd .= new;
     my DropDown $sessions-dd .= new;
     my Entry $grouptitle-e .= new-entry;
-    my Entry $sessiontitle-e .= new-entry;
+    my Label $sessiontitle-l .= new-label;
+
+    # Fill the sessions list. Triggers the .set-grouplist() and
+    # .set-grouptitle() call back routines.
+    $sessions-dd.set-selection($!sessions.keys.sort);
+
+    my ListBox $sessions-actions-list .= new(
+      :object(self), :method<remove-action>, :multi
+    );
+    my Str $c-session = $sessions-dd.get-text;
+    my Str $c-group = $groups-dd.get-text;
+    my Array $s-actions = $!sessions{$c-session}{$c-group}<actions> // [];
+note $?LINE;
+    my ScrolledWindow $sw1 = $sessions-actions-list.set-list($s-actions);
+note $?LINE;
+
+    my ListBox $all-actions-list .= new(
+      :object(self), :method<add-action>, :multi
+    );
+note $?LINE;
+    my ScrolledWindow $sw2 = $all-actions-list.set-list([|$actions.get-ids]);
+note $?LINE;
 
     # Trap changes in the sessions list
     $sessions-dd.trap-dropdown-changes(
-      self, 'set-grouplist', :$sessions-dd, :$groups-dd,
-      :$sessiontitle-e, :$grouptitle-e
+      self, 'set-grouplist', :$sessions-dd, :$groups-dd, :$sessions-actions-list
+      :$sessiontitle-l, :$grouptitle-e
     );
 
     # Trap changes in the group list
@@ -393,19 +414,13 @@ method sessions-modify (
       self, 'set-grouptitle', :$sessions-dd, :$groups-dd, :$grouptitle-e
     );
 
-    # Fill the sessions list. Triggers the .set-grouplist() and
-    # .set-grouptitle() call back routines.
-    $sessions-dd.set-selection($!sessions.keys.sort);
-
-    my ListBox $actions-list .= new(:multi);
-    my ScrolledWindow $sw = $actions-list.set-list((|$actions.get-ids));
-
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, :2columns);
-    .add-content( 'Session title', $sessiontitle-e, :2columns);
+    .add-content( 'Session title', $sessiontitle-l, :2columns);
     .add-content( 'Current group', $groups-dd, :2columns);
     .add-content( 'Group title', $grouptitle-e, :2columns);
-    .add-content( 'Actions list', $sw, :2rows);
+    .add-content( 'Sessions Actions list', $sw1, :2rows);
+    .add-content( 'All Actions list', $sw2, :2rows);
 
     # Add buttons
 #    .add-button(
@@ -415,7 +430,7 @@ method sessions-modify (
 
     .add-button(
       self, 'save-session', 'Save session',
-      :$dialog, :$sessions-dd, :$groups-dd, :$sessiontitle-e, :$grouptitle-e
+      :$dialog, :$sessions-dd, :$groups-dd, :$sessiontitle-l, :$grouptitle-e
     );
 
     .add-button(
@@ -439,9 +454,31 @@ method sessions-modify (
 }
 
 #-------------------------------------------------------------------------------
+# Add action to session
+method add-action (
+  Label() :row-widget($text-l), ListBoxRow() :row($row-lbr), ListBox :$listbox
+) {
+  note "$?LINE $text-l.get-text(), $row-lbr.is-selected()";
+#  if $row-lbr.is-selected {
+#    $listbox.unselect-row($row-lbr);
+#  }
+}
+
+#-------------------------------------------------------------------------------
+# Remove action from session
+method remove-action (
+  Label() :row-widget($text-l), ListBoxRow() :row($row-lbr), ListBox :$listbox
+) {
+  note "$?LINE $text-l.get-text(), $row-lbr.is-selected()";
+#  if $row-lbr.is-selected {
+#    $listbox.unselect-row($row-lbr);
+#  }
+}
+
+#-------------------------------------------------------------------------------
 method set-grouplist (
   N-Object $, DropDown :$sessions-dd, DropDown :$groups-dd,
-  Label :$sessiontitle-l, Entry :$grouptitle-e
+  ListBox :$sessions-actions-list, Label :$sessiontitle-l, Entry :$grouptitle-e
 ) {
   my Str $sessionid = $sessions-dd.get-text;
   $groups-dd.set-selection($!sessions{$sessionid}.keys.grep(/^group/).sort);
@@ -450,6 +487,12 @@ method set-grouplist (
   $grouptitle-e.set-text($!sessions{$sessionid}{$group-name}<title> // '');
 
   $sessiontitle-l.set-text($!sessions{$sessionid}<title>);
+
+  my Str $c-session = $sessions-dd.get-text;
+  my Str $c-group = $groups-dd.get-text;
+note "$?LINE $c-session, $c-group\n$!sessions.gist();";
+  my Array $s-actions = $!sessions{$c-session}{$c-group}<actions> // [];
+  $sessions-actions-list.reset-list($s-actions);
 }
 
 #-------------------------------------------------------------------------------
