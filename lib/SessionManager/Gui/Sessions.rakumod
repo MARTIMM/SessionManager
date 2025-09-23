@@ -330,14 +330,27 @@ method sessions-add-remove-actions (
     my Label $grouptitle .= new-label;
     my Label $sessiontitle .= new-label;
 
+    my ListBox $sessions-actions-list;
+
+    # Trap changes in the sessions list
+    $sessions-dd.trap-dropdown-changes(
+      self, 'set-grouplist', :$sessions-dd, :$groups-dd,
+      :$sessions-actions-list, :$sessiontitle, :$grouptitle
+    );
+
+    # Trap changes in the group list
+    $groups-dd.trap-dropdown-changes(
+      self, 'set-grouptitle', :$sessions-dd, :$groups-dd, :$grouptitle
+    );
+
     # Fill the sessions list. Triggers the .set-grouplist() and
     # .set-grouptitle() call back routines.
-    $sessions-dd.set-selection($!sessions.keys.sort);
+    my @session-ids = $!sessions.keys.sort;
+    $sessions-dd.set-selection(@session-ids);
+    $sessions-dd.select(@session-ids[0]);
 
-    my ListBox $sessions-actions-list;
     $sessions-actions-list .= new(
-      :object(self), :method<remove-action>, :multi, :$sessions-dd, :$groups-dd,
-      :$sessions-actions-list
+      :object(self), :method<remove-action>, :multi, :$sessions-dd, :$groups-dd
     );
     my Str $c-session = $sessions-dd.get-text;
     my Str $c-group = $groups-dd.get-text;
@@ -348,22 +361,12 @@ note $?LINE;
 
     my ListBox $all-actions-list .= new(
       :object(self), :method<add-action>, :multi, :$sessions-dd, :$groups-dd,
-      $sessions-actions-list
+      :$sessions-actions-list
     );
 note $?LINE;
     my ScrolledWindow $sw2 = $all-actions-list.set-list([|$actions.get-ids]);
 note $?LINE;
 
-    # Trap changes in the sessions list
-    $sessions-dd.trap-dropdown-changes(
-      self, 'set-grouplist2', :$sessions-dd, :$groups-dd,
-      :$sessions-actions-list, :$sessiontitle, :$grouptitle
-    );
-
-    # Trap changes in the group list
-    $groups-dd.trap-dropdown-changes(
-      self, 'set-grouptitle2', :$sessions-dd, :$groups-dd, :$grouptitle
-    );
 
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, :2columns);
@@ -406,39 +409,41 @@ note $?LINE;
 }
 
 #-------------------------------------------------------------------------------
-# Add action to session
+# Add action to the session list
 method add-action (
-  Label() :row-widget($text-l), ListBoxRow() :row($row-lbr), ListBox :$listbox,
+  Label() :$row-widget, ListBoxRow() :row($row-lbr),
   DropDown :$sessions-dd, DropDown :$groups-dd,
   ListBox :$sessions-actions-list, 
 ) {
-note "$?LINE $text-l.get-text(), $row-lbr.is-selected()";
+  my Str $action-id = $row-widget.get-text();
+note "$?LINE $action-id, $row-lbr.is-selected()";
 
   my Str $c-session = $sessions-dd.get-text;
   my Str $c-group = $groups-dd.get-text;
-note "$?LINE $c-session, $c-group\n$!sessions.gist();";
+note "$?LINE $c-session, $c-group\n$!sessions{$c-session}.gist();";
 
   my Array $s-actions = [];
 
   # Search through keys if it hasn't been added before
   my Bool $found-in-sessions = False;
   for $!sessions{$c-session}{$c-group}<actions>.keys -> $action-id {
-    if $action-id eq $text-l.get-text {
+
+    if $action-id eq $action-id {
       $found-in-sessions = True;
       last;
     }
   }
 
-  $sessions-actions-list.append-list($text-l.get-text)
+  $sessions-actions-list.append-list($action-id)
     unless $found-in-sessions;
 }
 
 #-------------------------------------------------------------------------------
-# Remove action from session
+# Remove action from the session actions list
 method remove-action (
-  Label() :row-widget($text-l), ListBoxRow() :row($row-lbr), ListBox :$listbox,
+  Label() :row-widget($text-l), ListBoxRow() :row($row-lbr),
+  ListBox :listbox($sessions-actions-list),
   DropDown :$sessions-dd, DropDown :$groups-dd,
-  ListBox :$sessions-actions-list, 
 ) {
 note "$?LINE $text-l.get-text(), $row-lbr.is-selected()";
 
@@ -464,13 +469,14 @@ method set-grouplist (
   $groups-dd.set-selection($!sessions{$sessionid}.keys.grep(/^group/).sort);
 
   my Str $group-name = $groups-dd.get-text;
+note "$?LINE $sessionid, $group-name";
   $grouptitle.set-text($!sessions{$sessionid}{$group-name}<title> // '');
 
   $sessiontitle.set-text($!sessions{$sessionid}<title>);
+note "$?LINE $sessiontitle.get-text(), $grouptitle.get-text()";
 
   my Str $c-session = $sessions-dd.get-text;
   my Str $c-group = $groups-dd.get-text;
-note "$?LINE $c-session, $c-group\n$!sessions.gist();";
   my Array $s-actions = $!sessions{$c-session}{$c-group}<actions> // [];
   $sessions-actions-list.reset-list($s-actions);
 }
