@@ -280,22 +280,26 @@ method do-add-group (
 ) {
   my Str $sessionid = $sessions-dd.get-text;
 
+  # Add a group key. names are labeled: group1, group2, etc. with a maximum of 5
   for 1..6 -> $group-count {
+    if $group-count >= 6 {
+      $dialog.set-status("maximum number of groups reached");
+      last;
+    }
+
     my Str $new-group = "group$group-count";
     next if $!sessions{$sessionid}{$new-group}:exists;
 
-    $!sessions{$sessionid}{}<title> = $grouptitle.get-text;
-    $dialog.set-status("$new-group is succesfully added");
+    # Add a new group, set its title and add an actions key
+    $!sessions{$sessionid}{$new-group}<title> = $grouptitle.get-text;
+    $!sessions{$sessionid}{$new-group}<actions> = %();
+
+    # Insert the group name in the dropdown and select the group
     $groups-dd.add-selection($new-group);
     $groups-dd.select($new-group);
-    last;
 
-    NEXT {
-      if $group-count > 5 {
-        $dialog.set-status("maximum number of groups");
-        last;
-      }
-    }
+    $dialog.set-status("$new-group is succesfully added");
+    last;
   }
 }
 
