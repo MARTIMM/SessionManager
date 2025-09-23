@@ -292,7 +292,7 @@ method do-add-group (
 
     # Add a new group, set its title and add an actions key
     $!sessions{$sessionid}{$new-group}<title> = $grouptitle.get-text;
-    $!sessions{$sessionid}{$new-group}<actions> = %();
+    $!sessions{$sessionid}{$new-group}<actions> = [];
 
     # Insert the group name in the dropdown and select the group
     $groups-dd.add-selection($new-group);
