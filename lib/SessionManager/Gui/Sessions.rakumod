@@ -250,36 +250,13 @@ method sessions-add-rename-group (
     # .set-grouptitle() call back routines.
     $sessions-dd.set-selection($!sessions.keys.sort);
 
-#    my ListBox $actions-list .= new(:multi);
-#    my ScrolledWindow $sw = $actions-list.set-list([|$actions.get-ids.sort]);
-
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, :2columns);
     .add-content( 'Session title', $sessiontitle, :2columns);
     .add-content( 'Current group', $groups-dd, :2columns);
     .add-content( 'Group title', $grouptitle, :2columns);
-#    .add-content( 'Actions list', $sw, :2rows);
 
     # Add buttons
-#    .add-button(
-#      self, 'save-sessiontitle', 'Set session title',
-#      :$dialog, :$sessiontitle-e, :$sessions-dd
-#    );
-
-#`{{
-    .add-button(
-      self, 'save-session', 'Save session',
-      :$dialog, :$sessions-dd, :$groups-dd, :$sessiontitle-e, :$grouptitle
-    );
-
-    .add-button(
-      self, 'do-add-session', 'Add', :$dialog,
-    );
-
-    .add-button(
-      self, 'do-modify-session', 'Modify', :$dialog, 
-    );
-}}
     .add-button(
       self, 'do-add-group', 'Add Group',
       :$dialog, :$sessions-dd, :$groups-dd, :$grouptitle, 
@@ -291,8 +268,6 @@ method sessions-add-rename-group (
     );
 
     .add-button( $dialog, 'destroy-dialog', 'Done');
-
-#    $sessions-dd.register-signal( self, 'set-data', 'row-selected');
 
     .show-dialog;
   }
