@@ -304,6 +304,7 @@ method do-add-group (
 }
 
 #-------------------------------------------------------------------------------
+# Changing the group is only a change for its title
 method do-change-group (
   Dialog :$dialog, DropDown :$sessions-dd,
   DropDown :$groups-dd, Widget :$grouptitle,
