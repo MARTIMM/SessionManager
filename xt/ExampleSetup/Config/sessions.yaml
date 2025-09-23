@@ -1,38 +1,12 @@
 ---
-"AI": 
-  "group1": 
-    "title": ""
-  "group2": 
-    "title": ""
-  "group3": 
-    "title": ""
-  "group4": 
-    "title": ""
-  "group5": 
-    "title": ""
-  "group6": 
-    "title": ""
-  "title": "test sessie"
-"AI10": 
-  "group1": 
-    "title": "title of AI10"
-  "title": "AI test sessie"
 "AI23a": 
   "group1": 
     "actions": 
       - "kHome"
     "title": "jhsgdf jhsgd f jhgsrwueit"
-  "title": ""
-"AI24": 
-  "": 
-    "title": "title van groep"
+  "title": "should have e text here?"
+"manager": 
   "group1": 
-    "title": ""
+    "actions":  []
   "title": "test sessie"
-"Default": 
-  "group1": 
-    "title": "default setup"
-  "title": "test sessie"
-"Default2": 
-  "title": "test sessie2"
 ...
