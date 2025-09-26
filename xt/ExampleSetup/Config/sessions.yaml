@@ -2,13 +2,15 @@
 "AI23b": 
   "group1": 
     "actions": 
-      - "kHome"
+      - "DHome"
     "title": "g1"
   "group2": 
     "actions":  []
     "title": "g2"
   "group3": 
-    "actions":  []
+    "actions": 
+      - "DHome"
+      - "kHome"
     "title": "g2"
   "group4": 
     "actions":  []
@@ -19,6 +21,11 @@
   "title": "should have a text here"
 "manager": 
   "group1": 
+    "actions": 
+      - "DHome"
+    "title": "my g1"
+  "group2": 
     "actions":  []
+    "title": "my g2"
   "title": "test sessie"
 ...
