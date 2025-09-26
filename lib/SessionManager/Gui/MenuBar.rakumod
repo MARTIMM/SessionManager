@@ -63,7 +63,7 @@ method make-menu (
 
     when 'Sessions' {
       self.bind-action(
-        $menu, $menu-name, $!session-edit, 'Add/Rename',
+        $menu, $menu-name, $!session-edit, 'Modify',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
 
