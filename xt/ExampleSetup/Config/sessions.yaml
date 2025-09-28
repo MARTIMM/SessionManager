@@ -25,7 +25,9 @@
       - "DHome"
     "title": "my g1"
   "group2": 
-    "actions":  []
+    "actions": 
+      - "DHome"
+      - "kHome"
     "title": "my g2"
   "title": "test sessie"
 ...
