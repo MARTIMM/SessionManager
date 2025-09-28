@@ -95,9 +95,7 @@ method load ( ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method sessions-add-rename (
-  N-Object $parameter, :extra-data($actions-object)
-) {
+method sessions-add-rename ( N-Object $parameter ) {
   my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
@@ -224,9 +222,7 @@ method do-rename-session (
 }
 
 #-------------------------------------------------------------------------------
-method sessions-add-rename-group (
-  N-Object $parameter, :extra-data($actions-object)
-) {
+method sessions-add-rename-group ( N-Object $parameter, ) {
   my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
@@ -317,9 +313,7 @@ method do-change-group (
 }
 
 #-------------------------------------------------------------------------------
-method sessions-add-remove-actions (
-  N-Object $parameter, :extra-data($actions-object)
-) {
+method sessions-add-remove-actions ( N-Object $parameter ) {
   my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
@@ -430,6 +424,6 @@ note "$?LINE";
 
 #-------------------------------------------------------------------------------
 method sessions-delete (
-  N-Object $parameter, :extra-data($actions-object)
+  N-Object $parameter
 ) {
 }
