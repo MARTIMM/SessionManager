@@ -25,7 +25,7 @@ use Gnome::N::X:api<2>;
 unit class SessionManager::Gui::Sessions;
 also is SessionManager::Sessions;
 
-constant ConfigPath = '/Config/sessions.yaml';
+#constant ConfigPath = '/Config/sessions.yaml';
 my SessionManager::Gui::Sessions $instance;
 
 constant Dialog = GnomeTools::Gtk::Dialog;
