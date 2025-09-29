@@ -1,11 +1,11 @@
 use v6.d;
 
 use SessionManager::ActionData;
-use SessionManager::Actions;
 
 use Digest::SHA256::Native;
 use YAMLish;
 
+#`{{
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
 
@@ -20,29 +20,32 @@ use Gnome::Gtk4::Switch:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
+}}
 
 #-------------------------------------------------------------------------------
-unit class SessionManager::Gui::Actions;
-also is SessionManager::Actions;
+unit class SessionManager::Actions;
 
-#constant ConfigPath = '/Config/actions.yaml';
+constant ConfigPath = '/Config/actions.yaml';
 
+#`{{
 constant Entry = Gnome::Gtk4::Entry;
 constant Switch = Gnome::Gtk4::Switch;
 constant ListBox = GnomeTools::Gtk::ListBox;
 #constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+}}
 
 #-------------------------------------------------------------------------------
-my SessionManager::Gui::Actions $instance;
+#my $instance;
 
-has Hash $!data-ids;
-has Str $!original-id;
+my Hash $data-ids = %();
+#has Str $!original-id;
 #has ListBoxRow $!original-row;
+#`{{
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
-  $!data-ids = %();
+  $data-ids = %();
 }
 
 #-------------------------------------------------------------------------------
@@ -54,14 +57,14 @@ method instance ( --> SessionManager::Gui::Actions ) {
 
   $instance
 }
+}}
 
-#`{{
 #-------------------------------------------------------------------------------
 method add-action ( Hash:D $raw-action, Str :$id = '' --> Str ) {
   my SessionManager::ActionData $action-data;
   $action-data .= new;
   $action-data.init-action( :$raw-action, :$id);
-  $!data-ids{$action-data.id} = $action-data;
+  $data-ids{$action-data.id} = $action-data;
   $action-data.id
 }
 
@@ -92,8 +95,8 @@ method add-from-yaml ( Str:D $path ) {
 #-------------------------------------------------------------------------------
 method save ( ) {
   my Hash $raw-actions = %();
-  for $!data-ids.keys -> $id {
-    $raw-actions{$id} = $!data-ids{$id}.raw-action;
+  for $data-ids.keys -> $id {
+    $raw-actions{$id} = $data-ids{$id}.raw-action;
   }
 
   ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($raw-actions));
@@ -113,9 +116,14 @@ method load ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method get-action-ids ( --> Seq ) {
+  $data-ids.keys
+}
+
+#-------------------------------------------------------------------------------
 method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
-  if $!data-ids{$id}:exists {
-    $!data-ids{$id}
+  if $data-ids{$id}:exists {
+    $data-ids{$id}
   }
 
   else {
@@ -123,8 +131,8 @@ method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
     # string. Those are taken when no id was found and converted into sha256
     # strings in SessionManager::ActionData.
     $id = sha256-hex($id);
-    if $!data-ids{$id}:exists {
-      $!data-ids{$id}
+    if $data-ids{$id}:exists {
+      $data-ids{$id}
     }
 
     else {
@@ -136,12 +144,24 @@ method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
 #-------------------------------------------------------------------------------
 # Substitute changed variable in the raw actions Hash.
 method subst-vars ( Str $original-var, Str $new-var ) {
-  for $!data-ids.keys -> $id {
-    $!data-ids{$id}.subst-vars( $original-var, $new-var);
+  for $data-ids.keys -> $id {
+    $data-ids{$id}.subst-vars( $original-var, $new-var);
   }
 }
-}}
 
+
+
+
+
+
+
+
+
+
+
+
+
+=finish
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
@@ -243,7 +263,7 @@ method do-create-act (
     $dialog.set-status('The action id may not be empty');
   }
 
-  elsif $id ~~ any(|$!data-ids.keys) {
+  elsif $id ~~ any(|$data-ids.keys) {
     $dialog.set-status('This action id is already defined');
   }
 
@@ -374,7 +394,7 @@ method do-modify-act (
   $raw-action<p> = $aspec-path.get-text;
 
   my Str $original-id = $listbox.get-selection[0];
-  my SessionManager::ActionData $action-data = $!data-ids{$original-id};
+  my SessionManager::ActionData $action-data = $data-ids{$original-id};
   $action-data.init-action( :$raw-action, :id($original-id));
   $sts-ok = True;
 
@@ -466,7 +486,7 @@ method do-rename-act (
     $dialog.set-status('An action id may not be empty');
   }
 
-  elsif $id ~~ any(|$!data-ids.keys) {
+  elsif $id ~~ any(|$data-ids.keys) {
     $dialog.set-status('This action id is already defined');
   }
 
@@ -483,8 +503,8 @@ method do-rename-act (
 
     # Set original
     $!original-id = $listbox.get-selection[0];
-    my SessionManager::ActionData $adata = $!data-ids{$!original-id}:delete;
-    $!data-ids{$id} = $adata;
+    my SessionManager::ActionData $adata = $data-ids{$!original-id}:delete;
+    $data-ids{$id} = $adata;
 
     $dialog.set-status('Renamed everything successfully');
   }
@@ -494,7 +514,7 @@ method do-rename-act (
 
 #-------------------------------------------------------------------------------
 method set-data(
-  Label() :$row-widget, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
+  Label() $l, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
   Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-path,
   Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic
@@ -503,12 +523,12 @@ method set-data(
 #  $!original-row = $row;
 #note "$?LINE";
 
-#  my Label() $row-widget = $row.get-child;
-  my Str $id = $row-widget.get-text;
+#  my Label() $l = $row.get-child;
+  my Str $id = $l.get-text;
 #  $!original-id = $id;
   $action-id.set-text($id);
 
-  my Hash $action-object = self.get-raw-action($id);
+  my Hash $action-object = $data-ids{$id}.raw-action;
   $aspec-title.set-text($action-object<t>) if ?$action-object<t>;
   $aspec-cmd.set-text($action-object<c>) if ?$action-object<c>;
   $aspec-path.set-text($action-object<p>) if ?$action-object<p>;
@@ -533,11 +553,11 @@ method scrollable-list ( Bool :$multi = False, *%options ) {
   my ListBox $list-lb .= new(
     :$object, :method<set-data>, :$multi, |%options
   );
-  my ScrolledWindow $sw = $list-lb.set-list([self.get-action-ids.sort]);
+  my ScrolledWindow $sw = $list-lb.set-list([|$data-ids.keys.sort]);
 
 #`{{
   $list-lb.set-selection-mode(GTK_SELECTION_MULTIPLE) if $multi;
-  for $!data-ids.keys.sort -> $id {
+  for $data-ids.keys.sort -> $id {
     with my Label $l .= new-with-mnemonic($id) {
       .set-justify(GTK_JUSTIFY_LEFT);
       .set-halign(GTK_ALIGN_START);
@@ -558,5 +578,5 @@ method scrollable-list ( Bool :$multi = False, *%options ) {
 
 #-------------------------------------------------------------------------------
 method get-ids ( --> Seq ) {
-  $!data-ids.keys.sort
+  $data-ids.keys.sort
 }
