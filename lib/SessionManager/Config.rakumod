@@ -162,8 +162,8 @@ method check-actions ( ) {
 
 #  for $!dispatch-config<sessions>.keys -> $name {
 #    my Hash $sessions = $!dispatch-config<sessions>{$name};
-  for $sessions.get-session-names -> $name {
-    my Hash $session = $sessions.get-session($name);
+  for $sessions.get-session-ids -> $sid {
+    my Hash $session = $sessions.get-session($sid);
     for 1 .. 10 -> $level {
       last unless $session{'group' ~ $level}<actions>:exists;
       $session{'group' ~ $level}<actions> =
