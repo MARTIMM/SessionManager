@@ -4,7 +4,9 @@
     "actions":  []
     "title": "g1"
   "group2": 
-    "actions":  []
+    "actions": 
+      - "DHome"
+      - "kHome"
     "title": "g2"
   "group3": 
     "actions": 
@@ -28,5 +30,12 @@
       - "DHome"
       - "kHome"
     "title": "my g2"
+  "group3": 
+    "actions": 
+      - "kHome"
+    "title": "my g1"
+  "group4": 
+    "actions":  []
+    "title": "my g1"
   "title": "test sessie"
 ...
