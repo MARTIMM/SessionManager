@@ -1,10 +1,10 @@
 v6.d;
 
-#use YAMLish;
+use YAMLish;
 
-use SessionManager::Sessions;
 use SessionManager::Gui::Actions;
 
+#`{{
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListBox;
@@ -20,14 +20,15 @@ use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
 use Gnome::N::X:api<2>;
 #Gnome::N::debug(:on);
+}}
 
 #-------------------------------------------------------------------------------
-unit class SessionManager::Gui::Sessions;
-also is SessionManager::Sessions;
+unit role SessionManager::Sessions;
 
-constant ConfigPath = '/Config/sessions.yaml';
-my SessionManager::Gui::Sessions $instance;
+my constant ConfigPath = '/Config/sessions.yaml';
+#my SessionManager::Gui::Sessions $instance;
 
+#`{{
 constant Dialog = GnomeTools::Gtk::Dialog;
 constant DropDown = GnomeTools::Gtk::DropDown;
 constant ListBox = GnomeTools::Gtk::ListBox;
@@ -39,15 +40,15 @@ constant Entry = Gnome::Gtk4::Entry;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Label = Gnome::Gtk4::Label;
 constant Widget = Gnome::Gtk4::Widget;
+}}
 
-#has Hash $!sessions;
+has Hash $!sessions = %();
 
 #`{{
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   $!sessions = %();
 }
-}}
 
 #-------------------------------------------------------------------------------
 method new ( ) { !!! }
@@ -58,31 +59,111 @@ method instance ( --> SessionManager::Gui::Sessions ) {
 
   $instance
 }
+}}
 
-#`{{
 #-------------------------------------------------------------------------------
-method load-session ( Str $name, Str $path ) {
+method load-session ( Str:D $name, Str:D $path ) {
   $!sessions{$name} = load-yaml($path.IO.slurp);
 }
 
 #-------------------------------------------------------------------------------
-method add-session ( Str $name, Hash $session ) {
+method add-session ( Str:D $name, Hash:D $session ) {
   $!sessions{$name} = $session;
 }
 
 #-------------------------------------------------------------------------------
-method get-session-names ( --> Seq ) {
+method get-session-ids ( --> Seq ) {
   $!sessions.keys
 }
 
 #-------------------------------------------------------------------------------
-method get-session ( Str $name --> Hash ) {
-  $!sessions{$name}
+method get-session ( Str:D $sid, Bool :$delete = False --> Hash ) {
+  if $delete {
+    $!sessions{$sid}:delete
+  }
+
+  else {
+    $!sessions{$sid}
+  }
+}
+
+#-------------------------------------------------------------------------------
+method set-session ( Str:D $sid, Hash:D $session ) {
+  $!sessions{$sid} = $session;
+}
+
+#-------------------------------------------------------------------------------
+method get-session-title ( Str:D $sid --> Str ) {
+  $!sessions{$sid}<title> // ''
+}
+
+#-------------------------------------------------------------------------------
+method set-session-title ( Str:D $sid, Str $title = '' ) {
+  $!sessions{$sid}<title> = $title;
+}
+
+#-------------------------------------------------------------------------------
+method rename-session ( Str:D $sid, Str:D $new-sid ) {
+  $!sessions{$new-sid} = $!sessions{$sid}:delete;
 }
 
 #-------------------------------------------------------------------------------
 method get-sessions ( --> Hash ) {
   $!sessions
+}
+
+#-------------------------------------------------------------------------------
+method add-group ( Str:D $sid, Str $grouptitle = '' --> Str ) {
+  my Str $group-id;
+
+  # Add a group key. names are labeled: group1, group2, etc. with a maximum of 5
+  for 1..6 -> $group-count {
+    if $group-count >= 6 {
+      # Finish and return undefined string
+      last;
+    }
+
+    my Str $new-group = "group$group-count";
+    next if $!sessions{$sid}{$new-group}:exists;
+
+    # Add a new group, set its title and add an actions key
+    $!sessions{$sid}{$new-group}<title> = $grouptitle.get-text;
+    $!sessions{$sid}{$new-group}<actions> = [];
+    $group-id = $new-group;
+    last;
+  }
+
+  $group-id
+}
+
+#-------------------------------------------------------------------------------
+method group-exists ( Str:D $sid, Str:D $group-id --> Bool ) {
+  $!sessions{$sid}{$group-id}:exists;
+}
+
+#-------------------------------------------------------------------------------
+method get-group-ids ( Str:D $sid --> Seq ) {
+  $!sessions{$sid}.keys.grep(/^group/)
+}
+
+#-------------------------------------------------------------------------------
+method get-group-title ( Str:D $sid, Str:D $group-id --> Str ) {
+  $!sessions{$sid}{$group-id}<title> // ''
+}
+
+#-------------------------------------------------------------------------------
+method set-group-title ( Str:D $sid, Str:D $group-id, Str $title = '' ) {
+  $!sessions{$sid}{$group-id}<title> = $title;
+}
+
+#-------------------------------------------------------------------------------
+method get-group-actions ( Str:D $sid, Str:D $group-id --> Array ) {
+  $!sessions{$sid}{$group-id}<actions> // []
+}
+
+#-------------------------------------------------------------------------------
+method set-group-actions ( Str:D $sid, Str:D $group-id, Array $actions = [] ) {
+  $!sessions{$sid}{$group-id}<actions> = $actions;
 }
 
 #-------------------------------------------------------------------------------
@@ -96,8 +177,10 @@ method load ( ) {
     $!sessions = load-yaml(($*config-directory ~ ConfigPath).IO.slurp);
   }
 }
-}}
 
+
+
+=finish
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
@@ -114,14 +197,14 @@ method sessions-add-rename ( N-Object $parameter ) {
     my DropDown $sessions-dd .= new;
 
     # Fill the session drop down with the session ids and select the first one
-    my Array $session-ids = [self.get-session-ids.sort];
+    my Array $session-ids = [$!sessions.keys.sort];
     if $session-ids.elems {
       $sessions-dd.set-selection($session-ids);
       $sessions-dd.select($session-ids[0]);
 
       # Set entry with text of first session id and its title
       $sessionid-e.set-text($session-ids[0]);
-      $sessiontitle-e.set-text(self.get-session($session-ids[0])<title>);
+      $sessiontitle-e.set-text($!sessions{$session-ids[0]}<title>);
     }
 
     # Trap changes in the sessions list
@@ -165,7 +248,7 @@ method trap-select-session (
 ) {
   my Str $sid = $sessions-dd.get-text;
   $sessionid-e.set-text($sid);
-  $sessiontitle-e.set-text(self.get-session($sid)<title>);
+  $sessiontitle-e.set-text($!sessions{$sid}<title>);
 }
 
 #-------------------------------------------------------------------------------
@@ -182,10 +265,10 @@ method do-add-session (
 
   else {
     # Set the title of the session
-    self.get-session-title( $sid, $sessiontitle-e.get-text);
+    $!sessions{$sid}<title> = $sessiontitle-e.get-text;
 
     # Always add a group with an actions key
-    self.set-group-actions( $sid, 'group1', []);
+    $!sessions{$sid}<group1> = %(:actions([]));
 
     # Add to the dropdown list and select
     $sessions-dd.add-selection($sid);
@@ -205,7 +288,7 @@ method do-change-session (
   my Str $current-sid = $sessions-dd.get-text;
 
   # Change the title of the session
-  self.get-session-title( $sid, $sessiontitle-e.get-text);
+  $!sessions{$sid}<title> = $sessiontitle-e.get-text;
 
   # Success
   $dialog.set-status("$sid successfully changed");
@@ -215,15 +298,15 @@ method do-change-session (
 method do-rename-session (
   Dialog :$dialog, DropDown :$sessions-dd, Entry :$sessionid-e
 ) {
-  my Str $new-sid = $sessionid-e.get-text;
+  my Str $sid = $sessionid-e.get-text;
   my Str $current-sid = $sessions-dd.get-text;
-  if $new-sid eq $current-sid {
-    $dialog.set-status("$new-sid already defined");
+  if $sid eq $current-sid {
+    $dialog.set-status("$sid already defined");
   }
 
   else {
-    self.rename-session( $current-sid, $new-sid);
-    $dialog.set-status("$current-sid successfully renamed to $new-sid");
+    $!sessions{$sid} = $!sessions{$current-sid}:delete;
+    $dialog.set-status("$current-sid successfully renamed to $sid");
   }
 }
 
@@ -232,7 +315,7 @@ method sessions-add-rename-group ( N-Object $parameter, ) {
   my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
-    :dialog-header('Modify Session Group'), :add-statusbar
+    :dialog-header('Modify Session'), :add-statusbar
   ) {
     my DropDown $groups-dd .= new;
     my DropDown $sessions-dd .= new;
@@ -252,7 +335,7 @@ method sessions-add-rename-group ( N-Object $parameter, ) {
 
     # Fill the sessions list. Triggers the .set-grouplist() and
     # .set-grouptitle() call back routines.
-    $sessions-dd.set-selection(self.get-session-ids.sort);
+    $sessions-dd.set-selection($!sessions.keys.sort);
 
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, $sessiontitle);
@@ -282,17 +365,26 @@ method do-add-group (
 ) {
   my Str $sessionid = $sessions-dd.get-text;
 
-  my $new-group = self.add-group( $sessionid, $grouptitle.get-text);
-  if ?$new-group {
+  # Add a group key. names are labeled: group1, group2, etc. with a maximum of 5
+  for 1..6 -> $group-count {
+    if $group-count >= 6 {
+      $dialog.set-status("maximum number of groups reached");
+      last;
+    }
+
+    my Str $new-group = "group$group-count";
+    next if $!sessions{$sessionid}{$new-group}:exists;
+
+    # Add a new group, set its title and add an actions key
+    $!sessions{$sessionid}{$new-group}<title> = $grouptitle.get-text;
+    $!sessions{$sessionid}{$new-group}<actions> = [];
+
     # Insert the group name in the dropdown and select the group
     $groups-dd.add-selection($new-group);
     $groups-dd.select($new-group);
 
     $dialog.set-status("$new-group is succesfully added");
-  }
-
-  else {
-    $dialog.set-status("maximum number of groups reached");
+    last;
   }
 }
 
@@ -305,7 +397,7 @@ method do-change-group (
   my Str $sessionid = $sessions-dd.get-text;
   my Str $group = $groups-dd.get-text;
 
-  self.set-group-title( $sessionid, $group, $grouptitle.get-text);
+  $!sessions{$sessionid}{$group}<title> = $grouptitle.get-text;
   $dialog.set-status("$group is succesfully changed");
 }
 
@@ -325,7 +417,7 @@ method sessions-add-remove-actions ( N-Object $parameter ) {
     my ListBox $all-actions-list;
 
     # Fill the sessions list.
-    my @session-ids = self.get-session-ids.sort;
+    my @session-ids = $!sessions.keys.sort;
     $sessions-dd.set-selection(@session-ids);
     $sessions-dd.select(@session-ids[0]);
 
@@ -334,7 +426,9 @@ method sessions-add-remove-actions ( N-Object $parameter ) {
     my ScrolledWindow $sw2 = $all-actions-list.set-list([|$actions.get-ids]);
 
     # Fill the groups list.
-    $groups-dd.set-selection(self.get-group-ids(@session-ids[0]).sort);
+    $groups-dd.set-selection(
+      $!sessions{@session-ids[0]}.keys.grep(/^group/).sort
+    );
 
     # Trap changes in the sessions list
     $sessions-dd.trap-dropdown-changes(
@@ -358,6 +452,7 @@ method sessions-add-remove-actions ( N-Object $parameter ) {
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, $sessiontitle);
     .add-content( 'Current group', $groups-dd, $grouptitle);
+    .add-content( 'Group title', :2columns);
     .add-content( 'All Actions list', $sw2, :2columns);
 
     # Add buttons
@@ -379,7 +474,7 @@ method set-actions (
 ) {
   my Str $c-session = $sessions-dd.get-text;
   my Str $c-group = $groups-dd.get-text;
-  self.set-group-actions( $c-session, $c-group, $listbox.get-selection);
+  $!sessions{$c-session}{$c-group}<actions> = $listbox.get-selection;
 
   # Remove dialog
   $dialog.destroy-dialog;
@@ -393,12 +488,13 @@ method set-grouplist (
   my Str $sessionid = $sessions-dd.get-text;
   return unless ?$sessionid;
 
-  $groups-dd.set-selection(self.get-group-ids($sessionid).sort);
+  $groups-dd.set-selection($!sessions{$sessionid}.keys.grep(/^group/).sort);
 
   my Str $group-name = $groups-dd.get-text // '';
-  $grouptitle.set-text(self.get-group-title( $sessionid, $group-name));
+  $grouptitle.set-text($!sessions{$sessionid}{$group-name}<title> // '');
 
-  $sessiontitle.set-text(self.get-session-title($sessionid));
+  $sessiontitle.set-text($!sessions{$sessionid}<title>);
+
 }
 
 #------------------------------------------------------------------------------
@@ -406,11 +502,12 @@ method set-grouptitle (
   N-Object $, DropDown :$sessions-dd, DropDown :$groups-dd,
   Widget :$grouptitle, ListBox :$all-actions-list
 ) {
+note "$?LINE";
   my Str $session-id = $sessions-dd.get-text;
   my Str $group-name = $groups-dd.get-text;
-  $grouptitle.set-text(self.get-group-title( $session-id, $group-name));
+  $grouptitle.set-text($!sessions{$session-id}{$group-name}<title> // '');
 
-  my Array $s-actions = self.get-group-actions( $session-id, $group-name);
+  my Array $s-actions = $!sessions{$session-id}{$group-name}<actions> // [];
   $all-actions-list.set-selection($s-actions);
 }
 
