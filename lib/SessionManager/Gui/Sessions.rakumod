@@ -410,8 +410,9 @@ method set-grouptitle (
   my Str $group-name = $groups-dd.get-text;
   $grouptitle.set-text(self.get-group-title( $session-id, $group-name));
 
-  my Array $s-actions = self.get-group-actions( $session-id, $group-name);
-  $all-actions-list.set-selection($s-actions);
+  $all-actions-list.set-selection(
+    self.get-group-actions( $session-id, $group-name)
+  ) if ?$all-actions-list;
 }
 
 #-------------------------------------------------------------------------------
