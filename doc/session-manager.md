@@ -9,26 +9,18 @@ The purpose of this program is that it can quickly setup an environment for some
 * start a reader with some language documentation
   etcetera.
 
-## What is implemented?
-* [x] When started, the program is able to show a list of shortcut buttons to start tasks right away. For example, start the browser or a mail program.
-* [x] The program must show a list of sessions next to the list of shortcut buttons.
+## Checklist?
+* [ ] When started, the program is able to show a list of shortcut buttons to start tasks right away. For example, start the browser or a mail program.
+* [x] The program shows a list of sessions next to the list of shortcut buttons.
 * [ ] List of shortcut buttons can grow or shrink like a bookmark list.
 * [x] When a session button is pressed, it shows additional buttons to start a task needed to setup the session.
 * [x] The additional buttons are grouped in action lists.
-* [ ] (DONE but need changes) A button can be added to start all actions in an actions group.
+* [ ] A button can be added to start all actions in an actions group.
+  * [ ] Optionally each action can show a checkbutton which can be (de-)selected to disable or enable the start of that action.
 * [x] There is only one dispatcher instance running. All other instances started later will communicate with the main running program.
-* [x] It is possible to swap configurations when starting another instance.
-
-
-## Additions for later
-
-* Optionally the action can show a checkbutton for each program which can be (de-)selected to disable or enable the start of a program depending on what is needed at that moment.
-
-* DBus will play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera.
-
-* There is a configuration section to create the configuration file.
-
-* Editing of actions, variables and sessions. To make it more simple, the directory names `Actions`, `Parts` and `Images` are fixed. The sessions entry point is in the file `sessions.yaml`. In this file are only `Part` references and some basic configs for themes and other minor settings.
+* [ ] It is possible to swap configurations when starting another instance.
+* [ ] DBus might play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera.
+* [ ] Editing of actions, variables and sessions. See below.
 
 # Configuration editing
 
@@ -52,12 +44,12 @@ The purpose of this program is that it can quickly setup an environment for some
 
 * Sessions
   * [x] Storage in <root>/Config/sessions.yaml
-  * [ ] Add session
-  * [ ] Add session group
+  * [x] Add session
+  * [x] Add session group
   * [ ] Delete session group
-  * [ ] Add actions to a group
-  * [ ] Remove actions from a group
-  * [ ] Rename session
+  * [x] Add actions to a group
+  * [x] Remove actions from a group
+  * [x] Rename session
   * [ ] Remove session
 
 ### Application workings
