@@ -2,6 +2,12 @@
 
 ---
 # Progress
+
+* 2025-09-29 0.6.0
+  * Refactor class **SessionManager::Gui::Sessions** to make a role  **SessionManager::Sessions**.
+  * Add and remove session groups
+  * Add and remove actions from a session group
+
 * 2025-09-06 0.5.1
   * WIP: sessions, actions and variables edit.
   * Save confirations in separate files and load at start of program.
