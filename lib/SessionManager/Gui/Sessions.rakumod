@@ -3,7 +3,8 @@ v6.d;
 #use YAMLish;
 
 use SessionManager::Sessions;
-use SessionManager::Gui::Actions;
+#use SessionManager::Gui::Actions;
+use SessionManager::Actions;
 
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
@@ -33,7 +34,8 @@ constant DropDown = GnomeTools::Gtk::DropDown;
 constant ListBox = GnomeTools::Gtk::ListBox;
 constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 
-constant Actions = SessionManager::Gui::Actions;
+#constant Actions = SessionManager::Gui::Actions;
+constant Actions = SessionManager::Actions;
 
 constant Entry = Gnome::Gtk4::Entry;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
@@ -102,7 +104,7 @@ method load ( ) {
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
 method sessions-add-rename ( N-Object $parameter ) {
-  my Actions $actions .= instance;
+#  my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session'), :add-statusbar
@@ -229,7 +231,7 @@ method do-rename-session (
 
 #-------------------------------------------------------------------------------
 method sessions-add-rename-group ( N-Object $parameter, ) {
-  my Actions $actions .= instance;
+#  my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session Group'), :add-statusbar
@@ -311,7 +313,7 @@ method do-change-group (
 
 #-------------------------------------------------------------------------------
 method sessions-add-remove-actions ( N-Object $parameter ) {
-  my Actions $actions .= instance;
+  my Actions $actions .= new;
 
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session'), :add-statusbar
@@ -331,7 +333,9 @@ method sessions-add-remove-actions ( N-Object $parameter ) {
 
     # Create the listbox to list all actions.
     $all-actions-list .= new(:multi);
-    my ScrolledWindow $sw2 = $all-actions-list.set-list([|$actions.get-ids]);
+    my ScrolledWindow $sw2 = $all-actions-list.set-list(
+      [|$actions.get-action-ids]
+    );
 
     # Fill the groups list.
     $groups-dd.set-selection(self.get-group-ids(@session-ids[0]).sort);

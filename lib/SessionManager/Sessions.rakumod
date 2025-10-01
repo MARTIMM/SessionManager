@@ -2,8 +2,6 @@ v6.d;
 
 use YAMLish;
 
-use SessionManager::Gui::Actions;
-
 #-------------------------------------------------------------------------------
 unit class SessionManager::Sessions;
 
@@ -114,6 +112,22 @@ method get-group-actions ( Str:D $sid, Str:D $group-id --> Array ) {
 #-------------------------------------------------------------------------------
 method set-group-actions ( Str:D $sid, Str:D $group-id, Array $actions = [] ) {
   $sessions{$sid}{$group-id}<actions> = $actions;
+}
+
+#-------------------------------------------------------------------------------
+method rename-group-actions ( $old-aid, $new-aid ) {
+  for $sessions.keys -> $sid {
+    for $sessions{$sid}.keys.grep(/^group/) -> $group-id {
+      my Array $actions = $sessions{$sid}{$group-id}<actions>;
+      loop ( my Int $i; $ < $actions.elems; $i++ ) {
+        if $actions[$i] eq $old-aid {
+          $actions[$i] = $new-aid;
+          $sessions{$sid}{$group-id}<actions> = $actions;
+          last;
+        }
+      }
+    }
+  }
 }
 
 #-------------------------------------------------------------------------------
