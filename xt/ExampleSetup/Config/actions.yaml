@@ -7,6 +7,14 @@
   "p": "$Ex1Path"
   "t": "File list of $Ex1Path"
   "w": 0
+"DHome3": 
+  "c": "dolphin $Ex1Path"
+  "i": ""
+  "l": 1
+  "o": ""
+  "p": "$Ex1Path"
+  "t": "File list of $Ex1Path"
+  "w": 0
 "kHome": 
   "c": "konsole --workdir $Ex1Path"
   "i": ""
