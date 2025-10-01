@@ -57,8 +57,10 @@ The purpose of this program is that it can quickly setup an environment for some
   ```plantuml
   @startyaml
   root directory:
-    - sessions.yaml
-    - variables.yaml
+    - config:
+      - variables.yaml
+      - actions.yaml
+      - sessions.yaml
     - Actions:
       - action-specs1.yaml
       - action-specs2.yaml
@@ -80,8 +82,6 @@ The purpose of this program is that it can quickly setup an environment for some
   ```
 
 #### Startup options
-* [x] `--config` option pointing to a root directory of the configuration.
-* [x] Remove the `--config` option because it became the only one.
 * [x] References to parts can now be made from within the config file.
 * [x] Actions and variables can be referred to from the config file.
 
