@@ -3,6 +3,10 @@
 ---
 # Progress
 
+* 2025-09-29 0.7.0
+  * **SessionManager::Sessions** should be a class and also not inherited.
+  * Refactor **SessionManager::Gui::Actions** and **SessionManager::Gui::Variables**.
+
 * 2025-09-29 0.6.0
   * Refactor class **SessionManager::Gui::Sessions** to make a role  **SessionManager::Sessions**.
   * Add and remove session groups
