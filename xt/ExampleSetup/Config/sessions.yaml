@@ -1,7 +1,8 @@
 ---
 "AI23b": 
   "group1": 
-    "actions":  []
+    "actions": 
+      - "DHome3"
     "title": "g1"
   "group2": 
     "actions": 
