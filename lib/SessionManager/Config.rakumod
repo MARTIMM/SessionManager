@@ -1,6 +1,6 @@
 use v6.d;
 
-use SessionManager::Gui::Variables;
+use SessionManager::Variables;
 use SessionManager::Actions;
 use SessionManager::Sessions;
 use SessionManager::ActionData;
@@ -102,7 +102,7 @@ method load-config ( Bool :$load-manual-build-config = False ) {
 
   $*images = [~] $*config-directory, '/', $*images;
 
-  my SessionManager::Gui::Variables $variables .= instance;
+  my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
   my SessionManager::Sessions $sessions .= new;
 

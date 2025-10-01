@@ -451,7 +451,7 @@ method legacy-button (
   SessionManager::Command :$command, *%options --> Overlay
 ) {
   my SessionManager::Config $config .= instance;
-  my SessionManager::Gui::Variables $v .= instance;
+  my SessionManager::Variables $v .= new;
 #  $config.set-css( self.get-style-context, 'session-toolbar');
 
 #  my SessionManager::Command $command = %options<command>;

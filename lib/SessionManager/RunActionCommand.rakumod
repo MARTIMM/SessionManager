@@ -1,7 +1,7 @@
 use v6.d;
 
 use SessionManager::ActionData;
-use SessionManager::Gui::Actions;
+use SessionManager::Actions;
 use SessionManager::Command;
 
 use Digest::SHA256::Native;
@@ -19,7 +19,7 @@ has SessionManager::ActionData $!action-data handles <
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Str:D :$id ) {
-  my SessionManager::Gui::Actions $actions .= instance;
+  my SessionManager::Actions $actions .= new;
   $!action-data = $actions.get-action($id);
   die "Failed to find an action with id '$id'" unless ? $!action-data;
 }

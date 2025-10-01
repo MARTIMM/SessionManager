@@ -1,7 +1,7 @@
 
 use v6.d;
 
-use SessionManager::Gui::Variables;
+use SessionManager::Variables;
 use Digest::SHA256::Native;
 
 #-------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ has Str $.picture;
 has Str $.overlay-picture;
 
 has Hash $!temp-variables;
-has SessionManager::Gui::Variables $!variables;
+has SessionManager::Variables $!variables;
 
 # For save keeping
 has Hash $.raw-action;
@@ -50,7 +50,7 @@ method init-action ( Str :$!id = '', Hash:D :$!raw-action ) {
   $!running = False;
   $!shell = '/usr/bin/bash';
 
-  $!variables .= instance;
+  $!variables .= new;
 
   # Get tooltip text
   $!tooltip = $!variables.substitute-vars($!raw-action<t>) if ? $!raw-action<t>;

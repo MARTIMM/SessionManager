@@ -26,6 +26,7 @@ use Gnome::N::N-Object:api<2>;
 
 use SessionManager::Actions;
 use SessionManager::Sessions;
+use SessionManager::Variables;
 use SessionManager::Config;
 use SessionManager::Gui::Toolbar;
 use SessionManager::Gui::MenuBar;
@@ -233,7 +234,7 @@ method shutdown ( ) {
 note "$?LINE shutdown";
 
   # save changed config
-  my SessionManager::Gui::Variables $variables .= instance;
+  my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
   my SessionManager::Sessions $sessions .= new;
   $actions.save;
