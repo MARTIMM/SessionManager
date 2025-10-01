@@ -24,11 +24,11 @@ use Gnome::N::N-Object:api<2>;
 #use Gnome::N::X:api<2>;
 #Gnome::N::debug(:on);
 
-#use SessionManager::Gui::Actions;
+use SessionManager::Actions;
+use SessionManager::Sessions;
 use SessionManager::Config;
 use SessionManager::Gui::Toolbar;
 use SessionManager::Gui::MenuBar;
-use SessionManager::Gui::Sessions;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
@@ -233,9 +233,9 @@ method shutdown ( ) {
 note "$?LINE shutdown";
 
   # save changed config
-  my SessionManager::Gui::Actions $actions .= instance;
   my SessionManager::Gui::Variables $variables .= instance;
-  my SessionManager::Gui::Sessions $sessions .= instance;
+  my SessionManager::Actions $actions .= new;
+  my SessionManager::Sessions $sessions .= new;
   $actions.save;
   $variables.save;
   $sessions.save;

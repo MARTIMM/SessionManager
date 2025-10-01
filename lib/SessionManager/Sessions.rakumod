@@ -66,7 +66,7 @@ method add-group ( Str:D $sid, Str $grouptitle = '' --> Str ) {
 
   # Add a group key. names are labeled: group1, group2, etc. with a maximum of 5
   for 1..6 -> $group-count {
-    if $group-count >= 6 {
+    if $group-count >= 10 {
       # Finish and return undefined string
       last;
     }

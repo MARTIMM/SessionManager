@@ -62,7 +62,7 @@ constant Overlay = Gnome::Gtk4::Overlay;
 constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
 constant Texture = Gnome::Gdk4::Texture;
 
-has Str $!session-name;
+has Str $!session-id;
 has Hash $!manage-session;
 has Grid $!session-manager-box;
 
@@ -72,7 +72,7 @@ has Mu $!app-window;
 
 #-------------------------------------------------------------------------------
 submethod BUILD (
-  Str:D :$!session-name, Hash:D :$!manage-session,
+  Str:D :$!session-id, Hash:D :$!manage-session,
   Grid :$!session-manager-box, Mu :$!app-window
 ) {
   $!theme .= new;
@@ -89,7 +89,7 @@ method session-button ( --> Widget ) {
 
   if $config.legacy {
     $widget = self.legacy-button(
-      'session-actions', :$!session-name, :$!manage-session
+      'session-actions', :$!session-id, :$!manage-session
     );
   }
 
@@ -101,7 +101,7 @@ method session-button ( --> Widget ) {
   #    .set-tooltip-text("Session\n$!manage-session<title>");
       .register-signal(
         self, 'session-actions', 'clicked',
-        :$!session-name, :$!manage-session
+        :$!session-id, :$!manage-session
       );
     }
 
@@ -461,7 +461,7 @@ method legacy-button (
     if $count == -1 and $level == -1 {
       $picture-file = $config.set-path(
         $v.substitute-vars(
-          $!manage-session<icon> // "$*images/$!session-name/0.png"
+          $!manage-session<icon> // "$*images/$!session-id/0.png"
         )
       );
     }
@@ -469,7 +469,7 @@ method legacy-button (
     else {
       $picture-file = $config.set-path(
         $v.substitute-vars(
-          $command.picture // "$*images/$!session-name/$level$count.png"
+          $command.picture // "$*images/$!session-id/$level$count.png"
         )
       );
     }
@@ -507,7 +507,7 @@ method legacy-button (
   if $count == -1 and $level == -1 {
     $overlay-icon = $config.set-path(
       $v.substitute-vars(
-        $!manage-session<over> // "$*images/$!session-name/o0.png"
+        $!manage-session<over> // "$*images/$!session-id/o0.png"
       )
     );
   }
@@ -515,7 +515,7 @@ method legacy-button (
   else {
     $overlay-icon = $config.set-path(
       $v.substitute-vars(
-        $command.overlay-picture // "$*images/$!session-name/o$level$count.png"
+        $command.overlay-picture // "$*images/$!session-id/o$level$count.png"
       )
     );
   }
@@ -558,7 +558,7 @@ method set-texture ( Str $file --> Texture ) {
 =finish
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Str:D :$!session-name, Hash:D :$!manage-session ) {
+submethod BUILD ( Str:D :$!session-id, Hash:D :$!manage-session ) {
 
   my SessionManager::Config $config .= instance;
   $config.set-css( self.get-style-context, 'session-toolbar');
@@ -566,7 +566,7 @@ submethod BUILD ( Str:D :$!session-name, Hash:D :$!manage-session ) {
   my SessionManager::Gui::Variables $v .= instance;
   my Str $title = "Session\n$!manage-session<title>";
   my Str $picture-file = $config.set-path(
-    $v.substitute-vars($!manage-session<icon> // "$*images/$!session-name/0.png")
+    $v.substitute-vars($!manage-session<icon> // "$*images/$!session-id/0.png")
   );
 note "$?LINE $picture-file, ", $picture-file.IO ~~ :r;
 
@@ -586,7 +586,7 @@ note "$?LINE $picture-file, ", $picture-file.IO ~~ :r;
     .set-tooltip-text($!manage-session<title>);
     $config.set-css( .get-style-context, 'session-toolbar-button');
     .register-signal(
-      self, 'session-actions', 'clicked', :$!session-name, :$!manage-session
+      self, 'session-actions', 'clicked', :$!session-id, :$!manage-session
     );
   }
 
@@ -594,7 +594,7 @@ note "$?LINE $picture-file, ", $picture-file.IO ~~ :r;
   self.set-child($button);
 
   my Str $overlay-icon = $config.set-path(
-    $v.substitute-vars($!manage-session<over> // "$*images/$!session-name/o0.png")
+    $v.substitute-vars($!manage-session<over> // "$*images/$!session-id/o0.png")
   );
 note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :r;
   if ? $overlay-icon.IO.r {

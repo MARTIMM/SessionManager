@@ -24,7 +24,8 @@ use Gnome::Gtk4::T-enums:api<2>;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Actions;
-also is SessionManager::Actions;
+
+has SessionManager::Actions $!actions;
 
 #constant ConfigPath = '/Config/actions.yaml';
 
@@ -245,7 +246,7 @@ method do-create-act (
     $dialog.set-status('The action id may not be empty');
   }
 
-  elsif $id ~~ any(|self.get-action-ids.keys) {
+  elsif $id ~~ any(|$!actions.get-action-ids.keys) {
     $dialog.set-status('This action id is already defined');
   }
 
@@ -258,7 +259,7 @@ method do-create-act (
     $raw-action<l> = $aspec-log.get-state;
     $raw-action<w> = $aspec-wait.get-text.Int;
     $raw-action<p> = $aspec-path.get-text;
-    self.add-action( $raw-action, :$id);
+    $!actions.add-action( $raw-action, :$id);
     $sts-ok = True;
     $dialog.set-status("The action '$id' is succesfully created");
   }
@@ -377,7 +378,7 @@ method do-modify-act (
   $raw-action<p> = $aspec-path.get-text;
 
   my Str $original-id = $listbox.get-selection[0];
-  self.modify-action( $original-id, $raw-action);
+  $!actions.modify-action( $original-id, $raw-action);
   $dialog.set-status("The action '$original-id' is succesfully modified");
   $sts-ok = True;
 
@@ -469,7 +470,7 @@ method do-rename-act (
     $dialog.set-status('An action id may not be empty');
   }
 
-  elsif $new-id ~~ any(|self.get-action-ids) {
+  elsif $new-id ~~ any(|$!actions.get-action-ids) {
     $dialog.set-status('This action id is already defined');
   }
 
@@ -486,7 +487,7 @@ method do-rename-act (
 
     # Set original, listbox is not in multi select so always one selection
     my $original-id = $listbox.get-selection[0];
-    self.rename-action( $original-id, $new-id);
+    $!actions.rename-action( $original-id, $new-id);
 
 #    my SessionManager::Sessions $sessions .= new;
 #    $sessions.rename-group-actions( $original-id, $new-id);
@@ -512,7 +513,7 @@ method set-data(
   my Str $id = $row-widget.get-text;
   $action-id.set-text($id);
 
-  my Hash $action-object = self.get-raw-action($id);
+  my Hash $action-object = $!actions.get-raw-action($id);
   $aspec-title.set-text($action-object<t>) if ?$action-object<t>;
   $aspec-cmd.set-text($action-object<c>) if ?$action-object<c>;
   $aspec-path.set-text($action-object<p>) if ?$action-object<p>;
@@ -537,7 +538,7 @@ method scrollable-list ( Bool :$multi = False, *%options ) {
   my ListBox $list-lb .= new(
     :$object, :method<set-data>, :$multi, |%options
   );
-  my ScrolledWindow $sw = $list-lb.set-list([self.get-action-ids.sort]);
+  my ScrolledWindow $sw = $list-lb.set-list([$!actions.get-action-ids.sort]);
 
 #`{{
   $list-lb.set-selection-mode(GTK_SELECTION_MULTIPLE) if $multi;

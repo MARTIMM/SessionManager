@@ -1,8 +1,8 @@
 use v6.d;
 
 use SessionManager::Gui::Variables;
-use SessionManager::Gui::Actions;
-use SessionManager::Gui::Sessions;
+use SessionManager::Actions;
+use SessionManager::Sessions;
 use SessionManager::ActionData;
 
 #use Gnome::Gtk4::StyleContext:api<2>;
@@ -103,8 +103,8 @@ method load-config ( Bool :$load-manual-build-config = False ) {
   $*images = [~] $*config-directory, '/', $*images;
 
   my SessionManager::Gui::Variables $variables .= instance;
-  my SessionManager::Gui::Actions $actions .= instance;
-  my SessionManager::Gui::Sessions $sessions .= instance;
+  my SessionManager::Actions $actions .= new;
+  my SessionManager::Sessions $sessions .= new;
 
   # Set a few variables beforehand
   if $load-manual-build-config {
@@ -117,7 +117,6 @@ method load-config ( Bool :$load-manual-build-config = False ) {
         $variables.add-from-yaml($file);
       }
     }
-
 
     # Check session descriptions from config, variables are now possible
     for $!dispatch-config<sessions>.keys -> $name {
@@ -158,7 +157,7 @@ method check-actions ( ) {
 
 #  $!dispatch-config<toolbar> =
 #    self.check-session-entries($!dispatch-config<toolbar>);
-  my SessionManager::Gui::Sessions $sessions .= instance;
+  my SessionManager::Sessions $sessions .= new;
 
 #  for $!dispatch-config<sessions>.keys -> $name {
 #    my Hash $sessions = $!dispatch-config<sessions>{$name};
@@ -174,7 +173,7 @@ method check-actions ( ) {
 
 #-------------------------------------------------------------------------------
 method check-session-entries ( Array $raw-entries --> Array ) {
-  my SessionManager::Gui::Actions $actions .= instance;
+  my SessionManager::Actions $actions .= new;
 
   # It is possible that an entry is just a string. If so, the string is
   # a key in the $!action-refs hash to get the action hash from there.
