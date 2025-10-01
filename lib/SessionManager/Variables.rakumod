@@ -2,8 +2,7 @@ use v6.d;
 
 use YAMLish;
 
-use SessionManager::Variables;
-
+#`{{
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
 
@@ -16,28 +15,33 @@ use Gnome::Gtk4::ListBoxRow:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
+}}
 
 #-------------------------------------------------------------------------------
-unit class SessionManager::Gui::Variables;
+unit class SessionManager::Variables;
 
 constant ConfigPath = '/Config/variables.yaml';
-my SessionManager::Gui::Variables $instance;
+#my SessionManager::Gui::Variables $instance;
 
+#`{{
 constant Entry = Gnome::Gtk4::Entry;
 constant ListBox = Gnome::Gtk4::ListBox;
 constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+}}
 
-has SessionManager::Variables $!variables;
+my Hash $variables = %();
+my Hash $temporary = %();
+#has Str $!original-name;
+#has ListBoxRow $!original-row;
 
-#has Hash $!temporary;
-has Str $!original-name;
-has ListBoxRow $!original-row;
 
+#`{{
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
-  $!variables .= new;
+  $variables = %();
+  $temporary = %();
 }
 
 #-------------------------------------------------------------------------------
@@ -49,33 +53,53 @@ method instance ( --> SessionManager::Gui::Variables ) {
 
   $instance
 }
+}}
 
-#`{{
 #-------------------------------------------------------------------------------
 method add ( Hash:D $variables ) {
-  $!variables = %( | $!variables, | $variables);
+  $variables = %( | $variables, | $variables);
 }
 
 #-------------------------------------------------------------------------------
 method add-from-yaml ( Str:D $path ) {
   die "File $path not found or unreadable" unless $path.IO.r;
-  $!variables = %( | $!variables, | load-yaml($path.IO.slurp));
+  $variables = %( | $variables, | load-yaml($path.IO.slurp));
 }
 
 #-------------------------------------------------------------------------------
 method save ( ) {
-  ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($!variables));
+  ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($variables));
 }
 
 #-------------------------------------------------------------------------------
 method load ( ) {
   if ($*config-directory ~ ConfigPath).IO.r {
-    $!variables = load-yaml(($*config-directory ~ ConfigPath).IO.slurp);
+    $variables = load-yaml(($*config-directory ~ ConfigPath).IO.slurp);
   }
 }
 
 #-------------------------------------------------------------------------------
-method set-temporary ( Hash:D $!temporary ) { }
+method get-variables ( --> Seq ) {
+  $variables.keys
+}
+
+#-------------------------------------------------------------------------------
+method get-variable ( Str:D $name --> Str ) {
+  $variables{$name}
+}
+
+#-------------------------------------------------------------------------------
+method set-variable ( Str:D $name, Str:D $value --> Str ) {
+  $variables{$name} = $value;
+}
+
+#-------------------------------------------------------------------------------
+method rename-variable ( Str:D $old-var, Str:D $new-var ) {
+  $variables{$new-var} = $variables{$old-var}:delete;
+}
+
+#-------------------------------------------------------------------------------
+#method set-temporary ( Hash:D $temporary ) { }
 
 #-------------------------------------------------------------------------------
 method substitute-vars ( Str $t --> Str ) {
@@ -86,13 +110,13 @@ method substitute-vars ( Str $t --> Str ) {
     my Str $name = $/<variable-name>.Str;
 #note "$?LINE $name";
     # Look in the variables Hash
-    if $!variables{$name}:exists {
-      $text ~~ s:g/ '$' $name (<-[\w-]>?) /$!variables{$name}$0/;
+    if $variables{$name}:exists {
+      $text ~~ s:g/ '$' $name (<-[\w-]>?) /$variables{$name}$0/;
     }
 
     # Look in the temporary Hash
-    elsif $!temporary{$name}:exists {
-      $text ~~ s:g/ '$' $name (<-[\w-]>?) /$!temporary{$name}$0/;
+    elsif $temporary{$name}:exists {
+      $text ~~ s:g/ '$' $name (<-[\w-]>?) /$temporary{$name}$0/;
     }
 
     # Look in the environment
@@ -113,8 +137,21 @@ method substitute-vars ( Str $t --> Str ) {
 
   $text
 }
-}}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+=finish
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
@@ -125,9 +162,9 @@ method variables-add-modify (
     :dialog-header('Modify Variable'), :add-statusbar
   ) {
     #my GnomeTools::Gtk::DropDown $variables-dd .= new;
-    #$variables-dd.set-selection($!variables.keys.sort);
+    #$variables-dd.set-selection($variables.keys.sort);
     my ListBox $variables-lb .= new-listbox;
-    for $!variables.get-variables.sort -> $v {
+    for $variables.keys.sort -> $v {
       with my Label $l .= new-with-mnemonic($v) {
         .set-justify(GTK_JUSTIFY_LEFT);
         .set-halign(GTK_ALIGN_START);
@@ -178,15 +215,15 @@ method do-rename-variable (
     $dialog.set-status("No variable name specified");
   }
 
-  elsif $variable ~~ any(|$!variables.get-variables) {
+  elsif $variable ~~ any(|$variables.keys) {
     $dialog.set-status("Variable '$variable' already defined");
   }
 
   else {
-    $!variables.rename-variable( $!original-name, $variable);
-    for $!variables.get-variables -> $variable-name {
+    $variables{$variable} = $variables{$!original-name}:delete;
+    for $variables.keys -> $variable-name {
       my Str $on = $!original-name;
-      $!variables.get-variable($variable-name) ~~ s:g/ '$' $on  (<-[\w-]>) /\$$variable$0/;
+      $variables{$variable-name} ~~ s:g/ '$' $on  (<-[\w-]>) /\$$variable$0/;
       $actions-object.subst-vars( $!original-name, $variable);
     }
 
@@ -217,12 +254,12 @@ method do-add-variable (
     $dialog.set-status("No variable name specified");
   }
 
-  elsif $variable ~~ any(|$!variables.get-variables) {
+  elsif $variable ~~ any(|$variables.keys) {
     $dialog.set-status("Variable '$variable' already defined");
   }
 
   else {
-    $!variables{$variable} = $vspec.get-text;
+    $variables{$variable} = $vspec.get-text;
     $sts-ok = True;
   }
 
@@ -242,7 +279,7 @@ method do-modify-variable (
   }
 
   else {
-    $!variables.set-variable( $variable, $vspec.get-text);
+    $variables{$variable} = $vspec.get-text;
     $sts-ok = True;
   }
 
@@ -258,7 +295,7 @@ method set-data( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
   my Label() $l = $row.get-child;
   $!original-name = $l.get-text;
   $vname.set-text($l.get-text);
-  $vspec.set-text($!variables.get-variable($l.get-text));
+  $vspec.set-text($variables{$l.get-text});
 }
 
 #-------------------------------------------------------------------------------
