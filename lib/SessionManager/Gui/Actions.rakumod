@@ -2,6 +2,7 @@ use v6.d;
 
 use SessionManager::ActionData;
 use SessionManager::Actions;
+#use SessionManager::Sessions;
 
 use Digest::SHA256::Native;
 use YAMLish;
@@ -38,7 +39,7 @@ constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 my SessionManager::Gui::Actions $instance;
 
 has Hash $!data-ids;
-has Str $!original-id;
+#has Str $!original-id;
 #has ListBoxRow $!original-row;
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -148,8 +149,9 @@ method subst-vars ( Str $original-var, Str $new-var ) {
 method actions-create ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Modify Action'), :add-statusbar
+    :dialog-header('Create Action'), :add-statusbar
   ) {
+#TODO some fields should be multiline text
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
     my Entry $aspec-cmd .= new-entry;
@@ -243,7 +245,7 @@ method do-create-act (
     $dialog.set-status('The action id may not be empty');
   }
 
-  elsif $id ~~ any(|$!data-ids.keys) {
+  elsif $id ~~ any(|self.get-action-ids.keys) {
     $dialog.set-status('This action id is already defined');
   }
 
@@ -258,6 +260,7 @@ method do-create-act (
     $raw-action<p> = $aspec-path.get-text;
     self.add-action( $raw-action, :$id);
     $sts-ok = True;
+    $dialog.set-status("The action '$id' is succesfully created");
   }
 
 #  $dialog.destroy-dialog if $sts-ok;
@@ -374,8 +377,8 @@ method do-modify-act (
   $raw-action<p> = $aspec-path.get-text;
 
   my Str $original-id = $listbox.get-selection[0];
-  my SessionManager::ActionData $action-data = $!data-ids{$original-id};
-  $action-data.init-action( :$raw-action, :id($original-id));
+  self.modify-action( $original-id, $raw-action);
+  $dialog.set-status("The action '$original-id' is succesfully modified");
   $sts-ok = True;
 
 #  $dialog.destroy-dialog if $sts-ok;
@@ -385,7 +388,7 @@ method do-modify-act (
 method actions-rename-id ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Modify Action'), :add-statusbar
+    :dialog-header('Rename Action'), :add-statusbar
   ) {
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
@@ -460,13 +463,13 @@ method actions-rename-id ( N-Object $parameter ) {
 method do-rename-act (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, ListBox :$listbox
 ) {
-  my Str $id = $action-id.get-text;
+  my Str $new-id = $action-id.get-text;
 
-  if !$id {
+  if !$new-id {
     $dialog.set-status('An action id may not be empty');
   }
 
-  elsif $id ~~ any(|$!data-ids.keys) {
+  elsif $new-id ~~ any(|self.get-action-ids) {
     $dialog.set-status('This action id is already defined');
   }
 
@@ -474,17 +477,19 @@ method do-rename-act (
     #TODO Rename references in sessions
 
     # Change the row in the listbox
-    with my Label $l .= new-with-mnemonic($id) {
+    with my Label $l .= new-with-mnemonic($new-id) {
       .set-justify(GTK_JUSTIFY_LEFT);
       .set-halign(GTK_ALIGN_START);
     }
     # Change the id of the row in the list
 #    $!original-row.set-child($l);
 
-    # Set original
-    $!original-id = $listbox.get-selection[0];
-    my SessionManager::ActionData $adata = $!data-ids{$!original-id}:delete;
-    $!data-ids{$id} = $adata;
+    # Set original, listbox is not in multi select so always one selection
+    my $original-id = $listbox.get-selection[0];
+    self.rename-action( $original-id, $new-id);
+
+#    my SessionManager::Sessions $sessions .= new;
+#    $sessions.rename-group-actions( $original-id, $new-id);
 
     $dialog.set-status('Renamed everything successfully');
   }
@@ -505,7 +510,6 @@ method set-data(
 
 #  my Label() $row-widget = $row.get-child;
   my Str $id = $row-widget.get-text;
-#  $!original-id = $id;
   $action-id.set-text($id);
 
   my Hash $action-object = self.get-raw-action($id);
@@ -554,9 +558,4 @@ method scrollable-list ( Bool :$multi = False, *%options ) {
   $sw
 }}
   ( $list-lb, $sw)
-}
-
-#-------------------------------------------------------------------------------
-method get-ids ( --> Seq ) {
-  $!data-ids.keys.sort
 }

@@ -121,6 +121,11 @@ method get-action-ids ( --> Seq ) {
 }
 
 #-------------------------------------------------------------------------------
+method get-raw-action ( Str:D $action-id --> Hash ) {
+  $data-ids{$action-id}.raw-action
+}
+
+#-------------------------------------------------------------------------------
 method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
   if $data-ids{$id}:exists {
     $data-ids{$id}
@@ -139,6 +144,17 @@ method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
       SessionManager::ActionData
     }
   }
+}
+
+#-------------------------------------------------------------------------------
+method rename-action ( Str:D $id, Str:D $new-id ) {
+  $data-ids{$new-id} = $data-ids{$id}:delete;
+}
+ 
+#-------------------------------------------------------------------------------
+method modify-action ( Str:D $id, Hash $raw-action ) {
+  my SessionManager::ActionData $action-data = $data-ids{$id};
+  $action-data.init-action( :$id, :$raw-action);
 }
 
 #-------------------------------------------------------------------------------
