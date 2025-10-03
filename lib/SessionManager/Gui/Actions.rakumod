@@ -2,7 +2,7 @@ use v6.d;
 
 use SessionManager::ActionData;
 use SessionManager::Actions;
-#use SessionManager::Sessions;
+use SessionManager::Sessions;
 
 use Digest::SHA256::Native;
 use YAMLish;
@@ -489,8 +489,8 @@ method do-rename-act (
     my $original-id = $listbox.get-selection[0];
     $!actions.rename-action( $original-id, $new-id);
 
-#    my SessionManager::Sessions $sessions .= new;
-#    $sessions.rename-group-actions( $original-id, $new-id);
+    my SessionManager::Sessions $sessions .= new;
+    $sessions.rename-group-actions( $original-id, $new-id);
 
     $dialog.set-status('Renamed everything successfully');
   }
