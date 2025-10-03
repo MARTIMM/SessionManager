@@ -212,7 +212,14 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
 #-------------------------------------------------------------------------------
 # Substitute changed variable in the raw actions Hash.
 method subst-vars ( Str $original-var, Str $new-var ) {
-  for $!raw-action.keys -> $type {
-    $!raw-action{$type} ~~ s:g/ '$' $original-var (<-[\w-]>) /\$$new-var$0/;
+  my Hash $raw-action = $!raw-action;
+  my Str $id = $!id;
+
+  for $raw-action.keys -> $type {
+    my $v = $raw-action{$type};
+    $v ~~ s:g/ '$' $original-var (<-[\w-]>?) /\$$new-var$0/;
+    $raw-action{$type} = $v;
   }
+
+  self.init-action( :$id, :$raw-action);
 }
