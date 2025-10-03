@@ -242,6 +242,19 @@ note "$?LINE shutdown";
   $sessions.save;
 }
 
+#-------------------------------------------------------------------------------
+method restart ( ) {
+
+  # save changed config
+  my SessionManager::Variables $variables .= new;
+  my SessionManager::Actions $actions .= new;
+  my SessionManager::Sessions $sessions .= new;
+  $actions.save;
+  $variables.save;
+  $sessions.save;
+
+  self.setup-window;
+}
 
 =finish
 
