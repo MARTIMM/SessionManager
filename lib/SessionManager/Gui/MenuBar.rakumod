@@ -54,11 +54,21 @@ method make-menu (
 
   with $menu-name {
     when 'File' {
+      my Gnome::Gio::Menu $section-menu .= new-menu;
       self.bind-action(
-        $menu, $menu-name, self, 'Quit'
+        $section-menu, $menu-name, self, 'Restart',
 #        , :icon<application-exit>,
 #        :tooltip('Quit application')
       );
+      $menu.append-section( Str, $section-menu);
+
+      $section-menu .= new-menu;
+      self.bind-action(
+        $section-menu, $menu-name, self, 'Quit'
+#        , :icon<application-exit>,
+#        :tooltip('Quit application')
+      );
+      $menu.append-section( Str, $section-menu);
     }
 
     when 'Sessions' {
