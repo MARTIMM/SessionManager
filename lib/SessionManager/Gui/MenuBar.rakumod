@@ -73,10 +73,16 @@ method make-menu (
 
     when 'Sessions' {
       self.bind-action(
-        $menu, $menu-name, $!session-edit, 'Modify',
+        $menu, $menu-name, $!session-edit, 'Add/Rename',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
 
+#`{{
+      self.bind-action(
+        $menu, $menu-name, $!session-edit, 'Modify',
+#        :icon<view-refresh>, :tooltip('Refresh sidebar')
+      );
+}}
       self.bind-action(
         $menu, $menu-name, $!session-edit, 'Add/Rename Group',
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
@@ -188,10 +194,17 @@ method bind-action (
 }
 
 #-------------------------------------------------------------------------------
+method file-restart ( N-Object $parameter ) {
+  say 'file restart';
+  $!main.restart;
+}
+
+#-------------------------------------------------------------------------------
 method file-quit ( N-Object $parameter ) {
   say 'file quit';
   $!application.quit;
 }
+
 
 
 
