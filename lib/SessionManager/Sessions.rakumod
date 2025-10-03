@@ -51,6 +51,26 @@ method set-session-title ( Str:D $sid, Str $title = '' ) {
 }
 
 #-------------------------------------------------------------------------------
+method get-session-icon ( Str:D $sid --> Str ) {
+  $sessions{$sid}<icon> // ''
+}
+
+#-------------------------------------------------------------------------------
+method set-session-icon ( Str:D $sid, Str $icon = '' ) {
+  $sessions{$sid}<icon> = $icon;
+}
+
+#-------------------------------------------------------------------------------
+method get-session-overlay ( Str:D $sid --> Str ) {
+  $sessions{$sid}<over> // ''
+}
+
+#-------------------------------------------------------------------------------
+method set-session-overlay ( Str:D $sid, Str $overlay = '' ) {
+  $sessions{$sid}<over> = $overlay;
+}
+
+#-------------------------------------------------------------------------------
 method rename-session ( Str:D $sid, Str:D $new-sid ) {
   $sessions{$new-sid} = $sessions{$sid}:delete;
 }
