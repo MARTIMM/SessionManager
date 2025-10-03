@@ -4,7 +4,7 @@ use NativeCall;
 
 use GnomeTools::Gtk::Theming;
 
-use SessionManager::Gui::Variables;
+use SessionManager::Variables;
 use SessionManager::Config;
 use SessionManager::RunActionCommand;
 use SessionManager::Command;
@@ -84,7 +84,7 @@ method session-button ( --> Widget ) {
   my Widget $widget;
 
   my SessionManager::Config $config .= instance;
-#  my SessionManager::Gui::Variables $v .= instance;
+#  my SessionManager::Variables $v .= new;
 #  $!theme.add-css-class( self, 'session-toolbar');
 
   if $config.legacy {
@@ -563,7 +563,7 @@ submethod BUILD ( Str:D :$!session-id, Hash:D :$!manage-session ) {
   my SessionManager::Config $config .= instance;
   $config.set-css( self.get-style-context, 'session-toolbar');
 
-  my SessionManager::Gui::Variables $v .= instance;
+  my SessionManager::Variables $v .= new;
   my Str $title = "Session\n$!manage-session<title>";
   my Str $picture-file = $config.set-path(
     $v.substitute-vars($!manage-session<icon> // "$*images/$!session-id/0.png")
