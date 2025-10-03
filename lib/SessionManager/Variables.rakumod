@@ -79,6 +79,11 @@ method load ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method add-variable ( Str:D $name, Str:D $value --> Str ) {
+  $variables{$name} = $value;
+}
+
+#-------------------------------------------------------------------------------
 method get-variables ( --> Seq ) {
   $variables.keys
 }
@@ -96,6 +101,11 @@ method set-variable ( Str:D $name, Str:D $value --> Str ) {
 #-------------------------------------------------------------------------------
 method rename-variable ( Str:D $old-var, Str:D $new-var ) {
   $variables{$new-var} = $variables{$old-var}:delete;
+
+  for $variables.keys -> $variable-name {
+    $variables{$variable-name} ~~ s:g/ '$' $old-var  (<-[\w-]>) /\$$new-var$0/;
+#    $actions-object.subst-vars( $!original-name, $variable);
+  }
 }
 
 #-------------------------------------------------------------------------------

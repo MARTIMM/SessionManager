@@ -3,6 +3,7 @@ use v6.d;
 use YAMLish;
 
 use SessionManager::Variables;
+use SessionManager::Actions;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -118,9 +119,7 @@ method substitute-vars ( Str $t --> Str ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method variables-add-modify (
-  N-Object $parameter, :extra-data($actions-object)
-) {
+method variables-add-modify ( N-Object $parameter ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Variable'), :add-statusbar
   ) {
@@ -145,19 +144,18 @@ method variables-add-modify (
     .add-content( 'Specification', my Entry $vspec .= new-entry);
 
     .add-button(
-      self, 'do-rename-variable', 'Rename',
-      :$dialog, :$vname, :$vspec, :$actions-object
+      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$vspec
     );
 
     .add-button(
-      self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec
+      self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec, :$variables-lb
     );
 
     .add-button(
       self, 'do-modify-variable', 'Modify', :$dialog, :$vname, :$vspec
     );
 
-    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+    .add-button( $dialog, 'destroy-dialog', 'Done');
 
     $variables-lb.register-signal(
       self, 'set-data', 'row-selected', :$vname, :$vspec
@@ -170,7 +168,7 @@ method variables-add-modify (
 #-------------------------------------------------------------------------------
 method do-rename-variable (
   GnomeTools::Gtk::Dialog :$dialog, ListBoxRow() :$row,
-  Entry :$vname, Entry :$vspec, :$actions-object
+  Entry :$vname, Entry :$vspec
 ) {
   my Str $variable = $vname.get-text;
 
@@ -183,12 +181,10 @@ method do-rename-variable (
   }
 
   else {
+    my SessionManager::Actions $actions;
     $!variables.rename-variable( $!original-name, $variable);
-    for $!variables.get-variables -> $variable-name {
-      my Str $on = $!original-name;
-      $!variables.get-variable($variable-name) ~~ s:g/ '$' $on  (<-[\w-]>) /\$$variable$0/;
-      $actions-object.subst-vars( $!original-name, $variable);
-    }
+    $actions.subst-vars( $!original-name, $variable);
+
 
     # Change the row in the listbox
     with my Label $l .= new-with-mnemonic($variable) {
@@ -207,9 +203,10 @@ method do-rename-variable (
 
 #-------------------------------------------------------------------------------
 method do-add-variable (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname, Entry :$vspec
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
+  Entry :$vspec, ListBox :$variables-lb
 ) {
-  my Bool $sts-ok = False;
+#  my Bool $sts-ok = False;
 
   my Str $variable = $vname.get-text;
 
@@ -222,18 +219,25 @@ method do-add-variable (
   }
 
   else {
-    $!variables{$variable} = $vspec.get-text;
-    $sts-ok = True;
+    my Str $var = $vspec.get-text;
+    $!variables.add-variable( $variable, $var);
+    $dialog.set-status("Variable $variable added with '$var'");
+    with my Label $l .= new-with-mnemonic($variable) {
+      .set-justify(GTK_JUSTIFY_LEFT);
+      .set-halign(GTK_ALIGN_START);
+    }
+    $variables-lb.append($l);
+#    $sts-ok = True;
   }
 
-  $dialog.destroy-dialog if $sts-ok;
+#  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
 method do-modify-variable (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$vname, Entry :$vspec
 ) {
-  my Bool $sts-ok = False;
+#  my Bool $sts-ok = False;
 
   my Str $variable = $vname.get-text;
 
@@ -243,10 +247,11 @@ method do-modify-variable (
 
   else {
     $!variables.set-variable( $variable, $vspec.get-text);
-    $sts-ok = True;
+    $dialog.set-status("Variable $variable modified to '$vspec.get-text()'");
+#    $sts-ok = True;
   }
 
-  $dialog.destroy-dialog if $sts-ok;
+#  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
