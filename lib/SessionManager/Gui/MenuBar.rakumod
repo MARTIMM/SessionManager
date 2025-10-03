@@ -115,7 +115,6 @@ method make-menu (
     when 'Variables' {
       self.bind-action(
         $menu, $menu-name, $!variable-edit, 'Add Modify',
-        :extra-data($!action-edit),
 #        :icon<view-refresh>, :tooltip('Refresh sidebar')
       );
 
@@ -126,7 +125,7 @@ method make-menu (
       );
     }
   }
-note "$?LINE $!bar.gist()";
+#note "$?LINE $!bar.gist()";
 
   $menu
 }
@@ -134,7 +133,7 @@ note "$?LINE $!bar.gist()";
 #-------------------------------------------------------------------------------
 method bind-action (
   Gnome::Gio::Menu $menu, Str $menu-name, Mu $object, Str $entry-name,
-  Str :$icon, Str :$path, Str :$tooltip, Bool :$shortcut = False, :$extra-data
+  Str :$icon, Str :$path, Str :$tooltip, Bool :$shortcut = False
 ) {
 
   # Make a method and action name
@@ -143,7 +142,7 @@ method bind-action (
   $method ~~ s:g/ <[\s/_]>+ /-/;
 
   my Str $action-name = 'app.' ~ $method;
-note "$?LINE $menu-name, '$entry-name', $method, $action-name";
+#note "$?LINE $menu-name, '$entry-name', $method, $action-name";
 
   # Make a menu entry
   my Gnome::Gio::MenuItem $menu-item .= new-menuitem(
@@ -154,7 +153,7 @@ note "$?LINE $menu-name, '$entry-name', $method, $action-name";
   # Use the method name
   my Gnome::Gio::SimpleAction $action .= new-simpleaction( $method, Pointer);
   $!application.add-action($action);
-  $action.register-signal( $object, $method, 'activate', :$extra-data);
+  $action.register-signal( $object, $method, 'activate');
 #`{{
   if ?$icon {
     my PuzzleTable::Gui::IconButton $toolbar-button .= new-button(
