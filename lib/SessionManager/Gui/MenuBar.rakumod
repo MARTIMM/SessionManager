@@ -5,6 +5,7 @@ use NativeCall;
 use SessionManager::Gui::Actions;
 use SessionManager::Gui::Variables;
 use SessionManager::Gui::Sessions;
+use SessionManager::Gui::Config;
 
 use Gnome::Gio::Menu:api<2>;
 use Gnome::Gio::MenuItem:api<2>;
@@ -26,6 +27,7 @@ has Array $!menus;
 has SessionManager::Gui::Actions $!action-edit;
 has SessionManager::Gui::Variables $!variable-edit;
 has SessionManager::Gui::Sessions $!session-edit;
+has SessionManager::Gui::Config $!config-edit;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( :$!main ) {
@@ -57,6 +59,13 @@ method make-menu (
       my Gnome::Gio::Menu $section-menu .= new-menu;
       self.bind-action(
         $section-menu, $menu-name, self, 'Restart',
+#        , :icon<application-exit>,
+#        :tooltip('Quit application')
+      );
+      $menu.append-section( Str, $section-menu);
+
+      self.bind-action(
+        $section-menu, $menu-name, self, 'Modify Configuration',
 #        , :icon<application-exit>,
 #        :tooltip('Quit application')
       );
