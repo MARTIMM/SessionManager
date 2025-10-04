@@ -155,7 +155,10 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
     }
     my SessionManager::Config $config .= instance(:$load-manual-build-config);
 
-    $config.set-legacy(?$o<legacy>);
+    if ?$o<legacy> {
+      $*legacy = True;
+      $config.set-legacy(True);
+    }
   }
 
   # finish up
