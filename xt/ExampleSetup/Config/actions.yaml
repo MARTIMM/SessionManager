@@ -1,9 +1,9 @@
 ---
 "DHome": 
   "c": "dolphin $Ex1Path"
-  "i": "/mnt/E4-8-TB/.Old/AI/ComfyUI/Lady D1/Futa/Futa 15/LD1-13-01_00027_.png"
+  "i": ""
   "l": 1
-  "o": "/mnt/E4-8-TB/.Old/AI/ComfyUI/Lady D1/Futa/Futa 15/LD1-13-01_00025_.png"
+  "o": ""
   "p": "$Ex1Path"
   "t": "File list of $Ex1Path"
   "w": 0
@@ -17,9 +17,9 @@
   "w": 0
 "kHome": 
   "c": "konsole --workdir $Ex1Path"
-  "i": "/mnt/E4-8-TB/.Old/AI/ComfyUI/Lady D1/Futa/Futa 15/LD1-13-01_00040_.png"
+  "i": ""
   "l": 1
-  "o": " /mnt/E4-8-TB/.Old/AI/ComfyUI/Lady D1/Futa/Futa 15/LD1-13-01_00030_.png"
+  "o": ""
   "p": "$Ex1Path"
   "t": "File list of $Ex1Path"
   "w": 0
