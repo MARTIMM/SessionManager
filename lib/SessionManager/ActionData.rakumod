@@ -48,7 +48,6 @@ submethod BUILD ( ) {
 method init-action ( Str :$!id = '', Hash:D :$!raw-action ) {
   $!run-in-group = False;
   $!running = False;
-  $!shell = '/usr/bin/bash';
 
   $!variables .= new;
 
@@ -108,7 +107,14 @@ method set-image-to-session-path (
 method set-run-in-group ( Bool $!run-in-group ) { }
 
 #-------------------------------------------------------------------------------
-method set-shell ( Str:D $!shell ) { }
+method get-shell ( --> Str ) {
+  $!shell // '/usr/bin/bash';
+}
+
+#-------------------------------------------------------------------------------
+method set-shell ( Str:D $shell ) {
+  $!shell = $shell // '/usr/bin/bash';
+}
 
 #-------------------------------------------------------------------------------
 method run-action ( ) {     #( Bool $!run-in-group ) {
