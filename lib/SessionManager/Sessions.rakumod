@@ -139,7 +139,7 @@ method rename-group-actions ( $old-aid, $new-aid ) {
   for $sessions.keys -> $sid {
     for $sessions{$sid}.keys.grep(/^group/) -> $group-id {
       my Array $actions = $sessions{$sid}{$group-id}<actions>;
-      loop ( my Int $i; $ < $actions.elems; $i++ ) {
+      loop ( my Int $i = 0; $i < $actions.elems; $i++ ) {
         if $actions[$i] eq $old-aid {
           $actions[$i] = $new-aid;
           $sessions{$sid}{$group-id}<actions> = $actions;
