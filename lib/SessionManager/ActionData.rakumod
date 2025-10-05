@@ -75,7 +75,7 @@ method init-action ( Str :$!id = '', Hash:D :$!raw-action ) {
     }
 
     $!cmd-finish-wait = $!raw-action<w> if $!raw-action<w>.defined;
-#    $!cmd-background = ? $!raw-action<b> if $!raw-action<b>.defined;
+    $!shell = $!raw-action<sh> if $!raw-action<sh>.defined;
   }
 
   # Set icon on the button.
@@ -106,6 +106,7 @@ method set-image-to-session-path (
 #-------------------------------------------------------------------------------
 method set-run-in-group ( Bool $!run-in-group ) { }
 
+#`{{
 #-------------------------------------------------------------------------------
 method get-shell ( --> Str ) {
   $!shell // '/usr/bin/bash';
@@ -115,6 +116,7 @@ method get-shell ( --> Str ) {
 method set-shell ( Str:D $shell ) {
   $!shell = $shell // '/usr/bin/bash';
 }
+}}
 
 #-------------------------------------------------------------------------------
 method run-action ( ) {     #( Bool $!run-in-group ) {
@@ -139,10 +141,11 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
   $script-name = '/tmp/' ~ sha256-hex($command) ~ '.shell-script';
   $script-name.IO.spurt($command);
 
-#note "\n$?LINE $script-name\n$command";
+  my $shell = $!shell // '/usr/bin/bash';
+note "\n$?LINE $shell, $script-name\n$command";
 
   if $!cmd-background {
-    shell "$!shell $script-name &> /dev/null \&";
+    shell "$shell $script-name &> /dev/null \&";
 #`{{
     $script-name.IO.unlink;
 

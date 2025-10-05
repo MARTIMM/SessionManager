@@ -131,10 +131,11 @@ method do-create-act (
     $raw-action<l> = $aspec-log.get-state;
     $raw-action<w> = $aspec-wait.get-text.Int;
     $raw-action<p> = $aspec-path.get-text;
+    $raw-action<sh> = $aspec-shell.get-text;
 
     $!actions.add-action( $raw-action, :$id);
-    my SessionManager::ActionData $ad = $!actions.get-action($id);
-    $ad.set-shell($aspec-shell.get-text);
+#    my SessionManager::ActionData $ad = $!actions.get-action($id);
+#    $ad.set-shell($aspec-shell.get-text);
 
     $dialog.set-status("The action '$id' is succesfully created");
   }
@@ -316,10 +317,13 @@ method set-data(
   $aspec-pic.set-text($action-object<i>)
     if ?$action-object<i> and ?$aspec-pic;
 
-  if ?$aspec-shell {
-    my SessionManager::ActionData $ad = $!actions.get-action($id);
-    $aspec-shell.set-placeholder-text($ad.get-shell);
-  }
+  $aspec-shell.set-placeholder-text($action-object<sh>)
+    if ?$action-object<sh> and ?$aspec-shell;
+
+#  if ?$aspec-shell {
+#    my SessionManager::ActionData $ad = $!actions.get-action($id);
+#    $aspec-shell.set-placeholder-text($ad.get-shell);
+#  }
 }
 
 #-------------------------------------------------------------------------------
