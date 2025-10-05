@@ -57,95 +57,6 @@ method instance ( --> SessionManager::Gui::Actions ) {
   $instance
 }
 
-#`{{
-#-------------------------------------------------------------------------------
-method add-action ( Hash:D $raw-action, Str :$id = '' --> Str ) {
-  my SessionManager::ActionData $action-data;
-  $action-data .= new;
-  $action-data.init-action( :$raw-action, :$id);
-  $!data-ids{$action-data.id} = $action-data;
-  $action-data.id
-}
-
-#-------------------------------------------------------------------------------
-# Only in action reference files
-multi method add-actions ( Hash:D $raw-actions ) {
-  for $raw-actions.keys -> $id {
-    self.add-action( $raw-actions{$id}, :$id);
-  }
-}
-
-#-------------------------------------------------------------------------------
-# Only found in config file and parts files
-multi method add-actions ( Array:D $raw-actions ) {
-  for @$raw-actions -> $action {
-    self.add-action($action);
-  }
-}
-
-#-------------------------------------------------------------------------------
-# Read from action reference files
-method add-from-yaml ( Str:D $path ) {
-  die "File $path not found or unreadable" unless $path.IO.r;
-
-  self.add-actions(load-yaml($path.IO.slurp));
-}
-
-#-------------------------------------------------------------------------------
-method save ( ) {
-  my Hash $raw-actions = %();
-  for $!data-ids.keys -> $id {
-    $raw-actions{$id} = $!data-ids{$id}.raw-action;
-  }
-
-  ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($raw-actions));
-}
-
-#-------------------------------------------------------------------------------
-method load ( ) {
-  if ($*config-directory ~ ConfigPath).IO.r {
-    my Hash $raw-actions = load-yaml(
-      ($*config-directory ~ ConfigPath).IO.slurp
-    );
-
-    for $raw-actions.keys -> $id {
-      self.add-action( $raw-actions{$id}, :$id);
-    }
-  }
-}
-
-#-------------------------------------------------------------------------------
-method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
-  if $!data-ids{$id}:exists {
-    $!data-ids{$id}
-  }
-
-  else {
-    # If action data isn't found, try $id as if it was a tooltip
-    # string. Those are taken when no id was found and converted into sha256
-    # strings in SessionManager::ActionData.
-    $id = sha256-hex($id);
-    if $!data-ids{$id}:exists {
-      $!data-ids{$id}
-    }
-
-    else {
-      SessionManager::ActionData
-    }
-  }
-}
-
-#-------------------------------------------------------------------------------
-# Substitute changed variable in the raw actions Hash.
-method subst-vars ( Str $original-var, Str $new-var ) {
-  for $!data-ids.keys -> $id {
-    $!data-ids{$id}.subst-vars( $original-var, $new-var);
-  }
-}
-}}
-
-#-------------------------------------------------------------------------------
-# Calls from menubar entries
 #-------------------------------------------------------------------------------
 method actions-create ( N-Object $parameter ) {
   note "$?LINE ";
@@ -156,6 +67,7 @@ method actions-create ( N-Object $parameter ) {
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
     my Entry $aspec-cmd .= new-entry;
+    my Entry $aspec-shell .= new-entry;
     my Entry $aspec-path .= new-entry;
     my Entry $aspec-wait .= new-entry;
     my Switch $aspec-log .= new-switch;
@@ -172,25 +84,29 @@ method actions-create ( N-Object $parameter ) {
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
       :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
-      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
+      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :4columns);
-    .add-content( 'Action id', $action-id, :4columns);
-    .add-content( 'Title', $aspec-title, :4columns);
+    .add-content( 'Action id', $action-id, $aspec-title, :2columns);
+#    .add-content( 'Action id', $action-id, :4columns);
+#    .add-content( 'Title', $aspec-title, :4columns);
     .add-content( 'Command', $aspec-cmd, :4columns);
+    .add-content( 'Shell', $aspec-shell, :4columns);
     .add-content( 'Path', $aspec-path, :4columns);
-    .add-content( 'Wait', $aspec-wait, :4columns);
-    .add-content( 'Logging', $aspec-log);
+    .add-content( 'Wait', $aspec-wait, $aspec-log);
+#    .add-content( 'Wait', $aspec-wait, :4columns);
+#    .add-content( 'Logging', $aspec-log);
     .add-content( 'Icon', $aspec-icon, :4columns);
     .add-content( 'Picture', $aspec-pic, :4columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
-    .add-button( self, 'do-create-act', 'Create', :$dialog, :$action-id,
-      :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
-      :$aspec-icon, :$aspec-pic
+    .add-button(
+      self, 'do-create-act', 'Create', :$dialog, :$action-id,
+      :$aspec-title, :$aspec-cmd, :$aspec-shell, :$aspec-path,
+      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
     );
 
     .add-button( $dialog, 'destroy-dialog', 'Done');
@@ -237,7 +153,7 @@ method actions-create ( N-Object $parameter ) {
 method do-create-act (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
   Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
-  Entry :$aspec-icon, Entry :$aspec-pic
+  Entry :$aspec-icon, Entry :$aspec-pic, Entry :$aspec-shell
 ) {
   my Bool $sts-ok = False;
   my Str $id = $action-id.get-text;
@@ -259,7 +175,11 @@ method do-create-act (
     $raw-action<l> = $aspec-log.get-state;
     $raw-action<w> = $aspec-wait.get-text.Int;
     $raw-action<p> = $aspec-path.get-text;
+
     $!actions.add-action( $raw-action, :$id);
+    my SessionManager::ActionData $ad = $!actions.get-action($id);
+    $ad.set-shell($aspec-shell.get-text);
+
     $sts-ok = True;
     $dialog.set-status("The action '$id' is succesfully created");
   }
@@ -276,6 +196,7 @@ method actions-modify ( N-Object $parameter ) {
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
     my Entry $aspec-cmd .= new-entry;
+    my Entry $aspec-shell .= new-entry;
     my Entry $aspec-path .= new-entry;
     my Entry $aspec-wait .= new-entry;
     my Switch $aspec-log .= new-switch;
@@ -292,16 +213,19 @@ method actions-modify ( N-Object $parameter ) {
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
       :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
-      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
+      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :4columns);
-    .add-content( 'Action id', $action-id, :4columns);
-    .add-content( 'Title', $aspec-title, :4columns);
+    .add-content( 'Action id', $action-id, $aspec-title, :2columns);
+#    .add-content( 'Action id', $action-id, :4columns);
+#    .add-content( 'Title', $aspec-title, :4columns);
     .add-content( 'Command', $aspec-cmd, :4columns);
+    .add-content( 'Shell', $aspec-shell, :4columns);
     .add-content( 'Path', $aspec-path, :4columns);
-    .add-content( 'Wait', $aspec-wait, :4columns);
-    .add-content( 'Logging', $aspec-log);
+    .add-content( 'Wait', $aspec-wait, $aspec-log);
+#    .add-content( 'Wait', $aspec-wait, :4columns);
+#    .add-content( 'Logging', $aspec-log);
     .add-content( 'Icon', $aspec-icon, :4columns);
     .add-content( 'Picture', $aspec-pic, :4columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
@@ -310,7 +234,7 @@ method actions-modify ( N-Object $parameter ) {
 
     .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$listbox,
       :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait,
-      :$aspec-log, :$aspec-icon, :$aspec-pic
+      :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
     .add-button( $dialog, 'destroy-dialog', 'Done');
@@ -362,7 +286,7 @@ method actions-modify ( N-Object $parameter ) {
 #-------------------------------------------------------------------------------
 method do-modify-act (
   GnomeTools::Gtk::Dialog :$dialog, ListBox :$listbox,
-  Entry :$aspec-title, Entry :$aspec-cmd,
+  Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-shell,
   Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
@@ -377,9 +301,12 @@ method do-modify-act (
   $raw-action<w> = $aspec-wait.get-text.Int;
   $raw-action<p> = $aspec-path.get-text;
 
-  my Str $original-id = $listbox.get-selection[0];
-  $!actions.modify-action( $original-id, $raw-action);
-  $dialog.set-status("The action '$original-id' is succesfully modified");
+  my Str $id = $listbox.get-selection[0];
+  $!actions.modify-action( $id, $raw-action);
+  my SessionManager::ActionData $ad = $!actions.get-action($id);
+  $ad.set-shell($aspec-shell.get-text);
+
+  $dialog.set-status("The action '$id' is succesfully modified");
   $sts-ok = True;
 
 #  $dialog.destroy-dialog if $sts-ok;
@@ -394,6 +321,7 @@ method actions-rename-id ( N-Object $parameter ) {
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
     my Entry $aspec-cmd .= new-entry;
+    my Entry $aspec-shell .= new-entry;
     my Entry $aspec-path .= new-entry;
     my Entry $aspec-wait .= new-entry;
     my Switch $aspec-log .= new-switch;
@@ -409,8 +337,9 @@ method actions-rename-id ( N-Object $parameter ) {
     my ListBox $listbox;
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
-      :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
-      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
+      :$dialog, :$action-id,
+#      :$aspec-title, :$aspec-cmd, :$aspec-path,
+#      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :4columns);
@@ -503,7 +432,7 @@ method set-data(
   Label() :$row-widget, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
   Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-path,
   Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
-  Entry :$aspec-pic
+  Entry :$aspec-pic, Entry :$aspec-shell
 ) {
   # Needed to rename content of row
 #  $!original-row = $row;
@@ -514,16 +443,26 @@ method set-data(
   $action-id.set-text($id);
 
   my Hash $action-object = $!actions.get-raw-action($id);
-  $aspec-title.set-text($action-object<t>) if ?$action-object<t>;
-  $aspec-cmd.set-text($action-object<c>) if ?$action-object<c>;
-  $aspec-path.set-text($action-object<p>) if ?$action-object<p>;
-  $aspec-wait.set-text($action-object<w>) if ?$action-object<w>;
-  $aspec-log.set-state($action-object<l>.Bool) if ?$action-object<l>;
-  $aspec-icon.set-text($action-object<o>) if ?$action-object<o>;
-  $aspec-pic.set-text($action-object<i>) if ?$action-object<i>;
+  $aspec-title.set-text($action-object<t>)
+    if ?$action-object<t> and ?$aspec-title;
+  $aspec-cmd.set-text($action-object<c>)
+    if ?$action-object<c> and ?$aspec-cmd;
+  $aspec-path.set-text($action-object<p>)
+    if ?$action-object<p> and ?$aspec-path;
+  $aspec-wait.set-text($action-object<w>)
+    if ?$action-object<w> and ?$aspec-wait;
+  $aspec-log.set-state($action-object<l>.Bool)
+    if ?$action-object<l> and ?$aspec-log;
+  $aspec-icon.set-text($action-object<o>)
+    if ?$action-object<o> and ?$aspec-icon;
+  $aspec-pic.set-text($action-object<i>)
+    if ?$action-object<i> and ?$aspec-pic;
+
+  if ?$aspec-shell {
+    my SessionManager::ActionData $ad = $!actions.get-action($id);
+    $aspec-shell.set-placeholder-text($ad.get-shell);
+  }
 }
-#`{{
-}}
 
 #-------------------------------------------------------------------------------
 method actions-delete ( N-Object $parameter ) {
