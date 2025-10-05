@@ -16,8 +16,6 @@ use GnomeTools::Gtk::ListBox;
 
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Switch:api<2>;
-#use Gnome::Gtk4::ListBox:api<2>;
-#use Gnome::Gtk4::ListBoxRow:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
@@ -25,23 +23,19 @@ use Gnome::Gtk4::T-enums:api<2>;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Actions;
 
-has SessionManager::Actions $!actions;
-
-#constant ConfigPath = '/Config/actions.yaml';
-
 constant Entry = Gnome::Gtk4::Entry;
 constant Switch = Gnome::Gtk4::Switch;
 constant ListBox = GnomeTools::Gtk::ListBox;
-#constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+
+has SessionManager::Actions $!actions;
 
 #-------------------------------------------------------------------------------
 my SessionManager::Gui::Actions $instance;
 
 has Hash $!data-ids;
-#has Str $!original-id;
-#has ListBoxRow $!original-row;
+
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   $!data-ids = %();
@@ -73,6 +67,7 @@ method actions-create ( N-Object $parameter ) {
     my Switch $aspec-log .= new-switch;
     my Entry $aspec-icon .= new-entry;
     my Entry $aspec-pic .= new-entry;
+#TODO add fields for variables and environment
 
     # Set placeholder texts when optional
     $aspec-path.set-placeholder-text('optional');
@@ -89,14 +84,10 @@ method actions-create ( N-Object $parameter ) {
 
     .add-content( 'Current actions', $scrolled-listbox, :4columns);
     .add-content( 'Action id', $action-id, $aspec-title, :2columns);
-#    .add-content( 'Action id', $action-id, :4columns);
-#    .add-content( 'Title', $aspec-title, :4columns);
     .add-content( 'Command', $aspec-cmd, :4columns);
     .add-content( 'Shell', $aspec-shell, :4columns);
     .add-content( 'Path', $aspec-path, :4columns);
     .add-content( 'Wait', $aspec-wait, $aspec-log);
-#    .add-content( 'Wait', $aspec-wait, :4columns);
-#    .add-content( 'Logging', $aspec-log);
     .add-content( 'Icon', $aspec-icon, :4columns);
     .add-content( 'Picture', $aspec-pic, :4columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
@@ -113,40 +104,6 @@ method actions-create ( N-Object $parameter ) {
 
     .show-dialog;
   }
-
-#`{{
-    my Str $current-root = $!config.get-current-root;
-
-    # Make a string list to be used in a combobox (dropdown)
-    my GnomeTools::Gtk::DropDown $container-dd .= new;
-    $container-dd.fill-containers(
-      $!config.get-current-container, $current-root, :skip-default
-    );
-
-    my GnomeTools::Gtk::DropDown $roots-dd;
-    if $*multiple-roots {
-      $roots-dd .= new;
-      $roots-dd.fill-roots($!config.get-current-root);
-
-      # Show dropdown
-      .add-content( 'Select a root', $roots-dd);
-
-      # Set a handler on the container list to change the category list
-      # when an item is selected.
-      $roots-dd.trap-root-changes( $container-dd, :skip-default);
-    }
-
-    # Show entry for input
-    .add-content( 'Select container to delete', $container-dd);
-
-    # Buttons to delete the container or cancel
-    .add-button(
-      self, 'do-container-delete', 'Delete',
-      :$dialog, :$container-dd, :$roots-dd
-    );
-    .add-button( $dialog, 'destroy-dialog', 'Cancel');
-}}
-
 }
 
 #-------------------------------------------------------------------------------
@@ -155,7 +112,6 @@ method do-create-act (
   Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic, Entry :$aspec-shell
 ) {
-  my Bool $sts-ok = False;
   my Str $id = $action-id.get-text;
 
   if !$id {
@@ -180,16 +136,13 @@ method do-create-act (
     my SessionManager::ActionData $ad = $!actions.get-action($id);
     $ad.set-shell($aspec-shell.get-text);
 
-    $sts-ok = True;
     $dialog.set-status("The action '$id' is succesfully created");
   }
-
-#  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
 method actions-modify ( N-Object $parameter ) {
-  note "$?LINE ";
+
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Action'), :add-statusbar
   ) {
@@ -218,14 +171,10 @@ method actions-modify ( N-Object $parameter ) {
 
     .add-content( 'Current actions', $scrolled-listbox, :4columns);
     .add-content( 'Action id', $action-id, $aspec-title, :2columns);
-#    .add-content( 'Action id', $action-id, :4columns);
-#    .add-content( 'Title', $aspec-title, :4columns);
     .add-content( 'Command', $aspec-cmd, :4columns);
     .add-content( 'Shell', $aspec-shell, :4columns);
     .add-content( 'Path', $aspec-path, :4columns);
     .add-content( 'Wait', $aspec-wait, $aspec-log);
-#    .add-content( 'Wait', $aspec-wait, :4columns);
-#    .add-content( 'Logging', $aspec-log);
     .add-content( 'Icon', $aspec-icon, :4columns);
     .add-content( 'Picture', $aspec-pic, :4columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
@@ -238,49 +187,8 @@ method actions-modify ( N-Object $parameter ) {
     );
 
     .add-button( $dialog, 'destroy-dialog', 'Done');
-#`{{
-    $variables-lb.register-signal(
-      self, 'set-data', 'row-selected', :$dialog, :$action-id, :$aspec-title, 
-      :$aspec-cmd, :$aspec-path, :$aspec-wait, :$aspec-log,
-      :$aspec-icon, :$aspec-pic
-    );
-}}
     .show-dialog;
   }
-
-#`{{
-    my Str $current-root = $!config.get-current-root;
-
-    # Make a string list to be used in a combobox (dropdown)
-    my GnomeTools::Gtk::DropDown $container-dd .= new;
-    $container-dd.fill-containers(
-      $!config.get-current-container, $current-root, :skip-default
-    );
-
-    my GnomeTools::Gtk::DropDown $roots-dd;
-    if $*multiple-roots {
-      $roots-dd .= new;
-      $roots-dd.fill-roots($!config.get-current-root);
-
-      # Show dropdown
-      .add-content( 'Select a root', $roots-dd);
-
-      # Set a handler on the container list to change the category list
-      # when an item is selected.
-      $roots-dd.trap-root-changes( $container-dd, :skip-default);
-    }
-
-    # Show entry for input
-    .add-content( 'Select container to delete', $container-dd);
-
-    # Buttons to delete the container or cancel
-    .add-button(
-      self, 'do-container-delete', 'Delete',
-      :$dialog, :$container-dd, :$roots-dd
-    );
-    .add-button( $dialog, 'destroy-dialog', 'Cancel');
-}}
-
 }
 
 #-------------------------------------------------------------------------------
@@ -290,8 +198,6 @@ method do-modify-act (
   Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
-  my Bool $sts-ok = False;
-
   my Hash $raw-action = %();
   $raw-action<t> = $aspec-title.get-text;
   $raw-action<c> = $aspec-cmd.get-text;
@@ -307,9 +213,6 @@ method do-modify-act (
   $ad.set-shell($aspec-shell.get-text);
 
   $dialog.set-status("The action '$id' is succesfully modified");
-  $sts-ok = True;
-
-#  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
@@ -338,8 +241,6 @@ method actions-rename-id ( N-Object $parameter ) {
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
       :$dialog, :$action-id,
-#      :$aspec-title, :$aspec-cmd, :$aspec-path,
-#      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :4columns);
@@ -353,40 +254,6 @@ method actions-rename-id ( N-Object $parameter ) {
 
     .show-dialog;
   }
-
-#`{{
-    my Str $current-root = $!config.get-current-root;
-
-    # Make a string list to be used in a combobox (dropdown)
-    my GnomeTools::Gtk::DropDown $container-dd .= new;
-    $container-dd.fill-containers(
-      $!config.get-current-container, $current-root, :skip-default
-    );
-
-    my GnomeTools::Gtk::DropDown $roots-dd;
-    if $*multiple-roots {
-      $roots-dd .= new;
-      $roots-dd.fill-roots($!config.get-current-root);
-
-      # Show dropdown
-      .add-content( 'Select a root', $roots-dd);
-
-      # Set a handler on the container list to change the category list
-      # when an item is selected.
-      $roots-dd.trap-root-changes( $container-dd, :skip-default);
-    }
-
-    # Show entry for input
-    .add-content( 'Select container to delete', $container-dd);
-
-    # Buttons to delete the container or cancel
-    .add-button(
-      self, 'do-container-delete', 'Delete',
-      :$dialog, :$container-dd, :$roots-dd
-    );
-    .add-button( $dialog, 'destroy-dialog', 'Cancel');
-}}
-
 }
 
 #-------------------------------------------------------------------------------
@@ -404,27 +271,21 @@ method do-rename-act (
   }
 
   else {
-    #TODO Rename references in sessions
-
     # Change the row in the listbox
     with my Label $l .= new-with-mnemonic($new-id) {
       .set-justify(GTK_JUSTIFY_LEFT);
       .set-halign(GTK_ALIGN_START);
     }
-    # Change the id of the row in the list
-#    $!original-row.set-child($l);
 
-    # Set original, listbox is not in multi select so always one selection
-    my $original-id = $listbox.get-selection[0];
-    $!actions.rename-action( $original-id, $new-id);
+    # Get selected id, listbox is not in multi select so always one selection
+    my $id = $listbox.get-selection[0];
+    $!actions.rename-action( $id, $new-id);
 
     my SessionManager::Sessions $sessions .= new;
-    $sessions.rename-group-actions( $original-id, $new-id);
+    $sessions.rename-group-actions( $id, $new-id);
 
     $dialog.set-status('Renamed everything successfully');
   }
-
-  # Keep dialog open for other edits
 }
 
 #-------------------------------------------------------------------------------
@@ -434,11 +295,6 @@ method set-data(
   Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic, Entry :$aspec-shell
 ) {
-  # Needed to rename content of row
-#  $!original-row = $row;
-#note "$?LINE";
-
-#  my Label() $row-widget = $row.get-child;
   my Str $id = $row-widget.get-text;
   $action-id.set-text($id);
 
@@ -479,23 +335,5 @@ method scrollable-list ( Bool :$multi = False, *%options ) {
   );
   my ScrolledWindow $sw = $list-lb.set-list([$!actions.get-action-ids.sort]);
 
-#`{{
-  $list-lb.set-selection-mode(GTK_SELECTION_MULTIPLE) if $multi;
-  for $!data-ids.keys.sort -> $id {
-    with my Label $l .= new-with-mnemonic($id) {
-      .set-justify(GTK_JUSTIFY_LEFT);
-      .set-halign(GTK_ALIGN_START);
-    }
-    $list-lb.append($l);
-    $list-lb.register-signal( $object, $method, 'row-selected', |%options);
-  }
-
-  with my ScrolledWindow $sw .= new-scrolledwindow {
-    .set-child($list-lb);
-    .set-size-request( 850, 300);
-  }
-
-  $sw
-}}
   ( $list-lb, $sw)
 }
