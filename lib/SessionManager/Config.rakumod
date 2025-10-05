@@ -79,8 +79,6 @@ method instance ( *%options --> SessionManager::Config ) {
 method load-config ( Bool :$load-manual-build-config = False ) {
   if "$*config-directory/dispatch-config.yaml".IO !~~ :r {
     "$*config-directory/dispatch-config.yaml".IO.spurt(Q:q:to/EOD/);
-      shell: /usr/bin/tcsh
-
       theme:
         title: Environment starter
 
@@ -211,8 +209,20 @@ method get-window-size ( --> List ) {
 }
 
 #-------------------------------------------------------------------------------
+method set-window-size ( Int:D $w, Int:D $h ) {
+  $!dispatch-config<theme><window-size>[0] = $w;
+  $!dispatch-config<theme><window-size>[1] = $h;
+}
+
+#-------------------------------------------------------------------------------
 method get-log-window-size ( --> List ) {
   | $!dispatch-config<theme><log-window-size>;
+}
+
+#-------------------------------------------------------------------------------
+method set-log-window-size ( Int:D $w, Int:D $h ) {
+  $!dispatch-config<theme><log-window-size>[0] = $w;
+  $!dispatch-config<theme><log-window-size>[1] = $h;
 }
 
 #-------------------------------------------------------------------------------
@@ -221,8 +231,19 @@ method get-icon-size ( --> List ) {
 }
 
 #-------------------------------------------------------------------------------
+method set-icon-size ( Int:D $w, Int:D $h ) {
+  $!dispatch-config<theme><icon-size>[0] = $w;
+  $!dispatch-config<theme><icon-size>[1] = $h;
+}
+
+#-------------------------------------------------------------------------------
 method get-window-title ( --> Str ) {
   $!dispatch-config<theme><title> // 'Session Manager';
+}
+
+#-------------------------------------------------------------------------------
+method set-window-title ( Str:D $title ) {
+  $!dispatch-config<theme><title> = $title;
 }
 
 #-------------------------------------------------------------------------------
@@ -238,6 +259,16 @@ method set-path ( Str $file = '' --> Str ) {
 }
 
 =finish
+
+#-------------------------------------------------------------------------------
+method get-shell ( --> Str ) {
+  $!dispatch-config<shell> // '/usr/bin/bash';
+}
+
+#-------------------------------------------------------------------------------
+method set-shell ( Str:D $shell ) {
+  $!dispatch-config<shell> = $shell;
+}
 
 #-------------------------------------------------------------------------------
 method get-sessions ( --> Hash ) {
@@ -304,9 +335,4 @@ method has-actions-level ( Str $name, Int $level --> Bool ) {
 #-------------------------------------------------------------------------------
 method get-toolbar-actions ( --> List ) {
   $!dispatch-config<toolbar>:exists ?? @($!dispatch-config<toolbar>) !! ()
-}
-
-#-------------------------------------------------------------------------------
-method get-shell ( --> Str ) {
-  $!dispatch-config<shell>:exists ?? $!dispatch-config<shell> !! '/usr/bin/bash'
 }
