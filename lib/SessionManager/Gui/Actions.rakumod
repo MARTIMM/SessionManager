@@ -298,6 +298,8 @@ method set-data(
   my Str $id = $row-widget.get-text;
   $action-id.set-text($id);
 
+#TODO show tooltip over fields with filled in variables
+
   my Hash $action-object = $!actions.get-raw-action($id);
   $aspec-title.set-text($action-object<t>)
     if ?$action-object<t> and ?$aspec-title;
