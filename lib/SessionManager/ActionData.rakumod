@@ -106,18 +106,6 @@ method set-image-to-session-path (
 #-------------------------------------------------------------------------------
 method set-run-in-group ( Bool $!run-in-group ) { }
 
-#`{{
-#-------------------------------------------------------------------------------
-method get-shell ( --> Str ) {
-  $!shell // '/usr/bin/bash';
-}
-
-#-------------------------------------------------------------------------------
-method set-shell ( Str:D $shell ) {
-  $!shell = $shell // '/usr/bin/bash';
-}
-}}
-
 #-------------------------------------------------------------------------------
 method run-action ( ) {     #( Bool $!run-in-group ) {
 #note "$?LINE run action '$!tooltip'";
@@ -142,7 +130,7 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
   $script-name.IO.spurt($command);
 
   my $shell = $!shell // '/usr/bin/bash';
-note "\n$?LINE $shell, $script-name\n$command";
+#note "\n$?LINE $shell, $script-name\n$command";
 
   if $!cmd-background {
     shell "$shell $script-name &> /dev/null \&";

@@ -319,11 +319,6 @@ method set-data(
 
   $aspec-shell.set-placeholder-text($action-object<sh>)
     if ?$action-object<sh> and ?$aspec-shell;
-
-#  if ?$aspec-shell {
-#    my SessionManager::ActionData $ad = $!actions.get-action($id);
-#    $aspec-shell.set-placeholder-text($ad.get-shell);
-#  }
 }
 
 #-------------------------------------------------------------------------------
