@@ -24,6 +24,7 @@ use Gnome::N::X:api<2>;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Config;
 
+my SessionManager::Gui::Config $instance;
 has SessionManager::Config $!config;
 
 constant Dialog = GnomeTools::Gtk::Dialog;
@@ -43,4 +44,22 @@ constant Widget = Gnome::Gtk4::Widget;
 submethod BUILD ( ) {
   $!config .= instance;
 }
+
+#-------------------------------------------------------------------------------
+method new ( ) { !!! }
+
+#-------------------------------------------------------------------------------
+method instance ( --> SessionManager::Gui::Config ) {
+  $instance //= self.bless;
+
+  $instance
+}
+
+#-------------------------------------------------------------------------------
+# Calls from menubar entries
+#-------------------------------------------------------------------------------
+method config-modify-configuration ( N-Object $parameter ) {
+note "$?LINE config";
+}
+
 

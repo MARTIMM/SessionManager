@@ -35,6 +35,7 @@ submethod BUILD ( :$!main ) {
   $!action-edit .= instance;
   $!variable-edit .= instance;
   $!session-edit .= instance;
+  $!config-edit .= instance;
 
   $!bar .= new-menu;
   $!menus = [
@@ -59,11 +60,12 @@ method make-menu (
       # Prepare a section
       my Gnome::Gio::Menu $section-menu .= new-menu;
       self.bind-action(
-        $section-menu, $menu-name, self, 'Modify Configuration',
+        $section-menu, $menu-name, $!config-edit, 'Modify Configuration',
       );
 
       self.bind-action( $section-menu, $menu-name, self, 'Restart');
       $menu.append-section( Str, $section-menu);
+
 
       $section-menu .= new-menu;
       self.bind-action( $section-menu, $menu-name, self, 'Quit');
@@ -107,7 +109,7 @@ method make-menu (
 #-------------------------------------------------------------------------------
 method bind-action (
   Gnome::Gio::Menu $menu, Str $menu-name, Mu $object, Str $entry-name,
-  Str :$icon, Str :$path, Str :$tooltip, Bool :$shortcut = False
+  Bool :$shortcut = False
 ) {
 
   # Make a method and action name
