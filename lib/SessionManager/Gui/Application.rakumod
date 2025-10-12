@@ -15,9 +15,6 @@ use Gnome::Gtk4::T-enums:api<2>;
 #use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 
-use Gnome::Gio::ApplicationCommandLine:api<2>;
-use Gnome::Gio::T-ioenums:api<2>;
-
 use Gnome::Glib::T-error:api<2>;
 
 use Gnome::N::N-Object:api<2>;
@@ -29,7 +26,16 @@ use SessionManager::Sessions;
 use SessionManager::Variables;
 use SessionManager::Config;
 use SessionManager::Gui::Toolbar;
-use SessionManager::Gui::MenuBar;
+#use SessionManager::Gui::MenuBar;
+use SessionManager::Gui::Actions;
+use SessionManager::Gui::Variables;
+use SessionManager::Gui::Sessions;
+use SessionManager::Gui::Config;
+
+use GnomeTools::Gtk::Menu;
+
+use Gnome::Gio::T-ioenums:api<2>;
+use Gnome::Gio::ApplicationCommandLine:api<2>;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
@@ -215,8 +221,11 @@ method setup-window ( ) {
     my SessionManager::Config $config .= instance;
 
 #    my SessionManager::Gui::Actions $actions .= new( :$!config, :$!app-window);
-    my SessionManager::Gui::MenuBar $menu-bar .= new(:main(self));
-    $!application.set-menubar($menu-bar.bar);
+#    $!application.set-menubar($menu-bar.bar);
+#    my SessionManager::Gui::MenuBar $menu-bar .= new(:main(self));
+    my GnomeTools::Gtk::Menu $menu-bar = self.make-menu;
+    $menu-bar.set-actions($!application);
+    $!application.set-menubar($menu-bar.get-menu);
     .set-show-menubar(True);
 
 #    .set-vexpand-set(True);
@@ -233,6 +242,64 @@ method setup-window ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method make-menu ( --> GnomeTools::Gtk::Menu ) {
+
+  my SessionManager::Gui::Actions $action-edit .= instance;
+  my SessionManager::Gui::Variables $variable-edit .= instance;
+  my SessionManager::Gui::Sessions $session-edit .= instance;
+  my SessionManager::Gui::Config $config-edit .= instance;
+
+  my GnomeTools::Gtk::Menu $bar .= new;
+  my GnomeTools::Gtk::Menu $parent-menu = $bar;
+  with my GnomeTools::Gtk::Menu $m1 .= new( :$parent-menu, :name<File>) {
+    $parent-menu = $m1;
+    with my GnomeTools::Gtk::Menu $sc1 .= new( :$parent-menu, :section(Str)) {
+      .item( 'Modify Configuration', $config-edit, 'modify-configuration');
+      .item( 'Restart', self, 'file-restart');
+    }
+    with my GnomeTools::Gtk::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
+      .item( 'Quit', $!application, 'file-quit');
+    }
+  }
+
+  $parent-menu = $bar;
+  with my GnomeTools::Gtk::Menu $m2 .= new( :$parent-menu, :name<Sessions>) {
+    .item( 'Add/Rename', $session-edit, 'add-rename');
+    .item( 'Add/Rename Group', $session-edit, 'add-rename-group');
+    .item( 'Delete Group', $session-edit, 'delete-group');
+    .item( 'Add/Remove Actions', $session-edit, 'add-remove-actions');
+    .item( 'Delete', $session-edit, 'delete');
+  }
+
+  with my GnomeTools::Gtk::Menu $m3 .= new( :$parent-menu, :name<Actions>) {
+    .item( 'Create', $action-edit, 'create');
+    .item( 'Modify', $action-edit, 'modify');
+    .item( 'Rename id', $action-edit, 'rename-id');
+    .item( 'Delete', $action-edit, 'delete');
+  }
+
+  with my GnomeTools::Gtk::Menu $m4 .= new( :$parent-menu, :name<Variables>) {
+    .item( 'Add Modify', $variable-edit, 'add-modify');
+    .item( 'Delete', $variable-edit, 'delete');
+  }
+  
+  $bar
+}
+
+#-------------------------------------------------------------------------------
+method file-restart ( N-Object $parameter ) {
+  say 'file restart';
+  self.restart;
+}
+
+#-------------------------------------------------------------------------------
+method file-quit ( N-Object $parameter ) {
+  say 'file quit';
+  $!application.quit;
+}
+
+
+#-------------------------------------------------------------------------------
 method shutdown ( ) {
 note "$?LINE shutdown";
 
@@ -247,7 +314,7 @@ note "$?LINE shutdown";
 
 #-------------------------------------------------------------------------------
 method restart ( ) {
-
+note $?LINE;
   # save changed config
   my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
@@ -256,7 +323,9 @@ method restart ( ) {
   $variables.save;
   $sessions.save;
 
+note $?LINE;
   self.setup-window;
+note $?LINE;
 }
 
 =finish
