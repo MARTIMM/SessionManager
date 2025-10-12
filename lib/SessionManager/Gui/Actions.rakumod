@@ -52,7 +52,7 @@ method instance ( --> SessionManager::Gui::Actions ) {
 }
 
 #-------------------------------------------------------------------------------
-method actions-create ( N-Object $parameter ) {
+method create ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Create Action'), :add-statusbar
@@ -142,7 +142,7 @@ method do-create-act (
 }
 
 #-------------------------------------------------------------------------------
-method actions-modify ( N-Object $parameter ) {
+method modify ( N-Object $parameter ) {
 
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Action'), :add-statusbar
@@ -217,7 +217,7 @@ method do-modify-act (
 }
 
 #-------------------------------------------------------------------------------
-method actions-rename-id ( N-Object $parameter ) {
+method rename-id ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Rename Action'), :add-statusbar
@@ -241,11 +241,18 @@ method actions-rename-id ( N-Object $parameter ) {
     my ListBox $listbox;
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
-      :$dialog, :$action-id,
+      :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
+      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :4columns);
     .add-content( 'Action id', $action-id, :4columns);
+    .add-content( 'Command', $aspec-cmd, :4columns);
+    .add-content( 'Shell', $aspec-shell, :4columns);
+    .add-content( 'Path', $aspec-path, :4columns);
+    .add-content( 'Wait', $aspec-wait, $aspec-log);
+    .add-content( 'Icon', $aspec-icon, :4columns);
+    .add-content( 'Picture', $aspec-pic, :4columns);
 
     .add-button(
       self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$listbox
@@ -322,7 +329,7 @@ method set-data(
 }
 
 #-------------------------------------------------------------------------------
-method actions-delete ( N-Object $parameter ) {
+method delete ( N-Object $parameter ) {
   note "$?LINE delete";
 }
 

@@ -59,7 +59,7 @@ method instance ( --> SessionManager::Gui::Sessions ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method sessions-add-rename ( N-Object $parameter ) {
+method add-rename ( N-Object $parameter ) {
 #  my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
@@ -205,7 +205,7 @@ method do-rename-session (
 }
 
 #-------------------------------------------------------------------------------
-method sessions-add-rename-group ( N-Object $parameter, ) {
+method add-rename-group ( N-Object $parameter, ) {
 #  my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
@@ -287,7 +287,12 @@ method do-change-group (
 }
 
 #-------------------------------------------------------------------------------
-method sessions-add-remove-actions ( N-Object $parameter ) {
+method delete-group ( N-Object $parameter, ) {
+  note "Delete group";
+}
+
+#-------------------------------------------------------------------------------
+method add-remove-actions ( N-Object $parameter ) {
   my Actions $actions .= new;
 
   with my Dialog $dialog .= new(
@@ -395,7 +400,7 @@ method set-grouptitle (
 }
 
 #-------------------------------------------------------------------------------
-method sessions-delete (
+method delete (
   N-Object $parameter
 ) {
 }

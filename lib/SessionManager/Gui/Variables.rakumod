@@ -119,7 +119,7 @@ method substitute-vars ( Str $t --> Str ) {
 #-------------------------------------------------------------------------------
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
-method variables-add-modify ( N-Object $parameter ) {
+method add-modify ( N-Object $parameter ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Variable'), :add-statusbar
   ) {
@@ -267,7 +267,7 @@ method set-data( ListBoxRow() $row, Entry :$vname, Entry :$vspec ) {
 }
 
 #-------------------------------------------------------------------------------
-method variables-delete ( N-Object $parameter ) {
+method delete ( N-Object $parameter ) {
   note "$?LINE";
 }
 
