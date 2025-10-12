@@ -6,7 +6,7 @@
   "author": "Marcel Timmerman",
   "auth": "fez:MARTIMM",
 
-  "version": "0.7.0",
+  "version": "0.7.1",
   "tags": [ "desktop", "kde", "gnome", "gtk", "tool" ],
   
   "license": "Artistic-2.0",
@@ -16,7 +16,6 @@
     "SessionManager::Gui::Actions": "lib/SessionManager/Gui/Actions.rakumod",
     "SessionManager::Gui::Application":
       "lib/SessionManager/Gui/Application.rakumod",
-    "SessionManager::Gui::MenuBar": "lib/SessionManager/Gui/MenuBar.rakumod",
     "SessionManager::Gui::Session": "lib/SessionManager/Gui/Session.rakumod",
     "SessionManager::Gui::Sessions": "lib/SessionManager/Gui/Sessions.rakumod",
     "SessionManager::Gui::Toolbar": "lib/SessionManager/Gui/Toolbar.rakumod",
