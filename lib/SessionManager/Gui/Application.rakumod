@@ -314,7 +314,6 @@ note "$?LINE shutdown";
 
 #-------------------------------------------------------------------------------
 method restart ( ) {
-note $?LINE;
   # save changed config
   my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
@@ -323,9 +322,7 @@ note $?LINE;
   $variables.save;
   $sessions.save;
 
-note $?LINE;
   self.setup-window;
-note $?LINE;
 }
 
 =finish
