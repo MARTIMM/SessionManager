@@ -3,6 +3,9 @@
 ---
 # Progress
 
+* 2025-10-12 0.7.1
+  * Menubar has become small due to the use of **GnomeTools::Gtk::Menu**. Menu is now created in **SessionManager::Gui::Application** and **SessionManager::Gui::Menubar** is removed.
+
 * 2025-09-29 0.7.0
   * **SessionManager::Sessions** should be a class and also not inherited.
   * Refactor **SessionManager::Gui::Actions** and **SessionManager::Gui::Variables**.
