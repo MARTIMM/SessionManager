@@ -129,8 +129,7 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
   $script-name = '/tmp/' ~ sha256-hex($command) ~ '.shell-script';
   $script-name.IO.spurt($command);
 
-  my $shell = $!shell // '/usr/bin/bash';
-#note "\n$?LINE $shell, $script-name\n$command";
+  my $shell = ?$!shell ?? $!shell !! '/usr/bin/bash';
 
   if $!cmd-background {
     shell "$shell $script-name &> /dev/null \&";
@@ -148,8 +147,7 @@ method run-action ( ) {     #( Bool $!run-in-group ) {
 
   else {
     my Proc::Async $process;
-
-    $process .= new( $!shell, $script-name);
+    $process .= new( $shell, $script-name);
     $!run-log = '';
     $!run-error = '';
     $!running = True;
