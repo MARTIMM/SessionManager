@@ -57,27 +57,15 @@ The purpose of this program is that it can quickly setup an environment for some
   ```plantuml
   @startyaml
   root directory:
-    - config:
-      - variables.yaml
-      - actions.yaml
-      - sessions.yaml
-    - Actions:
-      - action-specs1.yaml
-      - action-specs2.yaml
-      - ...
-    - Parts:
-      - part-spec1.yaml
-      - part-spec2.yaml
-      - ...
+    - session-config.yaml
     - Images:
       - Set1 directory
       - Set2 directory
       - ...
-    - Config:
-      - variables.yaml
-      - actions.yaml
-      - parts.yaml
-      - sessions.yaml
+    - variables.yaml
+    - actions.yaml
+    - parts.yaml
+    - sessions.yaml
   @endyaml
   ```
 
