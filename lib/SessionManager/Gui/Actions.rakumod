@@ -14,10 +14,12 @@ use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListBox;
 
+use Gnome::Gtk4::TextBuffer:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Switch:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
+use Gnome::Gtk4::TextView:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 
 #-------------------------------------------------------------------------------
@@ -28,6 +30,8 @@ constant Switch = Gnome::Gtk4::Switch;
 constant ListBox = GnomeTools::Gtk::ListBox;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+constant TextView = Gnome::Gtk4::TextView;
+constant TextBuffer = Gnome::Gtk4::TextBuffer;
 
 has SessionManager::Actions $!actions;
 
@@ -60,7 +64,7 @@ method create ( N-Object $parameter ) {
 #TODO some fields should be multiline text
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
-    my Entry $aspec-cmd .= new-entry;
+    my TextView $aspec-cmd .= new-textview;
     my Entry $aspec-shell .= new-entry;
     my Entry $aspec-path .= new-entry;
     my Entry $aspec-wait .= new-entry;
@@ -74,7 +78,7 @@ method create ( N-Object $parameter ) {
     $aspec-wait.set-placeholder-text('optional');
     $aspec-icon.set-placeholder-text('optional');
     $aspec-pic.set-placeholder-text('optional');
-    
+
     my ListBox $listbox;
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
@@ -109,8 +113,8 @@ method create ( N-Object $parameter ) {
 #-------------------------------------------------------------------------------
 method do-create-act (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
-  Entry :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
-  Entry :$aspec-icon, Entry :$aspec-pic, Entry :$aspec-shell
+  TextView :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait,
+  Switch :$aspec-log, Entry :$aspec-icon, Entry :$aspec-pic, Entry :$aspec-shell
 ) {
   my Str $id = $action-id.get-text;
 
@@ -125,7 +129,7 @@ method do-create-act (
   else {
     my Hash $raw-action = %();
     $raw-action<t> = $aspec-title.get-text;
-    $raw-action<c> = $aspec-cmd.get-text;
+    $raw-action<c> = $aspec-cmd.get-buffer.get-text;
     $raw-action<o> = $aspec-icon.get-text;
     $raw-action<i> = $aspec-pic.get-text;
     $raw-action<l> = $aspec-log.get-state;
@@ -149,7 +153,7 @@ method modify ( N-Object $parameter ) {
   ) {
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
-    my Entry $aspec-cmd .= new-entry;
+    my TextView $aspec-cmd .= new-textview;
     my Entry $aspec-shell .= new-entry;
     my Entry $aspec-path .= new-entry;
     my Entry $aspec-wait .= new-entry;
@@ -157,7 +161,7 @@ method modify ( N-Object $parameter ) {
     my Entry $aspec-icon .= new-entry;
     my Entry $aspec-pic .= new-entry;
 
-    # Set placeholder texts when optional
+    # Set pl$aspec-cmdceholder texts when optional
     $aspec-path.set-placeholder-text('optional');
     $aspec-wait.set-placeholder-text('optional');
     $aspec-icon.set-placeholder-text('optional');
@@ -195,7 +199,7 @@ method modify ( N-Object $parameter ) {
 #-------------------------------------------------------------------------------
 method do-modify-act (
   GnomeTools::Gtk::Dialog :$dialog, ListBox :$listbox,
-  Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-shell,
+  Entry :$aspec-title, TextView :$aspec-cmd, Entry :$aspec-shell,
   Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
@@ -224,7 +228,7 @@ method rename-id ( N-Object $parameter ) {
   ) {
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
-    my Entry $aspec-cmd .= new-entry;
+    my TextView $aspec-cmd .= new-textview;
     my Entry $aspec-shell .= new-entry;
     my Entry $aspec-path .= new-entry;
     my Entry $aspec-wait .= new-entry;
@@ -299,7 +303,7 @@ method do-rename-act (
 #-------------------------------------------------------------------------------
 method set-data(
   Label() :$row-widget, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
-  Entry :$aspec-title, Entry :$aspec-cmd, Entry :$aspec-path,
+  Entry :$aspec-title, TextView :$aspec-cmd, Entry :$aspec-path,
   Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic, Entry :$aspec-shell
 ) {
@@ -311,8 +315,11 @@ method set-data(
   my Hash $action-object = $!actions.get-raw-action($id);
   $aspec-title.set-text($action-object<t>)
     if ?$action-object<t> and ?$aspec-title;
-  $aspec-cmd.set-text($action-object<c>)
-    if ?$action-object<c> and ?$aspec-cmd;
+  if ?$action-object<c> and ?$aspec-cmd {
+    my TextBuffer() $tb = $aspec-cmd.get-buffer;
+note "$?LINE $tb.gist(), $?LINE $action-object<c>";
+    $tb.set-text( $action-object<c>, $action-object<c>.chars);
+  }
   $aspec-path.set-text($action-object<p>)
     if ?$action-object<p> and ?$aspec-path;
   $aspec-wait.set-text($action-object<w>)
