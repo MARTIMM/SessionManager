@@ -15,6 +15,7 @@ use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListBox;
 
 use Gnome::Gtk4::TextBuffer:api<2>;
+use Gnome::Gtk4::T-textiter:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Switch:api<2>;
 use Gnome::Gtk4::Label:api<2>;
@@ -32,6 +33,7 @@ constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant TextView = Gnome::Gtk4::TextView;
 constant TextBuffer = Gnome::Gtk4::TextBuffer;
+#constant TextIter = Gnome::Gtk4::TextIter;
 
 has SessionManager::Actions $!actions;
 
@@ -129,7 +131,10 @@ method do-create-act (
   else {
     my Hash $raw-action = %();
     $raw-action<t> = $aspec-title.get-text;
-    $raw-action<c> = $aspec-cmd.get-buffer.get-text;
+    my TextBuffer $tb = $aspec-cmd.get-buffer;
+    my N-TextIter $t0 = $tb.get-start-iter;
+    my N-TextIter $te = $tb.get-end-iter;
+    $raw-action<c> = $aspec-cmd.get-buffer.get-text( $t0, $te);
     $raw-action<o> = $aspec-icon.get-text;
     $raw-action<i> = $aspec-pic.get-text;
     $raw-action<l> = $aspec-log.get-state;
