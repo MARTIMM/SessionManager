@@ -23,9 +23,14 @@ The purpose of this program is that it can quickly setup an environment for some
 * [ ] Editing of actions, variables and sessions. See below.
 
 # Configuration editing
-
+* Global
+  * Fix the global settings in the root
+    * [ ] **root**/sessions.yaml
+    * [ ] **root**/manager.css
+    * [ ] **root**/manager-changes.css
+    * [ ] **root**/Images
 * Variables
-  * [ ] Storage in <root>/variables.yaml
+  * [ ] Storage in **root**/variables.yaml
   * [x] Add variable
   * [ ] Rename variable
     * [ ] With rename change its use in this and actions
@@ -35,7 +40,7 @@ The purpose of this program is that it can quickly setup an environment for some
     * [ ] Cleanup unused variables
 
 * Actions:
-  * [ ] Storage in <root>/actions.yaml
+  * [ ] Storage in **root**/actions.yaml
   * [x] Add action
   * [x] Rename action id
     * [x] With rename change its use in sessions
@@ -44,7 +49,7 @@ The purpose of this program is that it can quickly setup an environment for some
     * [ ] Before remove check its use in sessions
 
 * Sessions
-  * [ ] Storage in <root>/sessions.yaml
+  * [ ] Storage in **root**/sessions.yaml
   * [x] Add session
   * Session group levels
     * [x] Add session group
