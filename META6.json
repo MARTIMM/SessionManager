@@ -33,7 +33,7 @@
   },
 
   "depends": [
-    "Gnome::Gtk4:api<2>", "YAMLish", "Getopt::Long",
+    "Gnome::Gtk4:api<2>", ""GnomeTools", "YAMLish", "Getopt::Long",
   ],
 
   "resources": [
