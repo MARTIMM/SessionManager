@@ -25,31 +25,34 @@ The purpose of this program is that it can quickly setup an environment for some
 # Configuration editing
 
 * Variables
-  * [x] Storage in <root>/Config/variables.yaml
+  * [ ] Storage in <root>/variables.yaml
   * [x] Add variable
   * [ ] Rename variable
-    * [ ] With rename change its use in this and other configurations
+    * [ ] With rename change its use in this and actions
   * [ ] Modify variable data
   * [ ] Remove variable
-    * [ ] Before remove check its use in this and other configurations
+    * [ ] Before remove check its use in this and actions
+    * [ ] Cleanup unused variables
 
 * Actions:
-  * [x] Storage in <root>/Config/actions.yaml
+  * [ ] Storage in <root>/actions.yaml
   * [x] Add action
   * [x] Rename action id
-    * [ ] With rename change its use in other configurations
+    * [x] With rename change its use in sessions
   * [x] Modify action data
   * [ ] Remove action
-    * [ ] Before remove check its use in sessions configuration
+    * [ ] Before remove check its use in sessions
 
 * Sessions
-  * [x] Storage in <root>/Config/sessions.yaml
+  * [ ] Storage in <root>/sessions.yaml
   * [x] Add session
-  * [x] Add session group
-  * [ ] Delete session group
+  * Session group levels
+    * [x] Add session group
+    * [ ] Delete session group
+    * [ ] Remove unused groups
   * [x] Add actions to a group
   * [x] Remove actions from a group
-  * [x] Rename session
+  * [x] Rename session id
   * [ ] Remove session
 
 ### Application workings
