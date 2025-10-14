@@ -92,11 +92,10 @@ method add-rename ( N-Object $parameter ) {
     );
 
     # Add entries and dropdown widgets in the dialog
-    .add-content( 'Session list', $sessions-dd, :2columns);
-    .add-content( 'Id', $sessionid-e);
-    .add-content( 'Title', $sessiontitle-e, :2columns);
-    .add-content( 'icon', $sessionicon-e, :2columns);
-    .add-content( 'overlay', $sessionoverlay-e, :2columns);
+    .add-content( 'Session list', $sessions-dd, :4columns);
+    .add-content( 'Id and title', $sessionid-e, $sessiontitle-e, :2columns);
+    .add-content( 'icon', $sessionicon-e, :4columns);
+    .add-content( 'overlay', $sessionoverlay-e, :4columns);
 
     # Add buttons to the dialog
     .add-button(
