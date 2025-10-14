@@ -63,7 +63,7 @@ method add-rename ( N-Object $parameter ) {
 #  my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
-    :dialog-header('Add or Rename Session'), :add-statusbar
+    :dialog-header('Add or Rename Session'), :add-statusbar, :600width
   ) {
     my Entry $sessionid-e .= new-entry;
     my Entry $sessiontitle-e .= new-entry;
@@ -93,7 +93,7 @@ method add-rename ( N-Object $parameter ) {
 
     # Add entries and dropdown widgets in the dialog
     .add-content( 'Session list', $sessions-dd, :4columns);
-    .add-content( 'Id and title', $sessionid-e, $sessiontitle-e, :2columns);
+    .add-content( 'Id and title', [ 1, $sessionid-e, 3, $sessiontitle-e]);
     .add-content( 'icon', $sessionicon-e, :4columns);
     .add-content( 'overlay', $sessionoverlay-e, :4columns);
 
