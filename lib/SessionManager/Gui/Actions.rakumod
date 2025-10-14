@@ -210,7 +210,10 @@ method do-modify-act (
 ) {
   my Hash $raw-action = %();
   $raw-action<t> = $aspec-title.get-text;
-  $raw-action<c> = $aspec-cmd.get-text;
+  my TextBuffer $tb = $aspec-cmd.get-buffer;
+  my N-TextIter $t0 = $tb.get-start-iter;
+  my N-TextIter $te = $tb.get-end-iter;
+  $raw-action<c> = $aspec-cmd.get-buffer.get-text( $t0, $te);
   $raw-action<o> = $aspec-icon.get-text;
   $raw-action<i> = $aspec-pic.get-text;
   $raw-action<l> = $aspec-log.get-state;
