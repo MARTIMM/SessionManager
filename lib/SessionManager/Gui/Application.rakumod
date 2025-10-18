@@ -9,11 +9,11 @@ use Getopt::Long;
 #use Gnome::Gtk4::StyleContext:api<2>;
 #use Gnome::Gtk4::T-styleprovider:api<2>;
 
-use Gnome::Gtk4::Application:api<2>;
-use Gnome::Gtk4::ApplicationWindow:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 #use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
+use Gnome::Gtk4::Application:api<2>;
+use Gnome::Gtk4::ApplicationWindow:api<2>;
 
 use Gnome::Glib::T-error:api<2>;
 
