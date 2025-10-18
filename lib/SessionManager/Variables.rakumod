@@ -89,6 +89,11 @@ method get-variables ( --> Seq ) {
 }
 
 #-------------------------------------------------------------------------------
+method get-n-variables ( --> Int ) {
+  $variables.elems
+}
+
+#-------------------------------------------------------------------------------
 method get-variable ( Str:D $name --> Str ) {
   $variables{$name}
 }
