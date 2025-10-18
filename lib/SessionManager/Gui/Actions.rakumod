@@ -1,4 +1,5 @@
 use v6.d;
+use NativeCall;
 
 use SessionManager::ActionData;
 use SessionManager::Actions;
@@ -26,9 +27,10 @@ use Gnome::Gtk4::T-enums:api<2>;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Actions;
 
+constant ListBox = GnomeTools::Gtk::ListBox;
+
 constant Entry = Gnome::Gtk4::Entry;
 constant Switch = Gnome::Gtk4::Switch;
-constant ListBox = GnomeTools::Gtk::ListBox;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant TextView = Gnome::Gtk4::TextView;
@@ -131,9 +133,9 @@ method do-create-act (
   else {
     my Hash $raw-action = %();
     $raw-action<t> = $aspec-title.get-text;
-    my TextBuffer $tb = $aspec-cmd.get-buffer;
-    my N-TextIter $t0 = $tb.get-start-iter;
-    my N-TextIter $te = $tb.get-end-iter;
+    my TextBuffer() $tb = $aspec-cmd.get-buffer;
+    my N-TextIter() $t0 = $tb.get-start-iter;
+    my N-TextIter() $te = $tb.get-end-iter;
     $raw-action<c> = $aspec-cmd.get-buffer.get-text( $t0, $te);
     $raw-action<o> = $aspec-icon.get-text;
     $raw-action<i> = $aspec-pic.get-text;
@@ -179,14 +181,14 @@ method modify ( N-Object $parameter ) {
       :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
-    .add-content( 'Current actions', $scrolled-listbox, :4columns);
-    .add-content( 'Action id', $action-id, $aspec-title, :2columns);
-    .add-content( 'Command', $aspec-cmd, :4columns);
-    .add-content( 'Shell', $aspec-shell, :4columns);
-    .add-content( 'Path', $aspec-path, :4columns);
-    .add-content( 'Wait', $aspec-wait, $aspec-log);
-    .add-content( 'Icon', $aspec-icon, :4columns);
-    .add-content( 'Picture', $aspec-pic, :4columns);
+    .add-content( 'Current actions', $scrolled-listbox, :3columns);
+    .add-content( 'Action id', [ 1, $action-id, 2, $aspec-title]);
+    .add-content( 'Command', $aspec-cmd, :3columns);
+    .add-content( 'Shell', $aspec-shell, :3columns);
+    .add-content( 'Path', $aspec-path, :3columns);
+    .add-content( 'Wait', [ 2, $aspec-wait, 1, $aspec-log]);
+    .add-content( 'Icon', $aspec-icon, :3columns);
+    .add-content( 'Picture', $aspec-pic, :3columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
@@ -210,20 +212,26 @@ method do-modify-act (
 ) {
   my Hash $raw-action = %();
   $raw-action<t> = $aspec-title.get-text;
-  my TextBuffer $tb = $aspec-cmd.get-buffer;
-  my N-TextIter $t0 = $tb.get-start-iter;
-  my N-TextIter $te = $tb.get-end-iter;
-  $raw-action<c> = $aspec-cmd.get-buffer.get-text( $t0, $te);
+note $?LINE;
+  my TextBuffer() $tb = $aspec-cmd.get-buffer;
+note $?LINE;
+  my $t0 = CArray[N-TextIter].new(N-TextIter);
+note $?LINE;
+  my $te = CArray[N-TextIter].new(N-TextIter);
+note $?LINE;
+  $tb.get-bounds( $t0, $te);
+note "$?LINE $t0[0].gist(), $te[0].gist()";
+  $raw-action<c> = $tb.get-text( $t0[0], $te[0]);
+note $?LINE;
   $raw-action<o> = $aspec-icon.get-text;
   $raw-action<i> = $aspec-pic.get-text;
   $raw-action<l> = $aspec-log.get-state;
   $raw-action<w> = $aspec-wait.get-text.Int;
   $raw-action<p> = $aspec-path.get-text;
+  $raw-action<sh> = $aspec-shell.get-text;
 
   my Str $id = $listbox.get-selection[0];
   $!actions.modify-action( $id, $raw-action);
-  my SessionManager::ActionData $ad = $!actions.get-action($id);
-  $ad.set-shell($aspec-shell.get-text);
 
   $dialog.set-status("The action '$id' is succesfully modified");
 }
@@ -325,7 +333,7 @@ method set-data(
     if ?$action-object<t> and ?$aspec-title;
   if ?$action-object<c> and ?$aspec-cmd {
     my TextBuffer() $tb = $aspec-cmd.get-buffer;
-note "$?LINE $tb.gist(), $?LINE $action-object<c>";
+#note "$?LINE $tb.gist(), $$action-object<c>";
     $tb.set-text( $action-object<c>, $action-object<c>.chars);
   }
   $aspec-path.set-text($action-object<p>)
