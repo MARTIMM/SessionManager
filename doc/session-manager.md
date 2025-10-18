@@ -25,12 +25,19 @@ The purpose of this program is that it can quickly setup an environment for some
 # Configuration editing
 * Global
   * Fix the global settings in the root
+    * [ ] Create root and simple setup when directory is empty. Directory exists!
     * [ ] **root**/sessions.yaml
     * [ ] **root**/manager.css
     * [ ] **root**/manager-changes.css
-    * [ ] **root**/Images
+    * Images and Icons
+      * [x] **root**/Images
+      * [ ] **root**/Icons
+      * [ ] Copy pictures to the proper directory and modify its path
+      * [ ] Cleanup unused images
+
 * Variables
   * [ ] Storage in **root**/variables.yaml
+  * [ ] Add common variables for e.g. $HOME, root paths of config, and images.
   * [x] Add variable
   * [ ] Rename variable
     * [ ] With rename change its use in this and actions
