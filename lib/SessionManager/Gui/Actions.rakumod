@@ -90,14 +90,14 @@ method create ( N-Object $parameter ) {
       :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
-    .add-content( 'Current actions', $scrolled-listbox, :4columns);
-    .add-content( 'Action id', $action-id, $aspec-title, :2columns);
-    .add-content( 'Command', $aspec-cmd, :4columns);
-    .add-content( 'Shell', $aspec-shell, :4columns);
-    .add-content( 'Path', $aspec-path, :4columns);
+    .add-content( 'Current actions', $scrolled-listbox, :3columns);
+    .add-content( 'Action id', [1, $action-id, 2, $aspec-title]);
+    .add-content( 'Command', $aspec-cmd, :3columns);
+    .add-content( 'Shell', $aspec-shell, :3columns);
+    .add-content( 'Path', $aspec-path, :3columns);
     .add-content( 'Wait', $aspec-wait, $aspec-log);
-    .add-content( 'Icon', $aspec-icon, :4columns);
-    .add-content( 'Picture', $aspec-pic, :4columns);
+    .add-content( 'Icon', $aspec-icon, :3columns);
+    .add-content( 'Picture', $aspec-pic, :3columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
@@ -267,14 +267,14 @@ method rename-id ( N-Object $parameter ) {
       :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
-    .add-content( 'Current actions', $scrolled-listbox, :4columns);
+    .add-content( 'Current actions', $scrolled-listbox, :3columns);
     .add-content( 'Action id', [ 1, $action-id, 2, $aspec-title]);
-    .add-content( 'Command', $aspec-cmd, :4columns);
-    .add-content( 'Shell', $aspec-shell, :4columns);
-    .add-content( 'Path', $aspec-path, :4columns);
+    .add-content( 'Command', $aspec-cmd, :3columns);
+    .add-content( 'Shell', $aspec-shell, :3columns);
+    .add-content( 'Path', $aspec-path, :3columns);
     .add-content( 'Wait', $aspec-wait, $aspec-log);
-    .add-content( 'Icon', $aspec-icon, :4columns);
-    .add-content( 'Picture', $aspec-pic, :4columns);
+    .add-content( 'Icon', $aspec-icon, :3columns);
+    .add-content( 'Picture', $aspec-pic, :3columns);
 
     .add-button(
       self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$listbox
