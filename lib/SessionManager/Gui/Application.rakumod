@@ -5,12 +5,7 @@ use NativeCall;
 
 use Getopt::Long;
 
-#use Gnome::Gtk4::CssProvider:api<2>;
-#use Gnome::Gtk4::StyleContext:api<2>;
-#use Gnome::Gtk4::T-styleprovider:api<2>;
-
 use Gnome::Gtk4::T-enums:api<2>;
-#use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Application:api<2>;
 use Gnome::Gtk4::ApplicationWindow:api<2>;
@@ -26,7 +21,6 @@ use SessionManager::Sessions;
 use SessionManager::Variables;
 use SessionManager::Config;
 use SessionManager::Gui::Toolbar;
-#use SessionManager::Gui::MenuBar;
 use SessionManager::Gui::Actions;
 use SessionManager::Gui::Variables;
 use SessionManager::Gui::Sessions;
@@ -48,8 +42,6 @@ constant RemoteOptions = [ |<v verbose legacy m load-manual-build-config> ];
 
 has Gnome::Gtk4::Application $.application;
 has Gnome::Gtk4::ApplicationWindow $.app-window;
-#has SessionManager::Gui::Toolbar $!toolbar;
-#has SessionManager::Config $!config;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -124,20 +116,12 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
 
   my Array $args = $cl.get-arguments;
   my Capture $o = get-options-from( $args[1..*-1], |RemoteOptions);
-#note "$?LINE ", $args[1..*-1];
 
   if $o<v>:exists or $o<verbose>:exists {
     $*verbose = True;
   }
 
-  # Modify image map. Default is at <config>/Images.
-#  $*images = $o<images> if ? $o<images>;
-
-  # Modify parts map. Default is at <config>/Parts.
-  #$*parts = $o<parts> if ? $o<parts>;
-
   unless ?$!app-window and $!app-window.is-valid {
-#  my Str $config-directory;
     for $args[1..*-1] -> $a {
       if $a !~~ m/^ '-' / {
         $*config-directory = $a;
@@ -220,16 +204,10 @@ method setup-window ( ) {
 
     my SessionManager::Config $config .= instance;
 
-#    my SessionManager::Gui::Actions $actions .= new( :$!config, :$!app-window);
-#    $!application.set-menubar($menu-bar.bar);
-#    my SessionManager::Gui::MenuBar $menu-bar .= new(:main(self));
     my GnomeTools::Gtk::Menu $menu-bar = self.make-menu;
     $menu-bar.set-actions($!application);
     $!application.set-menubar($menu-bar.get-menu);
     .set-show-menubar(True);
-
-#    .set-vexpand-set(True);
-#    .set-vexpand(True);
     .set-valign(GTK_ALIGN_FILL);
 
     .set-title($config.get-window-title);
@@ -295,8 +273,6 @@ method file-restart ( N-Object $parameter ) {
 
 #-------------------------------------------------------------------------------
 method file-quit ( N-Object $parameter ) {
-  say 'file quit';
-#  self.save-config;
   $!application.quit;
 }
 
@@ -306,18 +282,8 @@ note "$?LINE shutdown";
   self.save-config;
 }
 
-#`{{
-#-------------------------------------------------------------------------------
-method restart ( ) {
-  self.save-config;
-  self.setup-window;
-}
-}}
-
 #-------------------------------------------------------------------------------
 method save-config ( ) {
-note "$?LINE save config";
-
   # save changed config
   my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
@@ -325,13 +291,4 @@ note "$?LINE save config";
   $actions.save;
   $variables.save;
   $sessions.save;
-}
-
-=finish
-
-#-------------------------------------------------------------------------------
-# Handled after pressing the close button added by the desktop manager
-method exit-program ( ) {
-
-  self.quit;
 }
