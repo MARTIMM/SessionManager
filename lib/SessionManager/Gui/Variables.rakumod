@@ -166,8 +166,8 @@ $variables-lb.register-signal(
       .set-child($vlist);
       .set-size-request( 850, 300);
     }
-#`{{
 
+#`{{
     with my ScrolledWindow $sw .= new-scrolledwindow {
       .set-child($variables-lb);
       .set-size-request( 400, 200);
