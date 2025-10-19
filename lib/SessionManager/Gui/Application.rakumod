@@ -278,7 +278,6 @@ method file-quit ( N-Object $parameter ) {
 
 #-------------------------------------------------------------------------------
 method shutdown ( ) {
-note "$?LINE shutdown";
   self.save-config;
 }
 
