@@ -120,4 +120,13 @@
   margin-bottom: 10px;
 }
 
+.listbox-tool {
+  .selected {
+    background-color: rgb(10, 13, 226);
+  }
+  .focussed {
+    background-color: rgb(255, 110, 156);
+  }
+}
+
 
