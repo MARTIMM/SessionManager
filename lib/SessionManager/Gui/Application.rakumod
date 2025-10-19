@@ -258,7 +258,7 @@ method make-menu ( --> GnomeTools::Gtk::Menu ) {
       .item( 'Restart', self, 'file-restart');
     }
     with my GnomeTools::Gtk::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
-      .item( 'Quit', $!application, 'file-quit');
+      .item( 'Quit', self, 'file-quit');
     }
   }
 
@@ -289,31 +289,35 @@ method make-menu ( --> GnomeTools::Gtk::Menu ) {
 #-------------------------------------------------------------------------------
 method file-restart ( N-Object $parameter ) {
   say 'file restart';
-  self.restart;
+  self.save-config;
+  self.setup-window;
 }
 
 #-------------------------------------------------------------------------------
 method file-quit ( N-Object $parameter ) {
   say 'file quit';
+#  self.save-config;
   $!application.quit;
 }
-
 
 #-------------------------------------------------------------------------------
 method shutdown ( ) {
 note "$?LINE shutdown";
-
-  # save changed config
-  my SessionManager::Variables $variables .= new;
-  my SessionManager::Actions $actions .= new;
-  my SessionManager::Sessions $sessions .= new;
-  $actions.save;
-  $variables.save;
-  $sessions.save;
+  self.save-config;
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method restart ( ) {
+  self.save-config;
+  self.setup-window;
+}
+}}
+
+#-------------------------------------------------------------------------------
+method save-config ( ) {
+note "$?LINE save config";
+
   # save changed config
   my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
@@ -321,8 +325,6 @@ method restart ( ) {
   $actions.save;
   $variables.save;
   $sessions.save;
-
-  self.setup-window;
 }
 
 =finish
