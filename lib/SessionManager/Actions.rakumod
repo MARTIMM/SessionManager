@@ -149,6 +149,7 @@ method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
 #-------------------------------------------------------------------------------
 method rename-action ( Str:D $id, Str:D $new-id ) {
   $data-ids{$new-id} = $data-ids{$id}:delete;
+  $data-ids{$new-id}.modify-id($new-id);
 }
  
 #-------------------------------------------------------------------------------

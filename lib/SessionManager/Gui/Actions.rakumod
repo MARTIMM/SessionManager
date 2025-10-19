@@ -37,7 +37,7 @@ constant TextView = Gnome::Gtk4::TextView;
 constant TextBuffer = Gnome::Gtk4::TextBuffer;
 #constant TextIter = Gnome::Gtk4::TextIter;
 
-has SessionManager::Actions $!actions;
+#has SessionManager::Actions $!actions;
 
 #-------------------------------------------------------------------------------
 my SessionManager::Gui::Actions $instance;
@@ -120,13 +120,14 @@ method do-create-act (
   TextView :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait,
   Switch :$aspec-log, Entry :$aspec-icon, Entry :$aspec-pic, Entry :$aspec-shell
 ) {
+  my SessionManager::Actions $actions .= new;
   my Str $id = $action-id.get-text;
 
   if !$id {
     $dialog.set-status('The action id may not be empty');
   }
 
-  elsif $id ~~ any(|$!actions.get-action-ids.keys) {
+  elsif $id ~~ any(|$actions.get-action-ids.keys) {
     $dialog.set-status('This action id is already defined');
   }
 
@@ -144,8 +145,8 @@ method do-create-act (
     $raw-action<p> = $aspec-path.get-text;
     $raw-action<sh> = $aspec-shell.get-text;
 
-    $!actions.add-action( $raw-action, :$id);
-#    my SessionManager::ActionData $ad = $!actions.get-action($id);
+    $actions.add-action( $raw-action, :$id);
+#    my SessionManager::ActionData $ad = $actions.get-action($id);
 #    $ad.set-shell($aspec-shell.get-text);
 
     $dialog.set-status("The action '$id' is succesfully created");
@@ -230,8 +231,9 @@ note $?LINE;
   $raw-action<p> = $aspec-path.get-text;
   $raw-action<sh> = $aspec-shell.get-text;
 
+  my SessionManager::Actions $actions .= new;
   my Str $id = $listbox.get-selection[0];
-  $!actions.modify-action( $id, $raw-action);
+  $actions.modify-action( $id, $raw-action);
 
   $dialog.set-status("The action '$id' is succesfully modified");
 }
@@ -266,7 +268,7 @@ method rename-id ( N-Object $parameter ) {
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :4columns);
-    .add-content( 'Action id', $action-id, :4columns);
+    .add-content( 'Action id', [ 1, $action-id, 2, $aspec-title]);
     .add-content( 'Command', $aspec-cmd, :4columns);
     .add-content( 'Shell', $aspec-shell, :4columns);
     .add-content( 'Path', $aspec-path, :4columns);
@@ -288,29 +290,38 @@ method rename-id ( N-Object $parameter ) {
 method do-rename-act (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, ListBox :$listbox
 ) {
+  my SessionManager::Actions $actions .= new;
   my Str $new-id = $action-id.get-text;
 
   if !$new-id {
     $dialog.set-status('An action id may not be empty');
   }
 
-  elsif $new-id ~~ any(|$!actions.get-action-ids) {
+  elsif $new-id ~~ any(|$actions.get-action-ids) {
     $dialog.set-status('This action id is already defined');
   }
 
   else {
     # Change the row in the listbox
-    with my Label $l .= new-with-mnemonic($new-id) {
-      .set-justify(GTK_JUSTIFY_LEFT);
-      .set-halign(GTK_ALIGN_START);
-    }
+    #with my Label $l .= new-with-mnemonic($new-id) {
+    #  .set-justify(GTK_JUSTIFY_LEFT);
+    #  .set-halign(GTK_ALIGN_START);
+    #}
 
     # Get selected id, listbox is not in multi select so always one selection
-    my $id = $listbox.get-selection[0];
-    $!actions.rename-action( $id, $new-id);
+    my Array $widgets = $listbox.get-selection(:get-widgets);
+    my Label() $id-label = $widgets[0];
 
+    # Get the id and change is actions and action data
+    my Str $id = $id-label.get-text;
+    $actions.rename-action( $id, $new-id);
+
+    # Change the use of actions in sessions
     my SessionManager::Sessions $sessions .= new;
     $sessions.rename-group-actions( $id, $new-id);
+
+    # Change text in listbox row
+    $id-label.set-text($new-id);
 
     $dialog.set-status('Renamed everything successfully');
   }
@@ -323,12 +334,13 @@ method set-data(
   Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic, Entry :$aspec-shell
 ) {
+  my SessionManager::Actions $actions .= new;
   my Str $id = $row-widget.get-text;
   $action-id.set-text($id);
 
 #TODO show tooltip over fields with filled in variables
 
-  my Hash $action-object = $!actions.get-raw-action($id);
+  my Hash $action-object = $actions.get-raw-action($id);
   $aspec-title.set-text($action-object<t>)
     if ?$action-object<t> and ?$aspec-title;
   if ?$action-object<c> and ?$aspec-cmd {
@@ -359,12 +371,13 @@ method delete ( N-Object $parameter ) {
 #-------------------------------------------------------------------------------
 method scrollable-list ( Bool :$multi = False, *%options ) {
 
+  my SessionManager::Actions $actions .= new;
 #note "$?LINE";
   my $object = self;
   my ListBox $list-lb .= new(
     :$object, :method<set-data>, :$multi, |%options
   );
-  my ScrolledWindow $sw = $list-lb.set-list([$!actions.get-action-ids.sort]);
+  my ScrolledWindow $sw = $list-lb.set-list([$actions.get-action-ids.sort]);
 
   ( $list-lb, $sw)
 }

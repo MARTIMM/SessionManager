@@ -91,6 +91,9 @@ method init-action ( Str :$!id = '', Hash:D :$!raw-action ) {
 }
 
 #-------------------------------------------------------------------------------
+method modify-id ( Str $!id ) { }
+
+#-------------------------------------------------------------------------------
 method set-image-to-session-path (
   Str $session-name, Str $image-name, Bool :$overlay = False
 ) {
