@@ -259,7 +259,7 @@ method rename-id ( N-Object $parameter ) {
     $aspec-wait.set-placeholder-text('optional');
     $aspec-icon.set-placeholder-text('optional');
     $aspec-pic.set-placeholder-text('optional');
-    
+
     my ListBox $listbox;
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
@@ -348,19 +348,13 @@ method set-data(
 #note "$?LINE $tb.gist(), $$action-object<c>";
     $tb.set-text( $action-object<c>, $action-object<c>.chars);
   }
-  $aspec-path.set-text($action-object<p>)
-    if ?$action-object<p> and ?$aspec-path;
-  $aspec-wait.set-text($action-object<w>)
-    if ?$action-object<w> and ?$aspec-wait;
-  $aspec-log.set-state($action-object<l>.Bool)
-    if ?$action-object<l> and ?$aspec-log;
-  $aspec-icon.set-text($action-object<o>)
-    if ?$action-object<o> and ?$aspec-icon;
-  $aspec-pic.set-text($action-object<i>)
-    if ?$action-object<i> and ?$aspec-pic;
-
-  $aspec-shell.set-placeholder-text($action-object<sh>)
-    if ?$action-object<sh> and ?$aspec-shell;
+  
+  if ?$aspec-path -> { $aspec-path.set-text($action-object<p> // ''); }
+  if ?$aspec-wait -> { $aspec-wait.set-text($action-object<w> // ''); }
+  if ?$aspec-log -> { $aspec-log.set-state($action-object<l>.Bool); }
+  if ?$aspec-icon -> { $aspec-icon.set-text($action-object<o> // ''); }
+  if ?$aspec-pic -> { $aspec-pic.set-text($action-object<i> // ''); }
+  if ?$aspec-shell -> { $aspec-shell.set-placeholder-text($action-object<sh>); }
 }
 
 #-------------------------------------------------------------------------------
