@@ -120,13 +120,17 @@
   margin-bottom: 10px;
 }
 
-.listbox-tool {
-  .selected {
-    background-color: rgb(10, 13, 226);
-  }
-  .focussed {
-    background-color: rgb(255, 110, 156);
-  }
+.listbox-tool row.activatable:hover {
+  background-color: transparent;
+  color: rgb(3, 215, 70);
 }
 
+.listbox-tool row.activatable:selected {
+  background-color: transparent;
+  color: #068a06;
+}
 
+.listbox-tool row.activatable:selected:hover {
+  background-color: #013b01;
+  color: #068a06;
+}
