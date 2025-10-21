@@ -213,17 +213,20 @@ method do-modify-act (
 ) {
   my Hash $raw-action = %();
   $raw-action<t> = $aspec-title.get-text;
-note $?LINE;
+
   my TextBuffer() $tb = $aspec-cmd.get-buffer;
-note $?LINE;
-  my $t0 = CArray[N-TextIter].new(N-TextIter);
-note $?LINE;
-  my $te = CArray[N-TextIter].new(N-TextIter);
-note $?LINE;
+
+  my N-TextIter $t0 .= new;
+  my N-TextIter $te .= new;
+
+#note "$?LINE $t0.gist(), $te.gist()";
+#$tb.get-start-iter($t0);
+#$tb.get-end-iter($te);
   $tb.get-bounds( $t0, $te);
-note "$?LINE $t0[0].gist(), $te[0].gist()";
-  $raw-action<c> = $tb.get-text( $t0[0], $te[0]);
-note $?LINE;
+note "$?LINE $t0.gist(), $te.gist()";
+
+  $raw-action<c> = $tb.get-text( $t0, $te, False);
+note "$?LINE, $raw-action<c>";
   $raw-action<o> = $aspec-icon.get-text;
   $raw-action<i> = $aspec-pic.get-text;
   $raw-action<l> = $aspec-log.get-state;
