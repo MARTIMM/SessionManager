@@ -338,23 +338,31 @@ method set-data(
   my Str $id = $row-widget.get-text;
   $action-id.set-text($id);
 
+  my SessionManager::Sessions $sessions .= new;
+  my Bool $aid-in-use = $sessions.action-in-use($id);
+  $action-id.set-css-classes($aid-in-use ?? "in-use" !! "not-in-use", 'abc');
+
 #TODO show tooltip over fields with filled in variables
 
   my Hash $action-object = $actions.get-raw-action($id);
-  $aspec-title.set-text($action-object<t>)
-    if ?$action-object<t> and ?$aspec-title;
-  if ?$action-object<c> and ?$aspec-cmd {
-    my TextBuffer() $tb = $aspec-cmd.get-buffer;
-#note "$?LINE $tb.gist(), $$action-object<c>";
-    $tb.set-text( $action-object<c>, $action-object<c>.chars);
+  with $aspec-title { .set-text($action-object<t> // ''); }
+  with $aspec-cmd {
+    my TextBuffer() $tb = .get-buffer;
+    if ? my $s = $action-object<c> {
+      $tb.set-text( $s, $s.chars);
+    }
+
+    else {
+      $tb.set-text( '', 0);
+    }
   }
-  
-  if ?$aspec-path -> { $aspec-path.set-text($action-object<p> // ''); }
-  if ?$aspec-wait -> { $aspec-wait.set-text($action-object<w> // ''); }
-  if ?$aspec-log -> { $aspec-log.set-state($action-object<l>.Bool); }
-  if ?$aspec-icon -> { $aspec-icon.set-text($action-object<o> // ''); }
-  if ?$aspec-pic -> { $aspec-pic.set-text($action-object<i> // ''); }
-  if ?$aspec-shell -> { $aspec-shell.set-placeholder-text($action-object<sh>); }
+note "\n$?LINE $aid-in-use, $action-object.gist()";
+  with $aspec-path { .set-text($action-object<p> // ''); }
+  with $aspec-wait { .set-text($action-object<w> // ''); }
+  with $aspec-log { .set-state($action-object<l>.Bool); }
+  with $aspec-icon { .set-text($action-object<o> // ''); }
+  with $aspec-pic { .set-text($action-object<i> // ''); }
+  with $aspec-shell { .set-placeholder-text($action-object<sh>); }
 }
 
 #-------------------------------------------------------------------------------
