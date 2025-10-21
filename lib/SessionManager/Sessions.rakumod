@@ -135,7 +135,7 @@ method set-group-actions ( Str:D $sid, Str:D $group-id, Array $actions = [] ) {
 }
 
 #-------------------------------------------------------------------------------
-method rename-group-actions ( $old-aid, $new-aid ) {
+method rename-group-actions ( Str:D $old-aid, Str:D $new-aid ) {
   for $sessions.keys -> $sid {
     for $sessions{$sid}.keys.grep(/^group/) -> $group-id {
       my Array $actions = $sessions{$sid}{$group-id}<actions>;
@@ -148,6 +148,27 @@ method rename-group-actions ( $old-aid, $new-aid ) {
       }
     }
   }
+}
+
+#-------------------------------------------------------------------------------
+method action-in-use ( Str:D $aid --> Bool ) {
+  my Bool $in-use = False;
+
+  for $sessions.keys -> $sid {
+    for $sessions{$sid}.keys.grep(/^group/) -> $group-id {
+      my Array $actions = $sessions{$sid}{$group-id}<actions>;
+      loop ( my Int $i = 0; $i < $actions.elems; $i++ ) {
+        if $actions[$i] eq $aid {
+          $in-use = True;
+          last;
+        }
+      }
+    }
+
+    last if $in-use;
+  }
+
+  $in-use
 }
 
 #-------------------------------------------------------------------------------
