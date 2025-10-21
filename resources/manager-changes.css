@@ -134,3 +134,13 @@
   background-color: #013b01;
   color: #068a06;
 }
+
+.in-use {
+  background-color: transparent;
+  color: #0edf0e;
+}
+
+.not-in-use {
+  background-color: transparent;
+  color: #f823d5;
+}
