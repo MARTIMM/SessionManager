@@ -127,7 +127,7 @@ method substitute-vars ( Str $t --> Str ) {
 #-------------------------------------------------------------------------------
 method add-modify ( N-Object $parameter ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Modify Variable'), :add-statusbar
+    :dialog-header('Modify Variable'), :add-statusbar, :!modal
   ) {
     #my GnomeTools::Gtk::DropDown $variables-dd .= new;
     #$variables-dd.set-selection($!variables.keys.sort);
