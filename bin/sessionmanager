@@ -43,6 +43,12 @@ sub usage ( ) {
       --legacy            Show older version layout.
       --version           Show the current version of the program.
       --verbose -v        Show more information while running.
+    Arguments
+      config directory    Directory where configuration is found.
+  EOUSAGE
+}
+
+=finish
       --load-manual-build-config -m
                           Load the manually build confgurations. Only the
                           saved configurations are loaded by default. With
@@ -50,7 +56,3 @@ sub usage ( ) {
                           previous run, are loaded after loading the
                           manual created/edited configurations.
 
-    Arguments
-      config directory    Directory where configuration is found.
-  EOUSAGE
-}

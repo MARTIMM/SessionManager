@@ -30,7 +30,8 @@ has Hash $!dispatch-config;
 has GnomeTools::Gtk::Theming $!theme;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Bool :$load-manual-build-config = False ) {
+#submethod BUILD ( Bool :$load-manual-build-config = False ) {
+submethod BUILD ( ) {
 #note "$?LINE $*config-directory";
 
   mkdir $*config-directory ~ '/Images', 0o700
@@ -60,7 +61,8 @@ submethod BUILD ( Bool :$load-manual-build-config = False ) {
   $css-path.IO.spurt($css-cnt);
   $!theme .= new(:$css-path);
 
-  self.load-config(:$load-manual-build-config);
+#  self.load-config(:$load-manual-build-config);
+  self.load-config;
 }
 
 #-------------------------------------------------------------------------------
@@ -74,7 +76,8 @@ method instance ( *%options --> SessionManager::Config ) {
 }
 
 #-------------------------------------------------------------------------------
-method load-config ( Bool :$load-manual-build-config = False ) {
+#method load-config ( Bool :$load-manual-build-config = False ) {
+method load-config ( ) {
   if "$*config-directory/dispatch-config.yaml".IO !~~ :r {
     "$*config-directory/dispatch-config.yaml".IO.spurt(Q:q:to/EOD/);
       theme:
@@ -102,6 +105,7 @@ method load-config ( Bool :$load-manual-build-config = False ) {
   my SessionManager::Actions $actions .= new;
   my SessionManager::Sessions $sessions .= new;
 
+#`{{
   # Set a few variables beforehand
   if $load-manual-build-config {
     $variables.add(%( :$*config-directory, :home($*HOME)));
@@ -137,6 +141,7 @@ method load-config ( Bool :$load-manual-build-config = False ) {
       }
     }
   }
+}}
 
   $variables.load;
   $actions.load;

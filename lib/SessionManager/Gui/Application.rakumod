@@ -38,7 +38,8 @@ constant APP_ID is export = 'io.github.martimm.session-manager';
 
 constant Grid = Gnome::Gtk4::Grid;
 constant LocalOptions = [<version h help>];
-constant RemoteOptions = [ |<v verbose legacy m load-manual-build-config> ];
+constant RemoteOptions = [ |<v verbose legacy> ];
+#constant RemoteOptions = [ |<v verbose legacy m load-manual-build-config> ];
 
 has Gnome::Gtk4::Application $.application;
 has Gnome::Gtk4::ApplicationWindow $.app-window;
@@ -122,10 +123,15 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
   }
 
   unless ?$!app-window and $!app-window.is-valid {
+    # Check all arguments, skip first arg, $args[0] == programname
     for $args[1..*-1] -> $a {
+
+      # Skip all options starting with a '-'
       if $a !~~ m/^ '-' / {
+        # Only one argument possible
         $*config-directory = $a;
 
+        # And must be a directory
         if $*config-directory.IO !~~ :d {
           note "\nConfiguration directory '$*config-directory' not found";
           return 1;
@@ -134,16 +140,20 @@ method remote-options ( Gnome::Gio::ApplicationCommandLine() $cl --> Int ) {
       }
     }
 
+    # if name is empty -> error
     if !$*config-directory {
       note "\nYou must specify a sesion directory";
       return 1;
     }
 
+#`{{
     my Bool $load-manual-build-config = False;
     if $o<m>:exists or $o<load-manual-build-config>:exists {
       $load-manual-build-config = $o<load-manual-build-config>.Bool;
     }
     my SessionManager::Config $config .= instance(:$load-manual-build-config);
+}}
+    my SessionManager::Config $config .= instance;
 
     if ?$o<legacy> {
       $*legacy = True;
