@@ -33,14 +33,13 @@
   },
 
   "depends": [
-    "Gnome::Gtk4:api<2>", ""GnomeTools", "YAMLish", "Getopt::Long",
+    "Gnome::Gtk4:api<2>", "GnomeTools", "YAMLish", "Getopt::Long",
   ],
 
   "resources": [
-    "brushed-dark.jpg", "brushed-light.jpg",
-    "diamond-steel-floor.jpg", "brushed-copper.jpg",
-    "mozaic.jpg", "bookmark.png", "fastforward.png",
+    "bookmark.png",
     "config-icon.jpg",
+    "fastforward.png",
     "sessionmanager-icon.png",
 
     "manager.css", "manager-changes.css"
