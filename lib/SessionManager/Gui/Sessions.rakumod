@@ -5,6 +5,7 @@ v6.d;
 use SessionManager::Sessions;
 #use SessionManager::Gui::Actions;
 use SessionManager::Actions;
+use SessionManager::Config;
 
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
