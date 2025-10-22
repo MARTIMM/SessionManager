@@ -87,7 +87,7 @@ method session-button ( --> Widget ) {
 #  my SessionManager::Variables $v .= new;
 #  $!theme.add-css-class( self, 'session-toolbar');
 
-  if $config.legacy {
+  if $*legacy {
     $widget = self.legacy-button(
       'session-actions', :$!session-id, :$!manage-session
     );
@@ -122,7 +122,7 @@ method session-actions (
   my SessionManager::Config $config .= instance;
   for 10...1 -> $x {
 #note "$?LINE $x, {$!session-manager-box.get-child-at( $x, 0) // '-'}";
-    if $config.legacy {
+    if $*legacy {
       if $!session-manager-box.get-child-at( 0, $x) {
         $!session-manager-box.remove-row($x);
       }
@@ -178,7 +178,7 @@ method session-actions (
 #    my Box $session-buttons .= new-box( GTK_ORIENTATION_VERTICAL, 1);
 
     my GtkOrientation $orientation =
-       $config.legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
+       $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
     my Box $session-buttons .= new-box( $orientation, 1);
     $session-buttons.set-spacing(20);
 #      .set-margin-top(0);
@@ -209,7 +209,7 @@ method session-actions (
         SessionManager::RunActionCommand.new(:$id);
 #note "$?LINE $command.tooltip()";
       my Widget $widget;
-      if $config.legacy {
+      if $*legacy {
         $widget = self.legacy-button(
           'setup-run', :$id, :$command, :level($level - 1), :$count
         );
@@ -252,7 +252,7 @@ method session-actions (
 }}
 
     # Add session actions group
-    if $config.legacy {
+    if $*legacy {
       $!session-manager-box.attach( $session-buttons, 0, $level, 1, 1);
     }
 

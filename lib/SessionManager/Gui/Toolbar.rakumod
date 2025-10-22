@@ -58,7 +58,7 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
 
   my SessionManager::Config $config .= instance;
   my GtkOrientation $orientation =
-      $config.legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
+      $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
 
   with self {
     .set-orientation($orientation);
