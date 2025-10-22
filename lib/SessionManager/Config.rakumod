@@ -24,8 +24,6 @@ unit class SessionManager::Config;
 #-------------------------------------------------------------------------------
 my $instance;
 
-has Bool $.legacy = False;
-
 has Hash $!dispatch-config;
 #has Gnome::Gtk4::CssProvider $!css-provider;
 
@@ -201,7 +199,9 @@ method set-css ( N-Object $context, Str:D $css-class ) {
 }}
 
 #-------------------------------------------------------------------------------
-method set-legacy ( Bool $!legacy ) { }
+method set-legacy ( Bool $legacy ) {
+  $*legacy = $legacy;
+}
 
 #-------------------------------------------------------------------------------
 method get-window-size ( --> List ) {
