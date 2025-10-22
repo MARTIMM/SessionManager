@@ -86,7 +86,7 @@ method add-rename ( N-Object $parameter ) {
 
     # Trap changes in the sessions list
     $sessions-dd.trap-dropdown-changes(
-      $!sessions, 'trap-select-session', :$sessions-dd,
+      self, 'trap-select-session', :$sessions-dd,
       :$sessionid-e, :$sessiontitle-e,
       :$sessionicon-e, :$sessionoverlay-e
     );
