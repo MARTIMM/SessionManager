@@ -34,8 +34,14 @@ has GnomeTools::Gtk::Theming $!theme;
 submethod BUILD ( ) {
 #note "$?LINE $*config-directory";
 
-  mkdir $*config-directory ~ '/Images', 0o700
-        unless ($*config-directory ~ '/Images').IO.e;
+  mkdir $*config-directory ~ '/Config', 0o700
+        unless ($*config-directory ~ '/Config').IO.e;
+
+  mkdir $*config-directory ~ '/Pictures/Overlay', 0o700
+        unless ($*config-directory ~ '/Pictures/Overlay').IO.e;
+
+  mkdir $*config-directory ~ '/Pictures/UserImages', 0o700
+        unless ($*config-directory ~ '/Pictures/UserImages').IO.e;
 
   # It is supposed to copy files to a controllable location See also issue #5746
   # at https://github.com/rakudo/rakudo/issues/5746.
@@ -43,16 +49,14 @@ submethod BUILD ( ) {
   # be retrieved from the resources.
   my Str $png-file;
   for <
-    diamond-steel-floor.jpg brushed-light.jpg brushed-dark.jpg
-    config-icon.jpg brushed-copper.jpg mozaic.jpg
-    bookmark.png fastforward.png
+    config-icon.jpg bookmark.png fastforward.png sessionmanager-icon.png
   > -> $i {
-#note "$?LINE $i";
-    $png-file = [~] $*config-directory, '/Images/', $i;
-    %?RESOURCES{$i}.copy($png-file) unless $png-file.IO.e;
+    $png-file = [~] $*config-directory, '/Pictures/Overlay/', $i;
+note "$?LINE $i, $png-file, %?RESOURCES{$i}.gist()";
+    %?RESOURCES{"overlay-icons/$i"}.copy($png-file) unless $png-file.IO.e;
   }
 
-  # Copy style sheet to data directory and load into program
+  # Copy style sheets to data directory and load into program
   my Str $css-path = $*config-directory ~ '/Config/manager.css';
   %?RESOURCES<manager.css>.copy($css-path);
   my $css-cnt = [~] '@import url("', $css-path.IO.absolute, '");', "\n\n",
@@ -202,11 +206,6 @@ method set-css ( N-Object $context, Str:D $css-class ) {
   $style-context.add-class($css-class);
 }
 }}
-
-#-------------------------------------------------------------------------------
-method set-legacy ( Bool $legacy ) {
-  $*legacy = $legacy;
-}
 
 #-------------------------------------------------------------------------------
 method get-window-size ( --> List ) {
