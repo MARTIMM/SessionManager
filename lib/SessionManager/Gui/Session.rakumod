@@ -458,38 +458,31 @@ method legacy-button (
 
   my Str $title = "Session\n$!manage-session<title>";
   my Str $picture-file;
-    if $count == -1 and $level == -1 {
-      $picture-file = $config.set-path(
-        $v.substitute-vars(
-          $!manage-session<icon> // "$*images/$!session-id/0.png"
-        )
-      );
-    }
+  if $count == -1 and $level == -1 {
+    $picture-file = $config.set-picture($!manage-session<icon> // '');
+  }
 
-    else {
-      $picture-file = $config.set-path(
-        $v.substitute-vars(
-          $command.picture // "$*images/$!session-id/$level$count.png"
-        )
-      );
-    }
+  else {
+    $picture-file = $config.set-picture($command.picture // '');
+  }
 
-#note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
-
+note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
   my Picture $picture .= new-picture;
-  with $picture {
-    .set-filename($picture-file);
-    my Int ( $w, $h) = $config.get-icon-size;
-    .set-size-request( $w, $h);
+  if ?$picture-file and $picture-file.IO ~~ :r {
+    with $picture {
+      .set-filename($picture-file);
+      my Int ( $w, $h) = $config.get-icon-size;
+      .set-size-request( $w, $h);
 
-    .set-margin-top(0);
-    .set-margin-bottom(0);
-    .set-margin-start(0);
-    .set-margin-end(0);
-#    .set-hexpand(True);
-    .set-vexpand-set(True);
-    .set-vexpand(True);
-#    .set-valign(GTK_ALIGN_FILL);
+      .set-margin-top(0);
+      .set-margin-bottom(0);
+      .set-margin-start(0);
+      .set-margin-end(0);
+  #    .set-hexpand(True);
+      .set-vexpand-set(True);
+      .set-vexpand(True);
+  #    .set-valign(GTK_ALIGN_FILL);
+    }
   }
 
   with my Button $button .= new-button {
@@ -505,23 +498,17 @@ method legacy-button (
 
   my Str $overlay-icon;
   if $count == -1 and $level == -1 {
-    $overlay-icon = $config.set-path(
-      $v.substitute-vars(
-        $!manage-session<over> // "$*images/$!session-id/o0.png"
-      )
-    );
+    $overlay-icon = $config.set-picture($!manage-session<over> // '', :overlay);
   }
 
   else {
-    $overlay-icon = $config.set-path(
-      $v.substitute-vars(
-        $command.overlay-picture // "$*images/$!session-id/o$level$count.png"
-      )
+    $overlay-icon = $config.set-picture(
+      $command.overlay-picture // '', :overlay
     );
   }
 
-#note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :r;
-  if ? $overlay-icon.IO.r {
+note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :r;
+  if ?$overlay-icon and $overlay-icon.IO ~~ :r {
     $picture .= new-for-paintable(
       self.set-texture($overlay-icon)
     );
