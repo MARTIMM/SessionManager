@@ -16,8 +16,6 @@ my Bool $*legacy = False;
 
 my $*dispatch-testing = False;
 
-my Str $*images = 'Images';
-
 my Str $*config-directory;
 
 my SessionManager::Gui::Application $manager .= new;
