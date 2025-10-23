@@ -40,9 +40,10 @@ submethod BUILD ( ) {
   mkdir $*config-directory ~ '/Pictures/Overlay', 0o700
         unless ($*config-directory ~ '/Pictures/Overlay').IO.e;
 
-  mkdir $*config-directory ~ '/Pictures/UserImages', 0o700
-        unless ($*config-directory ~ '/Pictures/UserImages').IO.e;
+  mkdir $*config-directory ~ '/Pictures/Icons', 0o700
+        unless ($*config-directory ~ '/Pictures/Icons').IO.e;
 
+#`{{
   # It is supposed to copy files to a controllable location See also issue #5746
   # at https://github.com/rakudo/rakudo/issues/5746.
   # Are used in the css file and must be accessable in a known path. Rest can
@@ -55,6 +56,7 @@ submethod BUILD ( ) {
 note "$?LINE $i, $png-file, %?RESOURCES{$i}.gist()";
     %?RESOURCES{"overlay-icons/$i"}.copy($png-file) unless $png-file.IO.e;
   }
+}}
 
   # Copy style sheets to data directory and load into program
   my Str $css-path = $*config-directory ~ '/Config/manager.css';
@@ -102,9 +104,6 @@ method load-config ( ) {
     "$*config-directory/dispatch-config.yaml".IO.slurp
   );
 
-
-  $*images = [~] $*config-directory, '/', $*images;
-
   my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
   my SessionManager::Sessions $sessions .= new;
@@ -147,7 +146,10 @@ method load-config ( ) {
   }
 }}
 
+  # load variables and check for necessary variables
   $variables.load;
+  $variables.add( %( :config($*config-directory), :home($*HOME)));
+
   $actions.load;
   $sessions.load;
 
@@ -250,6 +252,7 @@ method set-window-title ( Str:D $title ) {
   $!dispatch-config<theme><title> = $title;
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method set-path ( Str $file = '' --> Str ) {
 #note "$?LINE $file, $file.index('/')";
@@ -260,6 +263,23 @@ method set-path ( Str $file = '' --> Str ) {
   note "Set icon to $path" if $*verbose;
 
   $path
+}
+}}
+
+#-------------------------------------------------------------------------------
+method set-picture ( Str:D $path, Bool :$is-overlay = False --> Str  ) {
+  my Str $new-path = '';
+  if ?$path and $path.IO ~~ :r {
+    $new-path = "$*config-directory/Pictures/" ~
+                 ($is-overlay ?? 'Overlay/' !! 'Icons/') ~
+                 $path.IO.basename;
+    $path.IO.copy($new-path) unless $new-path.IO ~~ :e;
+
+    note "Set ", ($is-overlay ?? 'overlay' !! 'icon'), " '$path' to '$new-path'"
+      if $*verbose;
+  }
+
+  $new-path
 }
 
 =finish
