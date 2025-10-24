@@ -56,8 +56,10 @@ method instance ( --> SessionManager::Gui::Variables ) {
 }}
 
 #-------------------------------------------------------------------------------
-method add ( Hash:D $variables ) {
-  $variables = %( | $variables, | $variables);
+method add ( Hash:D $v ) {
+  for $v.kv -> $k, $v {
+    $variables{$k} = $v;
+  }
 }
 
 #-------------------------------------------------------------------------------
