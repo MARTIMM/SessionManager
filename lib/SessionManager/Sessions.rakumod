@@ -151,7 +151,7 @@ method rename-group-actions ( Str:D $old-aid, Str:D $new-aid ) {
 }
 
 #-------------------------------------------------------------------------------
-method action-in-use ( Str:D $aid --> Bool ) {
+method is-action-in-use ( Str:D $aid --> Bool ) {
   my Bool $in-use = False;
 
   for $sessions.keys -> $sid {

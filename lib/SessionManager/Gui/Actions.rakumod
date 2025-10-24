@@ -335,7 +335,7 @@ method set-data(
   $action-id.set-text($id);
 
   my SessionManager::Sessions $sessions .= new;
-  my Bool $aid-in-use = $sessions.action-in-use($id);
+  my Bool $aid-in-use = $sessions.is-action-in-use($id);
   $action-id.set-css-classes($aid-in-use ?? "in-use" !! "not-in-use", 'abc');
 
 #TODO show tooltip over fields with filled in variables
