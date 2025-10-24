@@ -216,6 +216,7 @@ method do-modify-act (
   Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
+  my SessionManager::Config $config .= instance;
   my Hash $raw-action = %();
   $raw-action<t> = $aspec-title.get-text;
 #`{{
@@ -227,13 +228,14 @@ method do-modify-act (
 }}
   $raw-action<c> = self.get-text($aspec-cmd);
 
-  $raw-action<o> = $aspec-icon.get-text;
-  $raw-action<i> = $aspec-pic.get-text;
+  $raw-action<o> = $config.set-picture( $aspec-icon.get-text, :is-overlay);
+  $raw-action<i> = $config.set-picture($aspec-pic.get-text);
   $raw-action<l> = $aspec-log.get-state;
   $raw-action<w> = $aspec-wait.get-text.Int;
   $raw-action<p> = $aspec-path.get-text;
   $raw-action<sh> = $aspec-shell.get-text;
 
+note "$?LINE $raw-action.gist()";
   my SessionManager::Actions $actions .= new;
   my Str $id = $listbox.get-selection[0];
   $actions.modify-action( $id, $raw-action);
