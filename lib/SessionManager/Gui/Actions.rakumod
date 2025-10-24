@@ -4,6 +4,7 @@ use NativeCall;
 use SessionManager::ActionData;
 use SessionManager::Actions;
 use SessionManager::Sessions;
+use SessionManager::Config;
 
 use Digest::SHA256::Native;
 use YAMLish;
@@ -132,14 +133,18 @@ method do-create-act (
   }
 
   else {
+    my SessionManager::Config $config .= instance;
     my Hash $raw-action = %();
     $raw-action<t> = $aspec-title.get-text;
+#`{{
     my TextBuffer() $tb = $aspec-cmd.get-buffer;
     my N-TextIter() $t0 = $tb.get-start-iter;
     my N-TextIter() $te = $tb.get-end-iter;
-    $raw-action<c> = $aspec-cmd.get-buffer.get-text( $t0, $te);
-    $raw-action<o> = $aspec-icon.get-text;
-    $raw-action<i> = $aspec-pic.get-text;
+    $raw-action<c> = $tb.get-text( $t0, $te, False);
+}}
+    $raw-action<c> = self.get-text($aspec-cmd);
+    $raw-action<o> = $config.set-picture( $aspec-icon.get-text, :is-overlay);
+    $raw-action<i> = $config.set-picture($aspec-pic.get-text);
     $raw-action<l> = $aspec-log.get-state;
     $raw-action<w> = $aspec-wait.get-text.Int;
     $raw-action<p> = $aspec-path.get-text;
@@ -213,12 +218,14 @@ method do-modify-act (
 ) {
   my Hash $raw-action = %();
   $raw-action<t> = $aspec-title.get-text;
-
+#`{{
   my TextBuffer() $tb = $aspec-cmd.get-buffer;
   my N-TextIter $t0 .= new;
   my N-TextIter $te .= new;
   $tb.get-bounds( $t0, $te);
   $raw-action<c> = $tb.get-text( $t0, $te, False);
+}}
+  $raw-action<c> = self.get-text($aspec-cmd);
 
   $raw-action<o> = $aspec-icon.get-text;
   $raw-action<i> = $aspec-pic.get-text;
@@ -378,4 +385,14 @@ method scrollable-list ( Bool :$multi = False, *%options ) {
   my ScrolledWindow $sw = $list-lb.set-list([$actions.get-action-ids.sort]);
 
   ( $list-lb, $sw)
+}
+
+#-------------------------------------------------------------------------------
+method get-text ( TextView:D $textview --> Str ) {
+  my TextBuffer() $tb = $textview.get-buffer;
+  my N-TextIter $t0 .= new;
+  my N-TextIter $te .= new;
+  $tb.get-bounds( $t0, $te);
+
+  $tb.get-text( $t0, $te, False)
 }
