@@ -271,8 +271,8 @@ method set-path ( Str $file = '' --> Str ) {
 #-------------------------------------------------------------------------------
 method set-picture ( Str:D $path is copy, Bool :$is-overlay = False --> Str  ) {
   my Str $new-path = '';
-  if ?$path {
 
+  if ?$path {
     my SessionManager::Variables $variables .= new;
     $path = $variables.substitute-vars($path);
     if $path.IO ~~ :r {
@@ -280,8 +280,6 @@ method set-picture ( Str:D $path is copy, Bool :$is-overlay = False --> Str  ) {
                   ($is-overlay ?? 'Overlay/' !! 'Icons/') ~
                   $path.IO.basename;
       $path.IO.copy($new-path) unless $new-path.IO ~~ :e;
-
-note "$?LINE $is-overlay, $path, $new-path";
 
       note "Set ", ($is-overlay ?? 'overlay' !! 'icon'),
            " '$path' to '$new-path'" if $*verbose;
