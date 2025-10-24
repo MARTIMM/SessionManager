@@ -93,6 +93,7 @@ method init-action ( Str :$!id = '', Hash:D :$!raw-action ) {
 #-------------------------------------------------------------------------------
 method modify-id ( Str $!id ) { }
 
+#`{{
 #-------------------------------------------------------------------------------
 method set-image-to-session-path (
   Str $session-name, Str $image-name, Bool :$overlay = False
@@ -105,6 +106,7 @@ method set-image-to-session-path (
     $!picture = "$*images/$session-name/$image-name";
   }
 }
+}}
 
 #-------------------------------------------------------------------------------
 method set-run-in-group ( Bool $!run-in-group ) { }
