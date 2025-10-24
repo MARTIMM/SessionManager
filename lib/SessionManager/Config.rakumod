@@ -148,14 +148,15 @@ method load-config ( ) {
 
   # load variables and check for necessary variables
   $variables.load;
-  $variables.add( %( :config($*config-directory), :home($*HOME)));
+  $variables.add( %( :config($*config-directory), :home($*HOME.Str)));
 
   $actions.load;
   $sessions.load;
 
-  self.check-actions;
+#  self.check-actions;
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method check-actions ( ) {
 #note "$?LINE $name, $level, $!dispatch-config<sessions>{$name}.gist()";
@@ -195,6 +196,7 @@ method check-session-entries ( Array $raw-entries --> Array ) {
   
   $raw-entries
 }
+}}
 
 #`{{
 #-------------------------------------------------------------------------------
@@ -267,16 +269,23 @@ method set-path ( Str $file = '' --> Str ) {
 }}
 
 #-------------------------------------------------------------------------------
-method set-picture ( Str:D $path, Bool :$is-overlay = False --> Str  ) {
+method set-picture ( Str:D $path is copy, Bool :$is-overlay = False --> Str  ) {
   my Str $new-path = '';
-  if ?$path and $path.IO ~~ :r {
-    $new-path = "$*config-directory/Pictures/" ~
-                 ($is-overlay ?? 'Overlay/' !! 'Icons/') ~
-                 $path.IO.basename;
-    $path.IO.copy($new-path) unless $new-path.IO ~~ :e;
+  if ?$path {
 
-    note "Set ", ($is-overlay ?? 'overlay' !! 'icon'), " '$path' to '$new-path'"
-      if $*verbose;
+    my SessionManager::Variables $variables .= new;
+    $path = $variables.substitute-vars($path);
+    if $path.IO ~~ :r {
+      $new-path = "$*config-directory/Pictures/" ~
+                  ($is-overlay ?? 'Overlay/' !! 'Icons/') ~
+                  $path.IO.basename;
+      $path.IO.copy($new-path) unless $new-path.IO ~~ :e;
+
+note "$?LINE $is-overlay, $path, $new-path";
+
+      note "Set ", ($is-overlay ?? 'overlay' !! 'icon'),
+           " '$path' to '$new-path'" if $*verbose;
+    }
   }
 
   $new-path
