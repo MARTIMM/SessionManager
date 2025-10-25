@@ -361,7 +361,7 @@ method set-data(
       $tb.set-text( '', 0);
     }
   }
-note "\n$?LINE $aid-in-use, $action-object.gist()";
+
   with $aspec-path { .set-text($action-object<p> // ''); }
   with $aspec-wait { .set-text($action-object<w> // ''); }
   with $aspec-log { .set-state($action-object<l>.Bool); }
@@ -379,10 +379,8 @@ method delete ( N-Object $parameter ) {
 method scrollable-list ( Bool :$multi = False, *%options ) {
 
   my SessionManager::Actions $actions .= new;
-#note "$?LINE";
-  my $object = self;
   my ListBox $list-lb .= new(
-    :$object, :method<set-data>, :$multi, |%options
+    :object(self), :method<set-data>, :$multi, |%options
   );
   my ScrolledWindow $sw = $list-lb.set-list([$actions.get-action-ids.sort]);
 
