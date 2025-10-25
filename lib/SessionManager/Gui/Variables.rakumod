@@ -15,11 +15,11 @@ use GnomeTools::Gtk::ListBox;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 #use Gnome::Gtk4::ListBox:api<2>;
 #use Gnome::Gtk4::ListBoxRow:api<2>;
-use Gnome::Gtk4::Grid:api<2>;
+#use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
+#use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
-
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Variables;
@@ -34,7 +34,8 @@ constant Entry = Gnome::Gtk4::Entry;
 constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
-constant Grid = Gnome::Gtk4::Grid;
+#constant Grid = Gnome::Gtk4::Grid;
+constant Box = Gnome::Gtk4::Box;
 
 has SessionManager::Variables $!variables;
 
@@ -126,22 +127,18 @@ method substitute-vars ( Str $t --> Str ) {
 # Calls from menubar entries
 #-------------------------------------------------------------------------------
 method add-modify ( N-Object $parameter ) {
+
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Variable'), :add-statusbar, :!modal
   ) {
-    #my GnomeTools::Gtk::DropDown $variables-dd .= new;
-    #$variables-dd.set-selection($!variables.keys.sort);
-#`{{
-my ListBox $list-lb .= new(
-  :$object, :method<set-data>, :$multi, |%options
-);
 
-$variables-lb.register-signal(
-  self, 'set-data', 'row-selected', :$vname, :$vspec
-);
-}}
     my Entry $vname .= new-entry;
     my Entry $vspec .= new-entry;
+    my ListBox $variables-lb .= new(
+      :object(self), :method<set-data>, :$vname, :$vspec,
+    );
+
+#`{{
     my Int $row-count = 0;
     my Grid $vlist .= new-grid;
     $vlist.set-column-spacing(15);
@@ -161,29 +158,27 @@ $variables-lb.register-signal(
       $vlist.attach( $lv, 1, $row-count, 1, 1);
       $row-count++;
     }
-
     with my ScrolledWindow $sw .= new-scrolledwindow {
       .set-child($vlist);
       .set-size-request( 850, 300);
     }
-
-#`{{
-    with my ScrolledWindow $sw .= new-scrolledwindow {
-      .set-child($variables-lb);
-      .set-size-request( 400, 200);
-    }
 }}
+
+    my ScrolledWindow $sw = $variables-lb.set-list(
+      [ |($!variables.get-variables)]
+    );
 
     .add-content( 'Variable list', $sw, :4rows);
     .add-content( 'Variable name', $vname);
     .add-content( 'Specification', $vspec);
 
     .add-button(
-      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$vspec
+      self, 'do-add-variable', 'Add', :$dialog,
+      :$vname, :$vspec, :$variables-lb
     );
 
     .add-button(
-      self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec, :$vlist
+      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$vspec
     );
 
     .add-button(
@@ -194,6 +189,45 @@ $variables-lb.register-signal(
 
     .show-dialog;
   }
+}
+
+#-------------------------------------------------------------------------------
+method do-add-variable (
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
+  Entry :$vspec #, Grid :$vlist
+) {
+#  my Bool $sts-ok = False;
+
+  my Str $variable = $vname.get-text;
+
+  if !$variable {
+    $dialog.set-status("No variable name specified");
+  }
+
+  elsif $variable ~~ any(|$!variables.get-variables) {
+    $dialog.set-status("Variable '$variable' already defined");
+  }
+
+  else {
+    my Str $var = $vspec.get-text;
+    $!variables.add-variable( $variable, $var);
+    $dialog.set-status("Variable $variable added with '$var'");
+    with my Label $ln .= new-with-mnemonic($variable) {
+      .set-justify(GTK_JUSTIFY_LEFT);
+      .set-halign(GTK_ALIGN_START);
+    }
+    with my Label $lv .= new-with-mnemonic($var) {
+      .set-justify(GTK_JUSTIFY_LEFT);
+      .set-halign(GTK_ALIGN_START);
+    }
+
+#    my Int $c = $!variables.get-n-variables;
+#    $vlist.attach( $ln, 0, $c, 1, 1);
+#    $vlist.attach( $lv, 1, $c, 1, 1);
+#    $sts-ok = True;
+  }
+
+#  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
@@ -232,45 +266,6 @@ method do-rename-variable (
  }
 
 #-------------------------------------------------------------------------------
-method do-add-variable (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
-  Entry :$vspec, Grid :$vlist
-) {
-#  my Bool $sts-ok = False;
-
-  my Str $variable = $vname.get-text;
-
-  if !$variable {
-    $dialog.set-status("No variable name specified");
-  }
-
-  elsif $variable ~~ any(|$!variables.get-variables) {
-    $dialog.set-status("Variable '$variable' already defined");
-  }
-
-  else {
-    my Str $var = $vspec.get-text;
-    $!variables.add-variable( $variable, $var);
-    $dialog.set-status("Variable $variable added with '$var'");
-    with my Label $ln .= new-with-mnemonic($variable) {
-      .set-justify(GTK_JUSTIFY_LEFT);
-      .set-halign(GTK_ALIGN_START);
-    }
-    with my Label $lv .= new-with-mnemonic($var) {
-      .set-justify(GTK_JUSTIFY_LEFT);
-      .set-halign(GTK_ALIGN_START);
-    }
-
-    my Int $c = $!variables.get-n-variables;
-    $vlist.attach( $ln, 0, $c, 1, 1);
-    $vlist.attach( $lv, 1, $c, 1, 1);
-#    $sts-ok = True;
-  }
-
-#  $dialog.destroy-dialog if $sts-ok;
-}
-
-#-------------------------------------------------------------------------------
 method do-modify-variable (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$vname, Entry :$vspec
 ) {
@@ -293,7 +288,8 @@ method do-modify-variable (
 
 #-------------------------------------------------------------------------------
 method set-data(
-  Label() :$row-widget, ListBoxRow() :$row, Entry :$vname, Entry :$vspec
+  ListBox :$listbox, Label() :$row-widget, ListBoxRow() :$row,
+  Entry :$vname, Entry :$vspec
 ) {
 
   # Needed to rename content of row
