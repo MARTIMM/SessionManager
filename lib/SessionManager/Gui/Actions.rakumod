@@ -179,7 +179,7 @@ method modify ( N-Object $parameter ) {
     $aspec-wait.set-placeholder-text('optional');
     $aspec-icon.set-placeholder-text('optional');
     $aspec-pic.set-placeholder-text('optional');
-    
+
     my ListBox $listbox;
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
