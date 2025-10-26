@@ -39,10 +39,6 @@ constant Box = Gnome::Gtk4::Box;
 
 has SessionManager::Variables $!variables;
 
-#has Hash $!temporary;
-has Str $!original-name;
-has ListBoxRow $!original-row;
-
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   $!variables .= new;
@@ -178,7 +174,8 @@ method add-modify ( N-Object $parameter ) {
     );
 
     .add-button(
-      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$vspec
+      self, 'do-rename-variable', 'Rename', :$dialog,
+      :$vname, :$vspec, :$variables-lb
     );
 
     .add-button(
@@ -194,7 +191,7 @@ method add-modify ( N-Object $parameter ) {
 #-------------------------------------------------------------------------------
 method do-add-variable (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
-  Entry :$vspec #, Grid :$vlist
+  Entry :$vspec, ListBox :$variables-lb#, Grid :$vlist
 ) {
 #  my Bool $sts-ok = False;
 
@@ -211,15 +208,9 @@ method do-add-variable (
   else {
     my Str $var = $vspec.get-text;
     $!variables.add-variable( $variable, $var);
+    $variables-lb.append-list($var);
     $dialog.set-status("Variable $variable added with '$var'");
-    with my Label $ln .= new-with-mnemonic($variable) {
-      .set-justify(GTK_JUSTIFY_LEFT);
-      .set-halign(GTK_ALIGN_START);
-    }
-    with my Label $lv .= new-with-mnemonic($var) {
-      .set-justify(GTK_JUSTIFY_LEFT);
-      .set-halign(GTK_ALIGN_START);
-    }
+
 
 #    my Int $c = $!variables.get-n-variables;
 #    $vlist.attach( $ln, 0, $c, 1, 1);
@@ -233,7 +224,7 @@ method do-add-variable (
 #-------------------------------------------------------------------------------
 method do-rename-variable (
   GnomeTools::Gtk::Dialog :$dialog, ListBoxRow() :$row,
-  Entry :$vname, Entry :$vspec
+  Entry :$vname, Entry :$vspec, ListBox :$variables-lb
 ) {
   my Str $variable = $vname.get-text;
 
@@ -246,19 +237,18 @@ method do-rename-variable (
   }
 
   else {
-    my SessionManager::Actions $actions;
-    $!variables.rename-variable( $!original-name, $variable);
-    $actions.subst-vars( $!original-name, $variable);
+    # Change the entry in the listbox, returns array of possible selections
+    my Str $original-name = $variables-lb.get-selection()[0];
+
+    # Rename the use of the variable in the variables hash.
+    $!variables.rename-variable( $original-name, $variable);
+#note "$?LINE $variable, $original-name, $variables-lb.get-selection()[0]";
+    # Rename the use of the variable in the actions list.
+    my SessionManager::Actions $actions .= new;
+    $actions.subst-vars( $original-name, $variable);
 
     # Change the row in the listbox
-    with my Label $l .= new-with-mnemonic($variable) {
-      .set-justify(GTK_JUSTIFY_LEFT);
-      .set-halign(GTK_ALIGN_START);
-    }
-    $!original-row.set-child($l);
-
-    $!original-name = $variable;
-
+    $variables-lb.reset-list([ | $!variables.get-variables ]);
     $dialog.set-status("Renamed successfully everything");
   }
 
@@ -291,12 +281,7 @@ method set-data(
   ListBox :$listbox, Label() :$row-widget, ListBoxRow() :$row,
   Entry :$vname, Entry :$vspec
 ) {
-
-  # Needed to rename content of row
-  $!original-row = $row;
-
   my Label() $l = $row.get-child;
-  $!original-name = $l.get-text;
   $vname.set-text($l.get-text);
   $vspec.set-text($!variables.get-variable($l.get-text));
 }
