@@ -282,7 +282,11 @@ method set-data(
   Entry :$vname, Entry :$vspec
 ) {
   my Label() $l = $row.get-child;
-  $vname.set-text($l.get-text);
+  my Str $v = $l.get-text;
+#TODO test also in actions and sessions
+  my Bool $vid-inuse =  $!variables.is-var-in-use($v);
+  $vname.set-text($v);
+  $vname.set-css-classes($vid-inuse ?? "in-use" !! "not-in-use", 'abc');
   $vspec.set-text($!variables.get-variable($l.get-text));
 }
 
