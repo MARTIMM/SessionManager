@@ -148,7 +148,12 @@ method load-config ( ) {
 
   # load variables and check for necessary variables
   $variables.load;
-  $variables.add( %( :config($*config-directory), :home($*HOME.Str)));
+  $variables.add( %(
+    :config($*config-directory),
+    :POver("$*config-directory/Pictures/Overlay"),
+    :PIcon("$*config-directory/Pictures/Icons"),
+    :home($*HOME.Str),
+  ));
 
   $actions.load;
   $sessions.load;
@@ -281,8 +286,15 @@ method set-picture ( Str:D $path is copy, Bool :$is-overlay = False --> Str  ) {
                   $path.IO.basename;
       $path.IO.copy($new-path) unless $new-path.IO ~~ :e;
 
-      note "Set ", ($is-overlay ?? 'overlay' !! 'icon'),
-           " '$path' to '$new-path'" if $*verbose;
+      if $is-overlay {
+        $new-path ~~ s/^ $*config-directory '/Pictures/Overlay' /\$POver/;
+        note "Set overlay '$path' to '$new-path'" if $*verbose;
+      }
+
+      else {
+        $new-path ~~ s/^ $*config-directory '/Pictures/Icons' /\$PIcon/;
+        note "Set icon '$path' to '$new-path'" if $*verbose;
+      }
     }
   }
 
