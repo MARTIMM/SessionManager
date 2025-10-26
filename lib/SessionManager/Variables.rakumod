@@ -155,6 +155,24 @@ method substitute-vars ( Str $t --> Str ) {
   $text
 }
 
+#-------------------------------------------------------------------------------
+method is-var-in-use ( Str $v --> Bool ) {
+  my Bool $in-use = False;
+
+  for $variables.kv -> $k, $text {
+    next if $k eq $v;
+
+    if $text ~~ m/ '$' $v <-[\w-]>? / {
+      $in-use = True;
+      last;
+    }
+  }
+  
+note "$?LINE $v in use: $in-use";
+
+  $in-use
+}
+
 
 
 
