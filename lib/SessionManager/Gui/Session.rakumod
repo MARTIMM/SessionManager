@@ -202,7 +202,6 @@ method session-actions (
     }
 }}
 
-    my UInt $count = 0;
     for @($manage-session{"group$level"}<actions>) -> $id {
 
       my SessionManager::Command $command =
@@ -211,7 +210,7 @@ method session-actions (
       my Widget $widget;
       if $*legacy {
         $widget = self.legacy-button(
-          'setup-run', :$id, :$command, :level($level - 1), :$count
+          'setup-run', :$id, :$command, :level($level - 1)
         );
       }
 
@@ -232,7 +231,6 @@ method session-actions (
         )
       );
 }}
-      $count++;
     }
 
 #`{{
@@ -447,7 +445,7 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
 
 #-------------------------------------------------------------------------------
 method legacy-button (
-  Str $method, Int :$level = -1, Int :$count = -1,
+  Str $method, Int :$level = -1,
   SessionManager::Command :$command, *%options --> Overlay
 ) {
   my SessionManager::Config $config .= instance;
@@ -458,15 +456,19 @@ method legacy-button (
 
   my Str $title = "Session\n$!manage-session<title>";
   my Str $picture-file;
-  if $count == -1 and $level == -1 {
-    $picture-file = $config.set-picture($!manage-session<icon> // '');
+  if $level == -1 {
+    $picture-file = $config.set-picture(
+      $!manage-session<icon> // '', :!relative-path
+    );
   }
 
   else {
-    $picture-file = $config.set-picture($command.picture // '');
+    $picture-file = $config.set-picture(
+      $command.picture // '', :!relative-path
+    );
   }
 
-note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
+note "$?LINE $level, $picture-file";
   my Picture $picture .= new-picture;
   if ?$picture-file and $picture-file.IO ~~ :r {
     with $picture {
@@ -497,17 +499,19 @@ note "$?LINE $level, $count, $picture-file, ", $picture-file.IO ~~ :r;
 #  $overlay.set-size-request($config.get-icon-size);
 
   my Str $overlay-icon;
-  if $count == -1 and $level == -1 {
-    $overlay-icon = $config.set-picture($!manage-session<over> // '', :overlay);
+  if $level == -1 {
+    $overlay-icon = $config.set-picture(
+      $!manage-session<over> // '', :overlay, :!relative-path
+    );
   }
 
   else {
     $overlay-icon = $config.set-picture(
-      $command.overlay-picture // '', :overlay
+      $command.overlay-picture // '', :overlay, :!relative-path
     );
   }
 
-note "$?LINE $overlay-icon, ", $overlay-icon.IO ~~ :r;
+note "$?LINE $overlay-icon";
   if ?$overlay-icon and $overlay-icon.IO ~~ :r {
     $picture .= new-for-paintable(
       self.set-texture($overlay-icon)
