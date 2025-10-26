@@ -274,7 +274,10 @@ method set-path ( Str $file = '' --> Str ) {
 }}
 
 #-------------------------------------------------------------------------------
-method set-picture ( Str:D $path is copy, Bool :$is-overlay = False --> Str  ) {
+method set-picture (
+  Str:D $path is copy, Bool :$is-overlay = False, Bool :$relative-path = True
+  --> Str
+) {
   my Str $new-path = '';
 
   if ?$path {
@@ -286,18 +289,21 @@ method set-picture ( Str:D $path is copy, Bool :$is-overlay = False --> Str  ) {
                   $path.IO.basename;
       $path.IO.copy($new-path) unless $new-path.IO ~~ :e;
 
-      if $is-overlay {
-        $new-path ~~ s/^ $*config-directory '/Pictures/Overlay' /\$POver/;
-        note "Set overlay '$path' to '$new-path'" if $*verbose;
-      }
+      if $relative-path {
+        if $is-overlay {
+          $new-path ~~ s/^ $*config-directory '/Pictures/Overlay' /\$POver/;
+          note "Set overlay '$path' to '$new-path'" if $*verbose;
+        }
 
-      else {
-        $new-path ~~ s/^ $*config-directory '/Pictures/Icons' /\$PIcon/;
-        note "Set icon '$path' to '$new-path'" if $*verbose;
+        else {
+          $new-path ~~ s/^ $*config-directory '/Pictures/Icons' /\$PIcon/;
+          note "Set icon '$path' to '$new-path'" if $*verbose;
+        }
       }
     }
   }
 
+note "$?LINE $path, $new-path";
   $new-path
 }
 
