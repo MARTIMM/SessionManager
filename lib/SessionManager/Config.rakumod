@@ -84,6 +84,7 @@ method instance ( *%options --> SessionManager::Config ) {
 #-------------------------------------------------------------------------------
 #method load-config ( Bool :$load-manual-build-config = False ) {
 method load-config ( ) {
+note "$?LINE $*config-directory/dispatch-config.yaml";
   if "$*config-directory/dispatch-config.yaml".IO !~~ :r {
     "$*config-directory/dispatch-config.yaml".IO.spurt(Q:q:to/EOD/);
       theme:
@@ -303,7 +304,7 @@ method set-picture (
     }
   }
 
-note "$?LINE $path, $new-path";
+#note "$?LINE $path, $new-path";
   $new-path
 }
 

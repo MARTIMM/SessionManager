@@ -468,7 +468,7 @@ method legacy-button (
     );
   }
 
-note "$?LINE $level, $picture-file";
+#note "$?LINE $level, $picture-file";
   my Picture $picture .= new-picture;
   if ?$picture-file and $picture-file.IO ~~ :r {
     with $picture {
@@ -511,7 +511,7 @@ note "$?LINE $level, $picture-file";
     );
   }
 
-note "$?LINE $overlay-icon";
+#note "$?LINE $overlay-icon";
   if ?$overlay-icon and $overlay-icon.IO ~~ :r {
     $picture .= new-for-paintable(
       self.set-texture($overlay-icon)
