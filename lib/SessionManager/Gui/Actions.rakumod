@@ -144,7 +144,7 @@ method do-create-act (
     $raw-action<c> = $tb.get-text( $t0, $te, False);
 }}
     $raw-action<c> = self.get-text($aspec-cmd);
-    $raw-action<o> = $config.set-picture( $aspec-icon.get-text, :is-overlay);
+    $raw-action<o> = $config.set-picture($aspec-icon.get-text);
     $raw-action<i> = $config.set-picture($aspec-pic.get-text);
     $raw-action<l> = $aspec-log.get-state;
     $raw-action<w> = $aspec-wait.get-text.Int;
@@ -230,7 +230,7 @@ method do-modify-act (
 }}
   $raw-action<c> = self.get-text($aspec-cmd);
 
-  $raw-action<o> = $config.set-picture( $aspec-icon.get-text, :is-overlay);
+  $raw-action<o> = $config.set-picture($aspec-icon.get-text);
   $raw-action<i> = $config.set-picture($aspec-pic.get-text);
   $raw-action<l> = $aspec-log.get-state;
   $raw-action<w> = $aspec-wait.get-text.Int;

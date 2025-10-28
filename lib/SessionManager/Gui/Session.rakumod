@@ -118,7 +118,6 @@ method session-actions (
 ) {
 #note "\n$?LINE $session-name";
   # Cleanup previous action boxes, start at the deepest level
-
   my SessionManager::Config $config .= instance;
   for 10...1 -> $x {
 #note "$?LINE $x, {$!session-manager-box.get-child-at( $x, 0) // '-'}";
@@ -501,13 +500,13 @@ method legacy-button (
   my Str $overlay-icon;
   if $level == -1 {
     $overlay-icon = $config.set-picture(
-      $!manage-session<over> // '', :overlay, :!relative-path
+      $!manage-session<over> // '', :!relative-path
     );
   }
 
   else {
     $overlay-icon = $config.set-picture(
-      $command.overlay-picture // '', :overlay, :!relative-path
+      $command.overlay-picture // '', :!relative-path
     );
   }
 
