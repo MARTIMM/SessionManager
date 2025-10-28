@@ -87,11 +87,6 @@ method add-rename ( N-Object $parameter ) {
     if $session-ids.elems {
       $sessions-dd.set-selection($session-ids);
       $sessions-dd.select($session-ids[0]);
-
-      # Set entry with text of first session id and its title
-#      $sessionid-e.set-text($session-ids[0]);
-#      $sessiontitle-e.set-text($!sessions.get-session($session-ids[0])<title>);
-
     }
 
     # Add entries and dropdown widgets in the dialog
