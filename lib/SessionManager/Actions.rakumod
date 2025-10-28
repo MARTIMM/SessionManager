@@ -166,6 +166,17 @@ method subst-vars ( Str $original-var, Str $new-var ) {
   }
 }
 
+#-------------------------------------------------------------------------------
+method is-var-in-use ( Str $v --> Bool ) {
+  my Bool $in-use = False;
+  for $data-ids.keys -> $id {
+    $in-use = $data-ids{$id}.is-var-in-use($v);
+    last if $in-use;
+  }
+
+  $in-use
+}
+
 
 
 
