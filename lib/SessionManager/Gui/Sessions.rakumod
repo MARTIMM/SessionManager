@@ -173,13 +173,18 @@ method do-change-session (
   Entry :$sessionid-e, Entry :$sessiontitle-e,
   Entry :$sessionicon-e, Entry :$sessionoverlay-e
 ) {
+  my SessionManager::Config $config .= instance;
   my Str $sid = $sessionid-e.get-text;
   my Str $current-sid = $sessions-dd.get-text;
 
   # Change the title, icon and overlay of the session
   $!sessions.set-session-title( $sid, $sessiontitle-e.get-text);
-  $!sessions.set-session-icon( $sid, $sessionicon-e.get-text);
-  $!sessions.set-session-overlay( $sid, $sessionoverlay-e.get-text);
+  $!sessions.set-session-icon(
+    $sid, $config.set-picture($sessionicon-e.get-text)
+  );
+  $!sessions.set-session-overlay(
+    $sid, $config.set-picture($sessionoverlay-e.get-text)
+  );
 
   # Success
   $dialog.set-status("$sid successfully changed");
