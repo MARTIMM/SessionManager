@@ -87,8 +87,9 @@ method create ( N-Object $parameter ) {
     my ListBox $listbox;
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
-      :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
-      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
+      :$dialog, :!modal, :$action-id, :$aspec-title, :$aspec-cmd,
+      :$aspec-path, :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic,
+      :$aspec-shell
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :3columns);
@@ -183,8 +184,9 @@ method modify ( N-Object $parameter ) {
     my ListBox $listbox;
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
-      :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
-      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
+      :$dialog, :!modal, :$action-id, :$aspec-title, :$aspec-cmd,
+      :$aspec-path, :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic,
+      :$aspec-shell
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :3columns);
@@ -247,7 +249,7 @@ note "$?LINE $raw-action.gist()";
 method rename-id ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Rename Action'), :add-statusbar
+    :dialog-header('Rename Action'), :add-statusbar, :!modal
   ) {
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
