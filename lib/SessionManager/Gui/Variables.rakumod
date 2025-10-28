@@ -284,6 +284,7 @@ method set-data(
 ) {
   my Label() $l = $row.get-child;
   my Str $v = $l.get-text;
+
   my Bool $vid-inuse = $!variables.is-var-in-use($v);
   if !$vid-inuse {
     my SessionManager::Actions $actions .= new;
