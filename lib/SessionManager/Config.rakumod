@@ -151,8 +151,7 @@ note "$?LINE $*config-directory/dispatch-config.yaml";
   $variables.load;
   $variables.add( %(
     :config($*config-directory),
-    :POver("$*config-directory/Pictures/Overlay"),
-    :PIcon("$*config-directory/Pictures/Icons"),
+    :PImag("$*config-directory/Pictures"),
     :home($*HOME.Str),
   ));
 
@@ -276,7 +275,7 @@ method set-path ( Str $file = '' --> Str ) {
 
 #-------------------------------------------------------------------------------
 method set-picture (
-  Str:D $path is copy, Bool :$is-overlay = False, Bool :$relative-path = True
+  Str:D $path is copy, Bool :$relative-path = True
   --> Str
 ) {
   my Str $new-path = '';
@@ -285,21 +284,12 @@ method set-picture (
     my SessionManager::Variables $variables .= new;
     $path = $variables.substitute-vars($path);
     if $path.IO ~~ :r {
-      $new-path = "$*config-directory/Pictures/" ~
-                  ($is-overlay ?? 'Overlay/' !! 'Icons/') ~
-                  $path.IO.basename;
+      $new-path = "$*config-directory/Pictures/" ~ $path.IO.basename;
       $path.IO.copy($new-path) unless $new-path.IO ~~ :e;
 
       if $relative-path {
-        if $is-overlay {
-          $new-path ~~ s/^ $*config-directory '/Pictures/Overlay' /\$POver/;
-          note "Set overlay '$path' to '$new-path'" if $*verbose;
-        }
-
-        else {
-          $new-path ~~ s/^ $*config-directory '/Pictures/Icons' /\$PIcon/;
-          note "Set icon '$path' to '$new-path'" if $*verbose;
-        }
+        $new-path ~~ s/^ $*config-directory '/Pictures' /\$PImag/;
+        note "Set icon '$path' to '$new-path'" if $*verbose;
       }
     }
   }
