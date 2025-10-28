@@ -4,6 +4,7 @@ use YAMLish;
 
 use SessionManager::Variables;
 use SessionManager::Actions;
+use SessionManager::Sessions;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -287,6 +288,11 @@ method set-data(
   if !$vid-inuse {
     my SessionManager::Actions $actions .= new;
     $vid-inuse = $actions.is-var-in-use($v);
+  }
+
+  if !$vid-inuse {
+    my SessionManager::Sessions $sessions .= new;
+    $vid-inuse = $sessions.is-var-in-use($v);
   }
 
   $vname.set-text($v);

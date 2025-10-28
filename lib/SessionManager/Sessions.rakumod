@@ -172,6 +172,20 @@ method is-action-in-use ( Str:D $aid --> Bool ) {
 }
 
 #-------------------------------------------------------------------------------
+method is-var-in-use ( Str $v --> Bool ) {
+  my Bool $in-use = False;
+
+  for $sessions.kv -> $k, $text {
+    if $text ~~ m/ '$' $v <-[\w-]>? / {
+      $in-use = True;
+      last;
+    }
+  }
+
+  $in-use
+}
+
+#-------------------------------------------------------------------------------
 method save ( ) {
   ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($sessions));
 }
