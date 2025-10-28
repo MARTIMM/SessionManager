@@ -5,6 +5,7 @@ use YAMLish;
 use SessionManager::Variables;
 use SessionManager::Actions;
 use SessionManager::Sessions;
+use SessionManager::Config;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -282,6 +283,7 @@ method set-data(
   ListBox :$listbox, Label() :$row-widget, ListBoxRow() :$row,
   Entry :$vname, Entry :$vspec
 ) {
+  my SessionManager::Config $config .= instance;
   my Label() $l = $row.get-child;
   my Str $v = $l.get-text;
 
@@ -298,7 +300,11 @@ method set-data(
 
   $vname.set-text($v);
   $vname.set-css-classes($vid-inuse ?? "in-use" !! "not-in-use", 'abc');
-  $vspec.set-text($!variables.get-variable($l.get-text));
+  my Str $vv = $!variables.get-variable($l.get-text);
+
+  # Might be a path
+  my Str $vp = $config.set-picture($vv);
+  $vspec.set-text($vp ?? $vp !! $vv);
 }
 
 #-------------------------------------------------------------------------------
