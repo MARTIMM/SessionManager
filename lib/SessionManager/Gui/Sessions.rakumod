@@ -64,7 +64,7 @@ method add-rename ( N-Object $parameter ) {
 #  my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
-    :dialog-header('Add or Rename Session'), :add-statusbar, :600width
+    :dialog-header('Add or Rename Session'), :!modal, :add-statusbar, :600width
   ) {
     my Entry $sessionid-e .= new-entry;
     my Entry $sessiontitle-e .= new-entry;
@@ -76,14 +76,6 @@ method add-rename ( N-Object $parameter ) {
 
     # Fill the session drop down with the session ids and select the first one
     my Array $session-ids = [$!sessions.get-session-ids.sort];
-    if $session-ids.elems {
-      $sessions-dd.set-selection($session-ids);
-      $sessions-dd.select($session-ids[0]);
-
-      # Set entry with text of first session id and its title
-      $sessionid-e.set-text($session-ids[0]);
-      $sessiontitle-e.set-text($!sessions.get-session($session-ids[0])<title>);
-    }
 
     # Trap changes in the sessions list
     $sessions-dd.trap-dropdown-changes(
@@ -91,6 +83,16 @@ method add-rename ( N-Object $parameter ) {
       :$sessionid-e, :$sessiontitle-e,
       :$sessionicon-e, :$sessionoverlay-e
     );
+
+    if $session-ids.elems {
+      $sessions-dd.set-selection($session-ids);
+      $sessions-dd.select($session-ids[0]);
+
+      # Set entry with text of first session id and its title
+#      $sessionid-e.set-text($session-ids[0]);
+#      $sessiontitle-e.set-text($!sessions.get-session($session-ids[0])<title>);
+
+    }
 
     # Add entries and dropdown widgets in the dialog
     .add-content( 'Session list', $sessions-dd, :4columns);
@@ -209,7 +211,7 @@ method add-rename-group ( N-Object $parameter, ) {
 #  my Actions $actions .= instance;
 
   with my Dialog $dialog .= new(
-    :dialog-header('Modify Session Group'), :add-statusbar
+    :dialog-header('Modify Session Group'), :!modal, :add-statusbar
   ) {
     my DropDown $groups-dd .= new;
     my DropDown $sessions-dd .= new;
@@ -218,13 +220,13 @@ method add-rename-group ( N-Object $parameter, ) {
 
     # Trap changes in the sessions list
     $sessions-dd.trap-dropdown-changes(
-      $!sessions, 'set-grouplist', :$sessions-dd, :$groups-dd,
+      self, 'set-grouplist', :$sessions-dd, :$groups-dd,
       :$sessiontitle, :$grouptitle
     );
 
     # Trap changes in the group list
     $groups-dd.trap-dropdown-changes(
-      $!sessions, 'set-grouptitle', :$sessions-dd, :$groups-dd, :$grouptitle
+      self, 'set-grouptitle', :$sessions-dd, :$groups-dd, :$grouptitle
     );
 
     # Fill the sessions list. Triggers the .set-grouplist() and
@@ -296,7 +298,7 @@ method add-remove-actions ( N-Object $parameter ) {
   my Actions $actions .= new;
 
   with my Dialog $dialog .= new(
-    :dialog-header('Modify Session'), :add-statusbar
+    :dialog-header('Modify Session'), :!modal, :add-statusbar
   ) {
     my DropDown $groups-dd .= new;
     my DropDown $sessions-dd .= new;
