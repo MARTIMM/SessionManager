@@ -167,8 +167,6 @@ method is-var-in-use ( Str $v --> Bool ) {
       last;
     }
   }
-  
-note "$?LINE $v in use: $in-use";
 
   $in-use
 }
