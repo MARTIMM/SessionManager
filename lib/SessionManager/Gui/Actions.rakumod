@@ -64,7 +64,7 @@ method instance ( --> SessionManager::Gui::Actions ) {
 method create ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Create Action'), :add-statusbar
+    :dialog-header('Create Action'), :add-statusbar, :!modal
   ) {
 #TODO some fields should be multiline text
     my Entry $action-id .= new-entry;
@@ -163,7 +163,7 @@ method do-create-act (
 method modify ( N-Object $parameter ) {
 
   with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Modify Action'), :add-statusbar
+    :dialog-header('Modify Action'), :add-statusbar, :!modal
   ) {
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
