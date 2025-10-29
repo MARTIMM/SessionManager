@@ -448,7 +448,7 @@ method legacy-button (
   SessionManager::Command :$command, *%options --> Overlay
 ) {
   my SessionManager::Config $config .= instance;
-  my SessionManager::Variables $v .= new;
+  my SessionManager::Variables $variables .= new;
 #  $config.set-css( self.get-style-context, 'session-toolbar');
 
 #  my SessionManager::Command $command = %options<command>;
@@ -456,18 +456,13 @@ method legacy-button (
   my Str $title = "Session\n$!manage-session<title>";
   my Str $picture-file;
   if $level == -1 {
-    $picture-file = $config.set-picture(
-      $!manage-session<icon> // '', :!relative-path
-    );
+    $picture-file = $variables.substitute-vars($!manage-session<icon> // '');
   }
 
   else {
-    $picture-file = $config.set-picture(
-      $command.picture // '', :!relative-path
-    );
+    $picture-file = $variables.substitute-vars($command.picture // '');
   }
 
-#note "$?LINE $level, $picture-file";
   my Picture $picture .= new-picture;
   if ?$picture-file and $picture-file.IO ~~ :r {
     with $picture {
@@ -499,22 +494,15 @@ method legacy-button (
 
   my Str $overlay-icon;
   if $level == -1 {
-    $overlay-icon = $config.set-picture(
-      $!manage-session<over> // '', :!relative-path
-    );
+    $overlay-icon = $variables.substitute-vars($!manage-session<over> // '');
   }
 
   else {
-    $overlay-icon = $config.set-picture(
-      $command.overlay-picture // '', :!relative-path
-    );
+    $overlay-icon = $variables.substitute-vars($command.overlay-picture // '');
   }
 
-#note "$?LINE $overlay-icon";
   if ?$overlay-icon and $overlay-icon.IO ~~ :r {
-    $picture .= new-for-paintable(
-      self.set-texture($overlay-icon)
-    );
+    $picture .= new-for-paintable(self.set-texture($overlay-icon));
 
     with $picture {
       $overlay.add-overlay($picture);
