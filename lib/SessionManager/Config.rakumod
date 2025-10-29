@@ -274,23 +274,19 @@ method set-path ( Str $file = '' --> Str ) {
 }}
 
 #-------------------------------------------------------------------------------
-method set-picture (
-  Str:D $path is copy, Bool :$relative-path = True
-  --> Str
-) {
+method set-picture ( Str:D $path is copy --> Str ) {
   my Str $new-path = '';
 
   if ?$path {
     my SessionManager::Variables $variables .= new;
-    $path = $variables.substitute-vars($path);
-    if $path.IO ~~ :r {
+    $new-path = $path = $variables.substitute-vars($path);
+
+    if $path.IO ~~ :r and $path ~~ m/ \. [ png | jpe?g ] $/ {
       $new-path = "$*config-directory/Pictures/" ~ $path.IO.basename;
       $path.IO.copy($new-path) unless $new-path.IO ~~ :e;
+      $new-path ~~ s/^ $*config-directory '/Pictures' /\$PImag/;
 
-      if $relative-path {
-        $new-path ~~ s/^ $*config-directory '/Pictures' /\$PImag/;
-        note "Set icon '$path' to '$new-path'" if $*verbose;
-      }
+      note "Set icon '$path' to '$new-path'" if $*verbose;
     }
   }
 
