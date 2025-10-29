@@ -299,12 +299,8 @@ method set-data(
   }
 
   $vname.set-text($v);
-  $vname.set-css-classes($vid-inuse ?? "in-use" !! "not-in-use", 'abc');
-  my Str $vv = $!variables.get-variable($l.get-text);
-
-  # Might be a path
-  my Str $vp = $config.set-picture($vv);
-  $vspec.set-text($vp ?? $vp !! $vv);
+  $vname.set-css-classes($vid-inuse ?? "in-use" !! "not-in-use");
+  $vspec.set-text($!variables.get-variable($l.get-text));
 }
 
 #-------------------------------------------------------------------------------
