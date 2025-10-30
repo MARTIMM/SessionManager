@@ -300,7 +300,12 @@ method set-data(
 
   $vname.set-text($v);
   $vname.set-css-classes($vid-inuse ?? "in-use" !! "not-in-use");
-  $vspec.set-text($!variables.get-variable($l.get-text));
+  
+  my Str $value = $!variables.get-variable($l.get-text);
+  $vspec.set-text($value);
+
+  $vspec.set-has-tooltip(True);
+  $vspec.set-tooltip-text($!variables.substitute-vars($value));
 }
 
 #-------------------------------------------------------------------------------
