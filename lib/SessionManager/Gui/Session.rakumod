@@ -79,6 +79,11 @@ submethod BUILD (
 }
 
 #-------------------------------------------------------------------------------
+=begin pod
+=head2 session-button
+Create a session button. The button is placed in the toolbar.
+
+=end pod
 method session-button ( --> Widget ) {
 
   my Widget $widget;
@@ -208,9 +213,7 @@ method session-actions (
 #note "$?LINE $command.tooltip()";
       my Widget $widget;
       if $*legacy {
-        $widget = self.legacy-button(
-          'setup-run', :$id, :$command, :level($level - 1)
-        );
+        $widget = self.legacy-button( 'setup-run', :$id, :$command, :level($level - 1));
       }
 
       else {
@@ -455,13 +458,21 @@ method legacy-button (
 
   my Str $title = "Session\n$!manage-session<title>";
   my Str $picture-file;
+  my Str $overlay-icon;
+  my Str $tooltip-text;
   if $level == -1 {
     $picture-file = $variables.substitute-vars($!manage-session<icon> // '');
+    $overlay-icon = $variables.substitute-vars($!manage-session<over> // '');
+    $tooltip-text = $variables.substitute-vars($!manage-session<title> // '');
   }
 
   else {
     $picture-file = $variables.substitute-vars($command.picture // '');
+    $overlay-icon = $variables.substitute-vars($command.overlay-picture // '');
+    $tooltip-text = $variables.substitute-vars($command.tooltip // '');
   }
+
+#note "$?LINE $picture-file, $overlay-icon, $tooltip-text":
 
   my Picture $picture .= new-picture;
   if ?$picture-file and $picture-file.IO ~~ :r {
@@ -483,7 +494,15 @@ method legacy-button (
 
   with my Button $button .= new-button {
     .set-child($picture);
-    .set-tooltip-text($!manage-session<title>);
+    .set-tooltip-text($tooltip-text);
+    if $level == -1 {
+#      .set-tooltip-text($!manage-session<title>);
+    }
+
+    else {
+#      .set-tooltip-text($command.tooltip);
+    }
+
     $!theme.add-css-class( $button, 'session-toolbar-button');
     .register-signal( self, $method, 'clicked', :$command, |%options);
   }
@@ -492,13 +511,10 @@ method legacy-button (
   $overlay.set-child($button);
 #  $overlay.set-size-request($config.get-icon-size);
 
-  my Str $overlay-icon;
   if $level == -1 {
-    $overlay-icon = $variables.substitute-vars($!manage-session<over> // '');
   }
 
   else {
-    $overlay-icon = $variables.substitute-vars($command.overlay-picture // '');
   }
 
   if ?$overlay-icon and $overlay-icon.IO ~~ :r {
