@@ -213,7 +213,9 @@ method session-actions (
 #note "$?LINE $command.tooltip()";
       my Widget $widget;
       if $*legacy {
-        $widget = self.legacy-button( 'setup-run', :$id, :$command, :level($level - 1));
+        $widget = self.legacy-button(
+          'setup-run', :$id, :$command, :level($level - 1)
+        );
       }
 
       else {
@@ -495,14 +497,6 @@ method legacy-button (
   with my Button $button .= new-button {
     .set-child($picture);
     .set-tooltip-text($tooltip-text);
-    if $level == -1 {
-#      .set-tooltip-text($!manage-session<title>);
-    }
-
-    else {
-#      .set-tooltip-text($command.tooltip);
-    }
-
     $!theme.add-css-class( $button, 'session-toolbar-button');
     .register-signal( self, $method, 'clicked', :$command, |%options);
   }
@@ -510,13 +504,6 @@ method legacy-button (
   my Overlay $overlay .= new-overlay;
   $overlay.set-child($button);
 #  $overlay.set-size-request($config.get-icon-size);
-
-  if $level == -1 {
-  }
-
-  else {
-  }
-
   if ?$overlay-icon and $overlay-icon.IO ~~ :r {
     $picture .= new-for-paintable(self.set-texture($overlay-icon));
 
