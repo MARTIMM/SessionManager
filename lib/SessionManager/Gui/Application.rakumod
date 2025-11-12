@@ -206,8 +206,8 @@ method setup-window ( ) {
 
     # Use of grid makes it easier to remove boxes from the grid later on
     my Grid $session-manager-box .= new-grid;
-    my SessionManager::Gui::Toolbar $toolbar .= new-box(
-      GTK_ORIENTATION_VERTICAL, 1, :$session-manager-box, :$!app-window
+    my SessionManager::Gui::Toolbar $toolbar .= new-scrolledwindow(
+      :$session-manager-box, :$!app-window
     );
     $session-manager-box.attach( $toolbar, 0, 0, 1, 1);
 
@@ -217,12 +217,12 @@ method setup-window ( ) {
     $menu-bar.set-actions($!application);
     $!application.set-menubar($menu-bar.get-menu);
     .set-show-menubar(True);
-    .set-valign(GTK_ALIGN_FILL);
+#    .set-valign(GTK_ALIGN_FILL);
 
     .set-title($config.get-window-title);
     .set-child($session-manager-box);
 
-    .set-default-size($config.get-window-size);
+#    .set-default-size($config.get-window-size);
 
     .present;
   }

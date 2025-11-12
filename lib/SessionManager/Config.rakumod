@@ -217,14 +217,25 @@ method set-css ( N-Object $context, Str:D $css-class ) {
 }}
 
 #-------------------------------------------------------------------------------
-method get-window-size ( --> List ) {
-  | $!dispatch-config<theme><window-size>;
+method get-window-hsize ( --> List ) {
+  | $!dispatch-config<theme><window-hsize>;
 }
 
 #-------------------------------------------------------------------------------
-method set-window-size ( Int:D $w, Int:D $h ) {
-  $!dispatch-config<theme><window-size>[0] = $w;
-  $!dispatch-config<theme><window-size>[1] = $h;
+method get-window-vsize ( --> List ) {
+  | $!dispatch-config<theme><window-vsize>;
+}
+
+#-------------------------------------------------------------------------------
+method set-window-hsize ( Int:D $w, Int:D $h ) {
+  $!dispatch-config<theme><window-hsize>[0] = $w;
+  $!dispatch-config<theme><window-hsize>[1] = $h;
+}
+
+#-------------------------------------------------------------------------------
+method set-window-vsize ( Int:D $w, Int:D $h ) {
+  $!dispatch-config<theme><window-vsize>[0] = $w;
+  $!dispatch-config<theme><window-vsize>[1] = $h;
 }
 
 #-------------------------------------------------------------------------------

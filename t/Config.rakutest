@@ -128,8 +128,8 @@ is $action-data.id, $id, 'keyless action entry';
 is $action-data.overlay-picture, './t/data/puzzle-table-logo.png',
    'variable substitution';
 
-my Int ( $w, $h) = $config.get-window-size;
-is-deeply ( $w, $h), ( 1000, 300), '.get-window-size()';
+my Int ( $w, $h) = $config.get-window-hsize;
+is-deeply ( $w, $h), ( 1000, 300), '.get-window-hsize()';
 ( $w, $h) = $config.get-icon-size;
 is-deeply ( $w, $h), ( 200, 200), '.get-icon-size()';
 is $config.get-window-title, 'Environment starter', '.get-window-title()';

@@ -130,15 +130,16 @@ method session-actions (
       if $!session-manager-box.get-child-at( 0, $x) {
         $!session-manager-box.remove-row($x);
       }
+      $!app-window.set-default-size($config.get-window-hsize) if ? $!app-window;
     }
 
     else {
       if $!session-manager-box.get-child-at( $x, 0) {
         $!session-manager-box.remove-column($x);
       }
+      $!app-window.set-default-size($config.get-window-vsize) if ? $!app-window;
     }
 #note "$?LINE $config.get-window-size(), ", ? $!app-window;
-    $!app-window.set-default-size($config.get-window-size) if ? $!app-window;
 
 #    else {
 #      last;

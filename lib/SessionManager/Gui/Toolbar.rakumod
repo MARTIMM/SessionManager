@@ -7,7 +7,7 @@ use SessionManager::Gui::Session;
 use SessionManager::Sessions;
 
 #use Gnome::Gtk4::ApplicationWindow:api<2>;
-#use Gnome::Gtk4::ScrolledWindow:api<2>;
+use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::Label:api<2>;
@@ -36,12 +36,12 @@ use GnomeTools::Gtk::Theming;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Toolbar:auth<github:MARTIMM>;
-also is Gnome::Gtk4::Box;
+also is Gnome::Gtk4::ScrolledWindow;
 
 constant Box = Gnome::Gtk4::Box;
 constant Grid = Gnome::Gtk4::Grid;
 #constant ApplicationWindow = Gnome::Gtk4::ApplicationWindow;
-#constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Button = Gnome::Gtk4::Button;
 constant Label = Gnome::Gtk4::Label;
 constant Picture = Gnome::Gtk4::Picture;
@@ -52,6 +52,7 @@ constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
 constant Texture = Gnome::Gdk4::Texture;
 
 has GnomeTools::Gtk::Theming $!theme;
+has Box $!box;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
@@ -60,13 +61,35 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
   my GtkOrientation $orientation =
       $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
 
-  with self {
+  $!box .= new-box( $orientation, 10);
+  self.set-child($!box);
+
+  with $!box {
     .set-orientation($orientation);
-    $!theme.add-css-class( self, 'session-toolbar');
-    .set-spacing(10);
-#    .set-vexpand-set(True);
-#    .set-vexpand(True);
-#    .set-valign(GTK_ALIGN_FILL);
+    $!theme.add-css-class( $!box, 'session-toolbar');
+#    .set-spacing(10);
+
+    my ( $iw, $ih) = $config.get-icon-size;
+    if $*legacy {
+      .set-hexpand(True);
+      self.set-hexpand(True);
+#      self.set-halign(GTK_ALIGN_FILL);
+
+      my ( $ww, $wh) = $config.get-window-hsize;
+note "$?LINE $ww, $wh, $iw, $ih";
+      self.set-min-content-height($ih + 2 * .get-spacing);
+      self.set-size-request( $ww, $wh);
+    }
+
+    else {
+      .set-vexpand(True);
+      self.set-vexpand(True);
+
+      my ( $ww, $wh) = $config.get-window-vsize;
+note "$?LINE $ww, $wh, $iw, $ih";
+      self.set-min-content-width($iw + 2 * .get-spacing);
+      self.set-size-request( $wh, $ww);
+    }
   }
 
   my SessionManager::Sessions $sessions .= new;
@@ -77,7 +100,7 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
       :$session-manager-box, :$app-window
     );
 
-    self.append($session.session-button);
+    $!box.append($session.session-button);
   }
 
   $!theme .= new;
