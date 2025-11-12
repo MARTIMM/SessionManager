@@ -67,6 +67,12 @@ The purpose of this program is that it can quickly setup an environment for some
   * [x] Rename session id
   * [ ] Remove session
 
+### Ideas
+
+#### Actions can be depending on other actions
+* State of session. In cases like starting up a server, it should not be possible to start a second one.
+* In an action there is a field `path` and is mostly used to go there before a command is run. This is like a depending operation which needs to be done before continuing further.
+
 ### Application workings
 
   ```plantuml
