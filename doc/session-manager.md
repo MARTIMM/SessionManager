@@ -25,23 +25,52 @@ The purpose of this program is that it can quickly setup an environment for some
 # Configuration editing
 * Global
   * Fix the global settings in the root
-    * [ ] Create root and simple setup when directory is empty. Directory must exist!
-    * [ ] **root**/sessions.yaml
-    * [ ] **root**/manager.css
-    * [ ] **root**/manager-changes.css
+    * [x] Create root and simple setup when directory is empty. Directory must exist!
+    * [x] **root**/sessions-manager.yaml
+    * [x] **root**/Config/manager.css
+    * [x] **root**/Config/manager-changes.css
     * Images and Icons
-      * [x] **root**/Images
-      * [ ] **root**/Icons
-      * [ ] Copy pictures to the proper directory and modify its path
+      * [x] Overlay icons and pictures all go in one directory: **root**/Pictures.
+      * [x] When referred in the program, copy the picture to the directory and modify its path.
       * [ ] Cleanup unused images
 
-  * [x] Rename `dispatch-config.yaml` to `session-manager.yaml`
-  * [ ] Add entries in the mime database to tag an icon on the files belonging to the session manager system. (linux based?).
-  * [ ] Create a desktop file to start the session manager. (linux based?).
+  * [x] Rename `dispatch-config.yaml` to `session-manager.yaml`.
+  * [x] Add entries in the mime database to tag an icon on the files belonging to the session manager system. (linux based?).
+    Example, create the file in path `~/.local/share/mime`.
+    ```XML
+    <?xml version="1.0" encoding="UTF-8"?>
+    <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+        <mime-type type="application/x-sessionmanager">
+            <comment>Session Manager</comment>
+            <icon name="/home/marcel/Languages/Raku/Projects/SessionManager/resources/overlay-icons/sessionmanager-icon.png"/>
+            <glob-deleteall/>
+            <glob pattern="session-manager.*"/>
+            <glob pattern="sessionmanager"/>
+        </mime-type>
+    </mime-info>
+    ```
+    To activate it run `update-mime-database ~/.local/share/mime`.
+  * [x] Create a desktop file to start the session manager. (linux based?).
+    Example:
+    ```
+    [Desktop Entry]
+    Comment[en_US]=Session Manager
+    Comment=Session Manager
+    GenericName[en_US]=Session Manager
+    GenericName=Session Manager
+    Name[en_US]=sessionmanager
+    Name=sessionmanager
+    Exec=/home/marcel/Languages/Raku/Projects/SessionManager/bin/sessionmanager xt/ExampleSetup
+    MimeType=application/x-sessionmanager;
+    Path=/home/marcel/Languages/Raku/Projects/SessionManager
+    StartupNotify=true
+    Type=Application
+    ```
+
   * [ ] Load all config files as before but save them into separate config files. These files will also be loaded when available after the users config files are loaded. This makes it possible for the user to still change the configuration by hand for the time being.
 
 * Variables
-  * [ ] Storage in **root**/variables.yaml
+  * [x] Storage in **root**/Config/variables.yaml
   * [ ] Add common variables for e.g. $HOME, root paths of config, and images.
   * [x] Add variable
   * [ ] Rename variable
@@ -52,7 +81,7 @@ The purpose of this program is that it can quickly setup an environment for some
     * [ ] Cleanup unused variables
 
 * Actions:
-  * [ ] Storage in **root**/actions.yaml
+  * [x] Storage in **root**/Config/actions.yaml
   * [x] Add action
   * [x] Rename action id
     * [x] With rename change its use in sessions
@@ -63,7 +92,7 @@ The purpose of this program is that it can quickly setup an environment for some
   * [ ] State of an action. In cases like starting up a server, it should check a run state to prevent starting a second one.
 
 * Sessions
-  * [ ] Storage in **root**/sessions.yaml
+  * [x] Storage in **root**/Config/sessions.yaml
   * [x] Add session
   * Session group levels
     * [x] Add session group
