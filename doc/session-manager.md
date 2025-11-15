@@ -23,16 +23,15 @@ The purpose of this program is that it can quickly setup an environment for some
 * [ ] Editing of actions, variables and sessions. See below.
 
 # Configuration editing
-* Global
-  * Fix the global settings in the root
-    * [x] Create root and simple setup when directory is empty. Directory must exist!
-    * [x] **root**/sessions-manager.yaml
-    * [x] **root**/Config/manager.css
-    * [x] **root**/Config/manager-changes.css
-    * Images and Icons
-      * [x] Overlay icons and pictures all go in one directory: **root**/Pictures.
-      * [x] When referred in the program, copy the picture to the directory and modify its path.
-      * [ ] Cleanup unused images
+* Global settings
+  * [x] Create root and simple setup when directory is empty. Directory must exist!
+  * [x] **root**/sessions-manager.yaml
+  * [x] **root**/Config/manager.css
+  * [x] **root**/Config/manager-changes.css
+  * Images and Icons
+    * [x] Overlay icons and pictures all go in one directory: **root**/Pictures.
+    * [x] When referred in the program, copy the picture to the directory and modify its path.
+    * [ ] Cleanup unused images
 
   * [x] Rename `dispatch-config.yaml` to `session-manager.yaml`.
   * [x] Add entries in the mime database to tag an icon on the files belonging to the session manager system. (linux based?).
@@ -52,7 +51,7 @@ The purpose of this program is that it can quickly setup an environment for some
     To activate it run `update-mime-database ~/.local/share/mime`.
   * [x] Create a desktop file to start the session manager. (linux based?).
     Example:
-    ```
+    ```INI
     [Desktop Entry]
     Comment[en_US]=Session Manager
     Comment=Session Manager
@@ -60,22 +59,20 @@ The purpose of this program is that it can quickly setup an environment for some
     GenericName=Session Manager
     Name[en_US]=sessionmanager
     Name=sessionmanager
-    Exec=/home/marcel/Languages/Raku/Projects/SessionManager/bin/sessionmanager xt/ExampleSetup
+    Exec=sessionmanager xt/ExampleSetups
     MimeType=application/x-sessionmanager;
     Path=/home/marcel/Languages/Raku/Projects/SessionManager
     StartupNotify=true
     Type=Application
     ```
 
-  * [ ] Load all config files as before but save them into separate config files. These files will also be loaded when available after the users config files are loaded. This makes it possible for the user to still change the configuration by hand for the time being.
-
 * Variables
   * [x] Storage in **root**/Config/variables.yaml
-  * [ ] Add common variables for e.g. $HOME, root paths of config, and images.
+  * [x] Add common variables for e.g. $HOME, root paths of config, and images.
   * [x] Add variable
-  * [ ] Rename variable
-    * [ ] With rename change its use in this and actions
-  * [ ] Modify variable data
+  * [x] Rename variable
+    * [x] With rename change its use in this and actions
+  * [x] Modify variable data
   * [ ] Remove variable
     * [ ] Before remove check its use in this and actions
     * [ ] Cleanup unused variables
@@ -88,8 +85,8 @@ The purpose of this program is that it can quickly setup an environment for some
   * [x] Modify action data
   * [ ] Remove action
     * [ ] Before remove check its use in sessions
-  * In an action there is a field `path` and is mostly used to go there before a command is run. This is like a depending operation which needs to be done before continuing further.
-  * [ ] State of an action. In cases like starting up a server, it should check a run state to prevent starting a second one.
+  * [ ] Check dependency on another action.
+  * [ ] State of an action. In cases like starting up a server, it should check a run state to prevent starting it second time.
 
 * Sessions
   * [x] Storage in **root**/Config/sessions.yaml
@@ -106,20 +103,21 @@ The purpose of this program is that it can quickly setup an environment for some
   A better example might be a test of some function of a database server. The server must be available before starting so that is a dependency. The action to depend on is testing if the server is up and, if not, start the server.
 * Action templates. An action can be defined in such a way that only a variable or command needs to be substituted to get a different effect.
 
-### Application workings
+### Application Directory Layout
 
   ```plantuml
   @startyaml
   root directory:
-    - session-config.yaml
-    - Images:
-      - Set1 directory
-      - Set2 directory
+    - session-manager.yaml
+    - Pictures:
+      - overlay or picture
       - ...
-    - variables.yaml
-    - actions.yaml
-    - parts.yaml
-    - sessions.yaml
+    - Config:
+      - variables.yaml
+      - actions.yaml
+      - sessions.yaml
+      - manager.css
+      - manager-changes.css
   @endyaml
   ```
 
