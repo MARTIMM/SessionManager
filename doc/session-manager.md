@@ -25,7 +25,7 @@ The purpose of this program is that it can quickly setup an environment for some
 # Configuration editing
 * Global
   * Fix the global settings in the root
-    * [ ] Create root and simple setup when directory is empty. Directory exists!
+    * [ ] Create root and simple setup when directory is empty. Directory must exist!
     * [ ] **root**/sessions.yaml
     * [ ] **root**/manager.css
     * [ ] **root**/manager-changes.css
@@ -34,6 +34,11 @@ The purpose of this program is that it can quickly setup an environment for some
       * [ ] **root**/Icons
       * [ ] Copy pictures to the proper directory and modify its path
       * [ ] Cleanup unused images
+
+  * [x] Rename `dispatch-config.yaml` to `session-manager.yaml`
+  * [ ] Add entries in the mime database to tag an icon on the files belonging to the session manager system. (linux based?).
+  * [ ] Create a desktop file to start the session manager. (linux based?).
+  * [ ] Load all config files as before but save them into separate config files. These files will also be loaded when available after the users config files are loaded. This makes it possible for the user to still change the configuration by hand for the time being.
 
 * Variables
   * [ ] Storage in **root**/variables.yaml
@@ -54,6 +59,8 @@ The purpose of this program is that it can quickly setup an environment for some
   * [x] Modify action data
   * [ ] Remove action
     * [ ] Before remove check its use in sessions
+  * In an action there is a field `path` and is mostly used to go there before a command is run. This is like a depending operation which needs to be done before continuing further.
+  * [ ] State of an action. In cases like starting up a server, it should check a run state to prevent starting a second one.
 
 * Sessions
   * [ ] Storage in **root**/sessions.yaml
@@ -67,11 +74,8 @@ The purpose of this program is that it can quickly setup an environment for some
   * [x] Rename session id
   * [ ] Remove session
 
-### Ideas
-
-#### Actions can be depending on other actions
-* State of session. In cases like starting up a server, it should not be possible to start a second one.
-* In an action there is a field `path` and is mostly used to go there before a command is run. This is like a depending operation which needs to be done before continuing further.
+  A better example might be a test of some function of a database server. The server must be available before starting so that is a dependency. The action to depend on is testing if the server is up and, if not, start the server.
+* Action templates. An action can be defined in such a way that only a variable or command needs to be substituted to get a different effect.
 
 ### Application workings
 
@@ -89,19 +93,6 @@ The purpose of this program is that it can quickly setup an environment for some
     - sessions.yaml
   @endyaml
   ```
-
-#### Startup options
-* [x] References to parts can now be made from within the config file.
-* [x] Actions and variables can be referred to from the config file.
-
-#### Changes to support editing of actions, variables and sessions
-* [ ] Rename `dispatch-config.yaml` to `sessions.yaml`
-* [ ] Load all config files as before but save them into separate config files. These files will also be loaded when available after the users config files are loaded. This makes it possible for the user to still change the configuration by hand for the time being.
-* Add edit possibilities for;
-  * [ ] Variables, saved in `./Config/variables.yaml`
-  * [ ] Actions, saved in `./Config/actions.yaml`
-  * [ ] Parts, saved in `./Config/parts.yaml`
-  * [ ] Sessions, saved in `./Config/sessions.yaml`
 
 # Uml diagrams
 
