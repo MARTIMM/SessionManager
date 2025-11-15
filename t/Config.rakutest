@@ -21,7 +21,7 @@ my Str $config-directory = './t/data';
 # the Actions object when they are a Hash. The created id replaces the Hash.
 # When the entry is a string, this should be an id to be found in the Actions
 # object.
-"$config-directory/dispatch-config.yaml".IO.spurt(Q:q:to/EOCFG/);
+"$config-directory/session-manager.yaml".IO.spurt(Q:q:to/EOCFG/);
   shell: /usr/bin/tcsh
 
   theme:
