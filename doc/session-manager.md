@@ -69,39 +69,38 @@ The purpose of this program is that it can quickly setup an environment for some
 * Variables
   * [x] Storage in **root**/Config/variables.yaml
   * [x] Add common variables for e.g. $HOME, root paths of config, and images.
-  * [x] Add variable
-  * [x] Rename variable
-    * [x] With rename change its use in this and actions
+  * [x] Add a variable
+  * [x] Rename a variable
+    * [x] With rename change its use in variables, actions, and sessions.
   * [x] Modify variable data
   * [ ] Remove variable
-    * [ ] Before remove check its use in this and actions
+    * [ ] Before remove check its use in variables, actions, and sessions.
     * [ ] Cleanup unused variables
 
 * Actions:
   * [x] Storage in **root**/Config/actions.yaml
-  * [x] Add action
-  * [x] Rename action id
+  * [x] Add an action
+  * [x] Rename an action id
     * [x] With rename change its use in sessions
   * [x] Modify action data
-  * [ ] Remove action
+  * [ ] Remove an action
     * [ ] Before remove check its use in sessions
-  * [ ] Check dependency on another action.
-  * [ ] State of an action. In cases like starting up a server, it should check a run state to prevent starting it second time.
+  * [ ] Check dependency on other actions.
+  * [ ] State of an action.
+    * [ ] Visibility in overlay
+  * [ ] Action templates.
 
 * Sessions
   * [x] Storage in **root**/Config/sessions.yaml
-  * [x] Add session
+  * [x] Add a session
   * Session group levels
-    * [x] Add session group
-    * [ ] Delete session group
+    * [x] Add a session group
+    * [ ] Delete a session group
     * [ ] Remove unused groups
   * [x] Add actions to a group
   * [x] Remove actions from a group
-  * [x] Rename session id
-  * [ ] Remove session
-
-  A better example might be a test of some function of a database server. The server must be available before starting so that is a dependency. The action to depend on is testing if the server is up and, if not, start the server.
-* Action templates. An action can be defined in such a way that only a variable or command needs to be substituted to get a different effect.
+  * [x] Rename a session id
+  * [ ] Remove a session
 
 ### Application Directory Layout
 
@@ -220,7 +219,7 @@ Session *-- Actions
 ```
 
 
-
+<!--
 Diagram to show macro commands which can execute more than one command
 ```plantuml
 @startuml
@@ -266,6 +265,7 @@ MacroCommand -* GroupRunButton
 ActionGroup *-- "1" Actions
 @enduml
 ```
+-->
 
 The configuration file is the loader of the YAML config file which has references to parts, variables and action data.
 
