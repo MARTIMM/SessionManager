@@ -85,7 +85,7 @@ The purpose of this program is that it can quickly setup an environment for some
   * [x] Modify action data
   * [ ] Remove an action
     * [ ] Before remove check its use in sessions
-  * [ ] Check dependency on other actions.
+  * [ ] Check dependency on other actions. Prevent loops.
   * [ ] State of an action.
     * [ ] Visibility in overlay
   * [ ] Action templates.
@@ -186,11 +186,13 @@ Actions o- "*" ActionData
 Command <|-- RunActionCommand
 RunActionCommand *-- "1" ActionData
 ActionData o- Variables
+ActionData "depend" o- "*" ActionData
 RunActionCommand -* CommandButton
 
 @enduml
 ```
 
+<!--
 
 ```plantuml
 @startuml
@@ -219,7 +221,6 @@ Session *-- Actions
 ```
 
 
-<!--
 Diagram to show macro commands which can execute more than one command
 ```plantuml
 @startuml
@@ -265,7 +266,6 @@ MacroCommand -* GroupRunButton
 ActionGroup *-- "1" Actions
 @enduml
 ```
--->
 
 The configuration file is the loader of the YAML config file which has references to parts, variables and action data.
 
@@ -292,6 +292,7 @@ Config *- Variables
 
 @enduml
 ```
+-->
 
 
 
