@@ -17,7 +17,10 @@ method add-action ( Hash:D $raw-action, Str :$id = '' --> Str ) {
   my SessionManager::ActionData $action-data;
   $action-data .= new;
   $action-data.init-action( :$raw-action, :$id);
-  $data-ids{$action-data.id} = $action-data;
+  $data-ids{$action-data.id} = %(
+    :data($action-data),
+    :depend([])
+  );
   $action-data.id
 }
 
@@ -49,7 +52,7 @@ method add-from-yaml ( Str:D $path ) {
 method save ( ) {
   my Hash $raw-actions = %();
   for $data-ids.keys -> $id {
-    $raw-actions{$id} = $data-ids{$id}.raw-action;
+    $raw-actions{$id} = $data-ids{$id}<data>.raw-action;
   }
 
   ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($raw-actions));
@@ -75,16 +78,17 @@ method get-action-ids ( --> Seq ) {
 
 #-------------------------------------------------------------------------------
 method get-raw-action ( Str:D $action-id --> Hash ) {
-  $data-ids{$action-id}.raw-action
+  $data-ids{$action-id}<data>.raw-action
 }
 
 #-------------------------------------------------------------------------------
 method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
   if $data-ids{$id}:exists {
-    $data-ids{$id}
+    $data-ids{$id}<data>
   }
 
   else {
+#`{{
     # If action data isn't found, try $id as if it was a tooltip
     # string. Those are taken when no id was found and converted into sha256
     # strings in SessionManager::ActionData.
@@ -94,8 +98,9 @@ method get-action ( Str:D $id is copy --> SessionManager::ActionData ) {
     }
 
     else {
+}}
       SessionManager::ActionData
-    }
+#    }
   }
 }
 
@@ -107,7 +112,7 @@ method rename-action ( Str:D $id, Str:D $new-id ) {
  
 #-------------------------------------------------------------------------------
 method modify-action ( Str:D $id, Hash $raw-action ) {
-  my SessionManager::ActionData $action-data = $data-ids{$id};
+  my SessionManager::ActionData $action-data = $data-ids{$id}<data>;
   $action-data.init-action( :$id, :$raw-action);
 }
 
@@ -115,7 +120,7 @@ method modify-action ( Str:D $id, Hash $raw-action ) {
 # Substitute changed variable in the raw actions Hash.
 method subst-vars ( Str $original-var, Str $new-var ) {
   for $data-ids.keys -> $id {
-    $data-ids{$id}.subst-vars( $original-var, $new-var);
+    $data-ids{$id}<data>.subst-vars( $original-var, $new-var);
   }
 }
 
@@ -123,7 +128,7 @@ method subst-vars ( Str $original-var, Str $new-var ) {
 method is-var-in-use ( Str $v --> Bool ) {
   my Bool $in-use = False;
   for $data-ids.keys -> $id {
-    $in-use = $data-ids{$id}.is-var-in-use($v);
+    $in-use = $data-ids{$id}<data>.is-var-in-use($v);
     last if $in-use;
   }
 
