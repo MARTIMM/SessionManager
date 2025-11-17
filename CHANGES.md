@@ -2,6 +2,9 @@
 
 ---
 # Progress
+* 2025 11 17 0.7.2
+  * Gizmo errors like `… GtkGizmo … (slider) reported min width -2, but sizes must be >= 0` are dealt with by defining slider style in `manager-changes.css`. Also made the scrollbar slide a wee bit wider.
+  * Changed the way of selecting/adding/removing an action in the sessions dialog.
 
 * 2025-10-12 0.7.1
   * Menubar has become small due to the use of **GnomeTools::Gtk::Menu**. Menu is now created in **SessionManager::Gui::Application** and **SessionManager::Gui::Menubar** is removed.
