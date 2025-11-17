@@ -3,7 +3,7 @@ v6.d;
 #use YAMLish;
 
 use SessionManager::Sessions;
-#use SessionManager::Gui::Actions;
+use SessionManager::Gui::Actions;
 use SessionManager::Actions;
 use SessionManager::Config;
 
@@ -347,9 +347,28 @@ method add-remove-actions ( N-Object $parameter ) {
     .add-content( 'All Actions list', $sw2, :2columns);
 
     # Add buttons
+    # Show a dialog to add an action
     .add-button(
-      self, 'set-actions', 'Done', :$dialog, :listbox($all-actions-list),
-      :$sessions-dd, :$groups-dd
+      self, 'add-action', 'Add Action', :$dialog,
+      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
+    );
+
+    # Show a dialog to modify an action
+    .add-button(
+      self, 'modify-action', 'Modify Action', :$dialog,
+      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
+    );
+
+    # Show a dialog to delete an action
+    .add-button(
+      self, 'remove-action', 'Remove Action', :$dialog,
+      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
+    );
+
+    # Finish dialog
+    .add-button(
+      self, 'set-actions', 'Done', :$dialog,
+      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
     );
 
     .show-dialog;
@@ -365,10 +384,29 @@ method set-actions (
 ) {
   my Str $c-session = $sessions-dd.get-text;
   my Str $c-group = $groups-dd.get-text;
+#  $!sessions.set-group-actions( $c-session, $c-group, $listbox.get-selection);
+note "$?LINE ", $listbox.get-list.gist;
+  $!sessions.set-group-actions( $c-session, $c-group, $listbox.get-list);
+
+  # Remove dialog
+  $dialog.destroy-dialog;
+}
+
+#-------------------------------------------------------------------------------
+method add-action (
+  Dialog :$dialog, ListBox :$listbox,
+  DropDown :$sessions-dd, DropDown :$groups-dd
+) {
+  my SessionManager::Gui::Actions $action .= instance;
+  $action.create(N-Object);
+#`{{
+  my Str $c-session = $sessions-dd.get-text;
+  my Str $c-group = $groups-dd.get-text;
   $!sessions.set-group-actions( $c-session, $c-group, $listbox.get-selection);
 
   # Remove dialog
   $dialog.destroy-dialog;
+}}
 }
 
 #-------------------------------------------------------------------------------
@@ -396,9 +434,14 @@ method set-grouptitle (
   my Str $group-name = $groups-dd.get-text;
   $grouptitle.set-text($!sessions.get-group-title( $session-id, $group-name));
 
+  $all-actions-list.reset-list(
+    $!sessions.get-group-actions( $session-id, $group-name)
+  ) if ?$all-actions-list;
+#`{{
   $all-actions-list.set-selection(
     $!sessions.get-group-actions( $session-id, $group-name)
   ) if ?$all-actions-list;
+}}
 }
 
 #-------------------------------------------------------------------------------
