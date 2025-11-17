@@ -84,7 +84,7 @@ method instance ( *%options --> SessionManager::Config ) {
 #-------------------------------------------------------------------------------
 #method load-config ( Bool :$load-manual-build-config = False ) {
 method load-config ( ) {
-note "$?LINE $*config-directory/session-manager.yaml";
+#note "$?LINE $*config-directory/session-manager.yaml";
   if "$*config-directory/session-manager.yaml".IO !~~ :r {
     "$*config-directory/session-manager.yaml".IO.spurt(Q:q:to/EOD/);
       theme:
