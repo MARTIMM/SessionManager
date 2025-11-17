@@ -76,8 +76,10 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
 #      self.set-halign(GTK_ALIGN_FILL);
 
       my ( $ww, $wh) = $config.get-window-hsize;
-note "$?LINE $ww, $wh, $iw, $ih";
-      self.set-min-content-height($ih + 2 * .get-spacing);
+
+      # In CSS min-width of scrolledwindow slider is set to 15px. The
+      # rest (border, margin, etc) is set to 0px;
+      self.set-min-content-height($ih + 2 * .get-spacing + 15);
       self.set-size-request( $ww, $wh);
     }
 
@@ -86,8 +88,7 @@ note "$?LINE $ww, $wh, $iw, $ih";
       self.set-vexpand(True);
 
       my ( $ww, $wh) = $config.get-window-vsize;
-note "$?LINE $ww, $wh, $iw, $ih";
-      self.set-min-content-width($iw + 2 * .get-spacing);
+      self.set-min-content-width($iw + 2 * .get-spacing + 15);
       self.set-size-request( $wh, $ww);
     }
   }
