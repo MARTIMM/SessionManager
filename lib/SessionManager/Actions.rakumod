@@ -61,6 +61,7 @@ method save ( ) {
   my Hash $raw-actions = %();
   for $data-ids.keys -> $id {
     $raw-actions{$id} = $data-ids{$id}<data>.raw-action;
+    $raw-actions{$id}<D> = $data-ids{$id}<depend>;
   }
 
   ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($raw-actions));
@@ -74,6 +75,7 @@ method load ( ) {
     );
 
     for $raw-actions.keys -> $id {
+      $data-ids{$id}<depend> = $raw-actions{$id}<depend>:delete;
       self.add-action( $raw-actions{$id}, :$id);
     }
   }
