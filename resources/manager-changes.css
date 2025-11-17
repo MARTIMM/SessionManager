@@ -105,7 +105,6 @@
 */
 
 .overlay-pic {
-
   border-top: 5px solid rgb(254, 174, 246);
   border-left: 5px solid rgb(254, 174, 246);
   border-right: 5px solid rgb(147, 3, 119);
@@ -143,4 +142,64 @@
 .not-in-use {
   background-color: transparent;
   color: #f823d5;
+}
+
+/*
+scrolledwindow scrollbar.horizontal {
+  min-height: 10px;
+}
+
+scrolledwindow scrollbar.vertical {
+  min-width: 10px;
+}
+
+scrolledwindow scrollbar range.horizontal {
+  min-height: 10px;
+}
+
+scrolledwindow scrollbar range.vertical {
+  min-width: 10px;
+}
+
+scrolledwindow scrollbar range.horizontal trough {
+  margin: 0px;
+  min-height: 10px;
+}
+
+scrolledwindow scrollbar range.vertical trough {
+  margin: 0px;
+  min-width: 10px;
+}
+
+scrolledwindow scrollbar range.horizontal trough {
+  min-height: 15px;
+}
+
+scrolledwindow scrollbar.horizontal {
+  padding: 0px;
+}
+*/
+
+scrolledwindow scrollbar range.horizontal trough slider {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+
+  border-top-width: 0px;
+  border-bottom-width: 0px;
+
+  min-height: 15px;
+}
+
+scrolledwindow scrollbar range.vertical trough slider {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+
+  border-left-width: 0px;
+  border-right-width: 0px;
+
+  min-width: 15px;
 }
