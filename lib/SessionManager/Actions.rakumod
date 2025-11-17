@@ -41,6 +41,14 @@ multi method add-actions ( Array:D $raw-actions ) {
 }
 
 #-------------------------------------------------------------------------------
+# Add actions which this action id depends on
+multi method add-actions ( Str:D $id, Array:D $dep-ids ) {
+  for @$dep-ids -> $dep-id {
+    $data-ids{$id}<depend>.push: $dep-id if $data-ids{$id}:exists;
+  }
+}
+
+#-------------------------------------------------------------------------------
 # Read from action reference files
 method add-from-yaml ( Str:D $path ) {
   die "File $path not found or unreadable" unless $path.IO.r;
