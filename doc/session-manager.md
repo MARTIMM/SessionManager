@@ -78,17 +78,23 @@ The purpose of this program is that it can quickly setup an environment for some
     * [ ] Cleanup unused variables
 
 * Actions:
-  * [x] Storage in **root**/Config/actions.yaml
-  * [x] Add an action
-  * [x] Rename an action id
-    * [x] With rename change its use in sessions
-  * [x] Modify action data
-  * [ ] Remove an action
-    * [ ] Before remove check its use in sessions
-  * [ ] Check dependency on other actions. Prevent loops.
-  * [ ] State of an action.
-    * [ ] Visibility in overlay
+  * [x] Storage in **root**/Config/actions.yaml.
+  * [x] Add an action.
+  * [x] Rename an action id.
+    * [x] With rename change its use in sessions.
+  * [x] Modify action data.
+  * [ ] Remove an action.
+    * [ ] Before remove check its use in sessions.
+  * Action dependencies.
+    * [ ] Add dependency.
+    * [ ] Remove dependency.
+    * [ ] On running, check dependency on other actions and run them first.
+    * [ ] Check to prevent loops.
   * [ ] Action templates.
+  * Action focus.
+    * [ ] Run state of an action.
+    * [ ] Visibility in overlay.
+    * [ ] Change css class of action icon in session group.
 
 * Sessions
   * [x] Storage in **root**/Config/sessions.yaml
@@ -101,6 +107,9 @@ The purpose of this program is that it can quickly setup an environment for some
   * [x] Remove actions from a group
   * [x] Rename a session id
   * [ ] Remove a session
+  * Session focus
+    * [ ] Change title of application window
+    * [ ] Change css class of session icon in toolbar
 
 ### Application Directory Layout
 
