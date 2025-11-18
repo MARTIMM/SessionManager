@@ -37,11 +37,8 @@ submethod BUILD ( ) {
   mkdir $*config-directory ~ '/Config', 0o700
         unless ($*config-directory ~ '/Config').IO.e;
 
-  mkdir $*config-directory ~ '/Pictures/Overlay', 0o700
-        unless ($*config-directory ~ '/Pictures/Overlay').IO.e;
-
-  mkdir $*config-directory ~ '/Pictures/Icons', 0o700
-        unless ($*config-directory ~ '/Pictures/Icons').IO.e;
+  mkdir $*config-directory ~ '/Pictures', 0o700
+        unless ($*config-directory ~ '/Pictures').IO.e;
 
 #`{{
   # It is supposed to copy files to a controllable location See also issue #5746
