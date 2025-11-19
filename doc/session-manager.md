@@ -10,10 +10,8 @@ The purpose of this program is that it can quickly setup an environment for some
   etcetera.
 
 ## Checklist?
-* [ ] When started, the program is able to show a list of shortcut buttons to start tasks right away. For example, start the browser or a mail program.
-* [x] The program shows a list of sessions next to the list of shortcut buttons.
-* [ ] List of shortcut buttons can grow or shrink like a bookmark list.
-* [x] When a session button is pressed, it shows additional buttons to start a task needed to setup the session.
+* [x] The program shows a list of sessions.
+* [x] When a session button is pressed, it shows additional buttons to start tasks needed for that session.
 * [x] The additional buttons are grouped in action lists.
 * [ ] A button can be added to start all actions in an actions group.
   * [ ] Optionally each action can show a checkbutton which can be (de-)selected to disable or enable the start of that action.
