@@ -130,8 +130,15 @@ method get-group-actions ( Str:D $sid, Str:D $group-id --> Array ) {
 }
 
 #-------------------------------------------------------------------------------
-method set-group-actions ( Str:D $sid, Str:D $group-id, Array $actions = [] ) {
+multi method set-group-actions (
+  Str:D $sid, Str:D $group-id, Array $actions = []
+) {
   $sessions{$sid}{$group-id}<actions> = $actions;
+}
+
+#-------------------------------------------------------------------------------
+multi method set-group-actions ( Str:D $sid, Str:D $group-id, Str $action ) {
+  $sessions{$sid}{$group-id}<actions>.push: $action;
 }
 
 #-------------------------------------------------------------------------------
