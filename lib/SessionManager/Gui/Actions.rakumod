@@ -241,7 +241,7 @@ method do-modify-act (
   $raw-action<p> = $aspec-path.get-text;
   $raw-action<sh> = $aspec-shell.get-text;
 
-note "$?LINE $raw-action.gist()";
+#note "$?LINE $raw-action.gist()";
   my SessionManager::Actions $actions .= new;
   my Str $id = $listbox.get-selection[0];
   $actions.modify-action( $id, $raw-action);
