@@ -44,6 +44,7 @@ constant TextBuffer = Gnome::Gtk4::TextBuffer;
 my SessionManager::Gui::Actions $instance;
 
 has Hash $!data-ids;
+has Str $!id-to-return-from-dialog = '';
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -61,7 +62,7 @@ method instance ( --> SessionManager::Gui::Actions ) {
 }
 
 #-------------------------------------------------------------------------------
-method create ( N-Object $parameter ) {
+method create ( N-Object $parameter --> Str ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Create Action'), :add-statusbar, :!modal
@@ -114,6 +115,8 @@ method create ( N-Object $parameter ) {
 
     .show-dialog;
   }
+
+  $!id-to-return-from-dialog
 }
 
 #-------------------------------------------------------------------------------
@@ -155,6 +158,7 @@ method do-create-act (
 #    my SessionManager::ActionData $ad = $actions.get-action($id);
 #    $ad.set-shell($aspec-shell.get-text);
 
+    $!id-to-return-from-dialog = $id;
     $dialog.set-status("The action '$id' is succesfully created");
   }
 }
@@ -319,7 +323,7 @@ method do-rename-act (
     my Array $widgets = $listbox.get-selection(:get-widgets);
     my Label() $id-label = $widgets[0];
 
-    # Get the id and change is actions and action data
+    # Get the id and change the actions and action data
     my Str $id = $id-label.get-text;
     $actions.rename-action( $id, $new-id);
 
