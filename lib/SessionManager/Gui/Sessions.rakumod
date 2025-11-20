@@ -68,8 +68,8 @@ method add-rename ( N-Object $parameter ) {
   ) {
     my Entry $sessionid-e .= new-entry;
     my Entry $sessiontitle-e .= new-entry;
-    my Entry $sessionicon-e .= new-entry;
     my Entry $sessionoverlay-e .= new-entry;
+    my Entry $sessionicon-e .= new-entry;
 
     # Setup the dropdown to show the session ids
     my DropDown $sessions-dd .= new;
@@ -92,8 +92,8 @@ method add-rename ( N-Object $parameter ) {
     # Add entries and dropdown widgets in the dialog
     .add-content( 'Session list', $sessions-dd, :4columns);
     .add-content( 'Id and title', [ 1, $sessionid-e, 3, $sessiontitle-e]);
-    .add-content( 'icon', $sessionicon-e, :4columns);
-    .add-content( 'overlay', $sessionoverlay-e, :4columns);
+    .add-content( 'Icon', $sessionoverlay-e, :4columns);
+    .add-content( 'Picture', $sessionicon-e, :4columns);
 
     # Add buttons to the dialog
     .add-button(
@@ -384,8 +384,6 @@ method set-actions (
 ) {
   my Str $c-session = $sessions-dd.get-text;
   my Str $c-group = $groups-dd.get-text;
-#  $!sessions.set-group-actions( $c-session, $c-group, $listbox.get-selection);
-note "$?LINE ", $listbox.get-list.gist;
   $!sessions.set-group-actions( $c-session, $c-group, $listbox.get-list);
 
   # Remove dialog
@@ -398,15 +396,12 @@ method add-action (
   DropDown :$sessions-dd, DropDown :$groups-dd
 ) {
   my SessionManager::Gui::Actions $action .= instance;
-  $action.create(N-Object);
-#`{{
   my Str $c-session = $sessions-dd.get-text;
   my Str $c-group = $groups-dd.get-text;
-  $!sessions.set-group-actions( $c-session, $c-group, $listbox.get-selection);
+  my Str $action-id = $action.create(N-Object);
+  $!sessions.set-group-actions( $c-session, $c-group, $action-id);
 
-  # Remove dialog
-  $dialog.destroy-dialog;
-}}
+  $listbox.reset-list($!sessions.get-group-actions( $c-session, $c-group));
 }
 
 #-------------------------------------------------------------------------------
