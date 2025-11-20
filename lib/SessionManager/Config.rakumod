@@ -88,7 +88,8 @@ method load-config ( ) {
         title: Environment starter
 
         icon-size: [ 200, 200]
-        window-size: [ 1000, 200]
+        window-hsize: [ 1000, 200]
+        window-vsize: [ 200, 1000]
         log-window-size: [ 900, 1300]
 
       part-references: {}
