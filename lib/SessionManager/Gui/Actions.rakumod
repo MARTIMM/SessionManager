@@ -61,8 +61,8 @@ method instance ( --> SessionManager::Gui::Actions ) {
   $instance
 }
 
+#`{{
 #-------------------------------------------------------------------------------
-# Called from menu
 method create ( N-Object $parameter ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Create Action'), :add-statusbar, :!modal
@@ -115,11 +115,13 @@ method create ( N-Object $parameter ) {
     .show-dialog;
   }
 }
+}}
 
 #-------------------------------------------------------------------------------
-# Called directly from other method
-method create-action ( --> Str ) {
-  note "$?LINE ";
+# Parameter is ignored but is needed here because native gnome routine calls it
+# with an argument when called from a menu. Default value is set to the
+# undefined N-Object so other methods can call it without an argument.
+method create-action ( N-Object $parameter = N-Object --> Str ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Create Action'), :add-statusbar, :!modal
   ) {
@@ -162,7 +164,7 @@ method create-action ( --> Str ) {
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
     .add-button(
-      self, 'do-create-act', 'Create', :$dialog, :destroy-dialog, :$action-id,
+      self, 'do-create-act', 'Create', :$dialog, :$action-id,
       :$aspec-title, :$aspec-cmd, :$aspec-shell, :$aspec-path,
       :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
     );
@@ -177,13 +179,13 @@ method create-action ( --> Str ) {
 
 #-------------------------------------------------------------------------------
 method do-create-act (
-  GnomeTools::Gtk::Dialog :$dialog, Bool :$destroy-dialog = False,
-  Entry :$action-id, Entry :$aspec-title,
+  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
   TextView :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait,
   Switch :$aspec-log, Entry :$aspec-icon, Entry :$aspec-pic, Entry :$aspec-shell
 ) {
   my SessionManager::Actions $actions .= new;
   my Str $id = $action-id.get-text;
+  my Bool $ok = False;
 
   if !$id {
     $dialog.set-status('The action id may not be empty');
@@ -215,15 +217,18 @@ method do-create-act (
 #    my SessionManager::ActionData $ad = $actions.get-action($id);
 #    $ad.set-shell($aspec-shell.get-text);
 
+#    $dialog.set-status("The action '$id' is succesfully created");
     $!id-to-return-from-dialog = $id;
-    $dialog.set-status("The action '$id' is succesfully created");
-
-    $dialog.destroy-dialog if $destroy-dialog;
+    $ok = True;
   }
+
+  $dialog.destroy-dialog if $ok;
 }
 
 #-------------------------------------------------------------------------------
-method modify ( N-Object $parameter ) {
+method modify-action (
+  N-Object $parameter = N-Object, Str :$target-id = '' --> Str
+) {
 
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Action'), :add-statusbar, :!modal
@@ -246,13 +251,39 @@ method modify ( N-Object $parameter ) {
 
     my ListBox $listbox;
     my ScrolledWindow $scrolled-listbox;
-    ( $listbox, $scrolled-listbox) = self.scrollable-list(
-      :$dialog, :!modal, :$action-id, :$aspec-title, :$aspec-cmd,
-      :$aspec-path, :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic,
-      :$aspec-shell
-    );
 
-    .add-content( 'Current actions', $scrolled-listbox, :3columns);
+    if ?$target-id {
+      my SessionManager::Actions $actions .= new;
+      my Hash $action-object = $actions.get-raw-action($target-id);
+      with $aspec-title { .set-text($action-object<t> // ''); }
+      with $aspec-cmd {
+        my TextBuffer() $tb = .get-buffer;
+        if ? my $s = $action-object<c> {
+          $tb.set-text( $s, $s.chars);
+        }
+
+        else {
+          $tb.set-text( '', 0);
+        }
+      }
+
+      with $aspec-path { .set-text($action-object<p> // ''); }
+      with $aspec-wait { .set-text($action-object<w> // ''); }
+      with $aspec-log { .set-state($action-object<l>.Bool); }
+      with $aspec-icon { .set-text($action-object<o> // ''); }
+      with $aspec-pic { .set-text($action-object<i> // ''); }
+      with $aspec-shell { .set-placeholder-text($action-object<sh>); }
+    }
+
+    else {
+      ( $listbox, $scrolled-listbox) = self.scrollable-list(
+        :$dialog, :$action-id, :$aspec-title, :$aspec-cmd,
+        :$aspec-path, :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic,
+        :$aspec-shell
+      );
+      .add-content( 'Current actions', $scrolled-listbox, :3columns);
+    }
+
     .add-content( 'Action id', [ 1, $action-id, 2, $aspec-title]);
     .add-content( 'Command', $aspec-cmd, :3columns);
     .add-content( 'Shell', $aspec-shell, :3columns);
@@ -269,9 +300,11 @@ method modify ( N-Object $parameter ) {
       :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
 
-    .add-button( $dialog, 'destroy-dialog', 'Done');
+    .add-button( $dialog, 'destroy-dialog', 'Cancel');
     .show-dialog;
   }
+
+  $!id-to-return-from-dialog
 }
 
 #-------------------------------------------------------------------------------
@@ -281,9 +314,11 @@ method do-modify-act (
   Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
 ) {
+#  my Bool $ok = False;
   my SessionManager::Config $config .= instance;
   my Hash $raw-action = %();
   $raw-action<t> = $aspec-title.get-text;
+
 #`{{
   my TextBuffer() $tb = $aspec-cmd.get-buffer;
   my N-TextIter $t0 .= new;
@@ -306,6 +341,9 @@ method do-modify-act (
   $actions.modify-action( $id, $raw-action);
 
   $dialog.set-status("The action '$id' is succesfully modified");
+
+  $!id-to-return-from-dialog = $id;
+  $dialog.destroy-dialog;
 }
 
 #-------------------------------------------------------------------------------
