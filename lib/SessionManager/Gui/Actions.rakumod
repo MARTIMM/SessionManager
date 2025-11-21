@@ -62,12 +62,11 @@ method instance ( --> SessionManager::Gui::Actions ) {
 }
 
 #-------------------------------------------------------------------------------
-method create ( N-Object $parameter --> Str ) {
-  note "$?LINE ";
+# Called from menu
+method create ( N-Object $parameter ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Create Action'), :add-statusbar, :!modal
   ) {
-#TODO some fields should be multiline text
     my Entry $action-id .= new-entry;
     my Entry $aspec-title .= new-entry;
     my TextView $aspec-cmd .= new-textview;
@@ -115,13 +114,71 @@ method create ( N-Object $parameter --> Str ) {
 
     .show-dialog;
   }
+}
+
+#-------------------------------------------------------------------------------
+# Called directly from other method
+method create-action ( --> Str ) {
+  note "$?LINE ";
+  with my GnomeTools::Gtk::Dialog $dialog .= new(
+    :dialog-header('Create Action'), :add-statusbar, :!modal
+  ) {
+#TODO some fields should be multiline text
+    my Entry $action-id .= new-entry;
+    my Entry $aspec-title .= new-entry;
+    my TextView $aspec-cmd .= new-textview;
+    my Entry $aspec-shell .= new-entry;
+    my Entry $aspec-path .= new-entry;
+    my Entry $aspec-wait .= new-entry;
+    my Switch $aspec-log .= new-switch;
+    my Entry $aspec-icon .= new-entry;
+    my Entry $aspec-pic .= new-entry;
+#TODO add fields for variables and environment
+
+    # Set placeholder texts when optional
+    $aspec-path.set-placeholder-text('optional');
+    $aspec-wait.set-placeholder-text('optional');
+    $aspec-icon.set-placeholder-text('optional');
+    $aspec-pic.set-placeholder-text('optional');
+
+    my ListBox $listbox;
+    my ScrolledWindow $scrolled-listbox;
+    ( $listbox, $scrolled-listbox) = self.scrollable-list(
+      :$dialog, :!modal, :$action-id, :$aspec-title, :$aspec-cmd,
+      :$aspec-path, :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic,
+      :$aspec-shell
+    );
+
+    .add-content( 'Current actions', $scrolled-listbox, :3columns);
+    .add-content( 'Action id', [1, $action-id, 2, $aspec-title]);
+    .add-content( 'Command', $aspec-cmd, :3columns);
+    .add-content( 'Shell', $aspec-shell, :3columns);
+    .add-content( 'Path', $aspec-path, :3columns);
+    .add-content( 'Wait', $aspec-wait, $aspec-log);
+    .add-content( 'Icon', $aspec-icon, :3columns);
+    .add-content( 'Picture', $aspec-pic, :3columns);
+#    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
+#    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
+#    .add-content( '', my Entry $aspec- .= new-entry);
+
+    .add-button(
+      self, 'do-create-act', 'Create', :$dialog, :destroy-dialog, :$action-id,
+      :$aspec-title, :$aspec-cmd, :$aspec-shell, :$aspec-path,
+      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
+    );
+
+    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+
+    .show-dialog;
+  }
 
   $!id-to-return-from-dialog
 }
 
 #-------------------------------------------------------------------------------
 method do-create-act (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
+  GnomeTools::Gtk::Dialog :$dialog, Bool :$destroy-dialog = False,
+  Entry :$action-id, Entry :$aspec-title,
   TextView :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait,
   Switch :$aspec-log, Entry :$aspec-icon, Entry :$aspec-pic, Entry :$aspec-shell
 ) {
@@ -160,6 +217,8 @@ method do-create-act (
 
     $!id-to-return-from-dialog = $id;
     $dialog.set-status("The action '$id' is succesfully created");
+
+    $dialog.destroy-dialog if $destroy-dialog;
   }
 }
 
