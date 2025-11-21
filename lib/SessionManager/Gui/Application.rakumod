@@ -259,8 +259,8 @@ method make-menu ( --> GnomeTools::Gtk::Menu ) {
   }
 
   with my GnomeTools::Gtk::Menu $m3 .= new( :$parent-menu, :name<Actions>) {
-    .item( 'Create', $action-edit, 'create');
-    .item( 'Modify', $action-edit, 'modify');
+    .item( 'Create', $action-edit, 'create-action');
+    .item( 'Modify', $action-edit, 'modify-action');
     .item( 'Rename id', $action-edit, 'rename-id');
     .item( 'Delete', $action-edit, 'delete');
   }
