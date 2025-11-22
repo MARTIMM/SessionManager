@@ -412,8 +412,14 @@ method modify-action (
   DropDown :$sessions-dd, DropDown :$groups-dd
 ) {
   my SessionManager::Gui::Actions $action .= instance;
-  my Str $action-id = $listbox.get-selection;
-  $action.modify-action(:target-id($action-id));
+  my Str $action-id = $listbox.get-selection()[0] // '';
+  if ?$action-id {
+    $action.modify-action(:target-id($action-id));
+  }
+
+  else {
+    $dialog.set-status('Please select an action id from the list');
+  }
 #`{{
   if ?$action-id {
     my Str $c-session = $sessions-dd.get-text;

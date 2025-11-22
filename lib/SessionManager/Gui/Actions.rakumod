@@ -24,6 +24,7 @@ use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::TextView:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
+use Gnome::Gtk4::Widget:api<2>;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Actions;
@@ -36,6 +37,7 @@ constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant TextView = Gnome::Gtk4::TextView;
 constant TextBuffer = Gnome::Gtk4::TextBuffer;
+constant Widget = Gnome::Gtk4::Widget;
 #constant TextIter = Gnome::Gtk4::TextIter;
 
 #has SessionManager::Actions $!actions;
@@ -233,7 +235,7 @@ method modify-action (
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Action'), :add-statusbar, :!modal
   ) {
-    my Entry $action-id .= new-entry;
+    my Label $action-id .= new-label;
     my Entry $aspec-title .= new-entry;
     my TextView $aspec-cmd .= new-textview;
     my Entry $aspec-shell .= new-entry;
@@ -253,26 +255,10 @@ method modify-action (
     my ScrolledWindow $scrolled-listbox;
 
     if ?$target-id {
-      my SessionManager::Actions $actions .= new;
-      my Hash $action-object = $actions.get-raw-action($target-id);
-      with $aspec-title { .set-text($action-object<t> // ''); }
-      with $aspec-cmd {
-        my TextBuffer() $tb = .get-buffer;
-        if ? my $s = $action-object<c> {
-          $tb.set-text( $s, $s.chars);
-        }
-
-        else {
-          $tb.set-text( '', 0);
-        }
-      }
-
-      with $aspec-path { .set-text($action-object<p> // ''); }
-      with $aspec-wait { .set-text($action-object<w> // ''); }
-      with $aspec-log { .set-state($action-object<l>.Bool); }
-      with $aspec-icon { .set-text($action-object<o> // ''); }
-      with $aspec-pic { .set-text($action-object<i> // ''); }
-      with $aspec-shell { .set-placeholder-text($action-object<sh>); }
+      self.set-input-fields(
+        :id($target-id), :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
+        :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
+      );
     }
 
     else {
@@ -295,7 +281,7 @@ method modify-action (
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
-    .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$listbox,
+    .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$action-id,
       :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait,
       :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
     );
@@ -309,7 +295,7 @@ method modify-action (
 
 #-------------------------------------------------------------------------------
 method do-modify-act (
-  GnomeTools::Gtk::Dialog :$dialog, ListBox :$listbox,
+  GnomeTools::Gtk::Dialog :$dialog, Label :$action-id,
   Entry :$aspec-title, TextView :$aspec-cmd, Entry :$aspec-shell,
   Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
   Entry :$aspec-icon, Entry :$aspec-pic
@@ -337,7 +323,7 @@ method do-modify-act (
 
 #note "$?LINE $raw-action.gist()";
   my SessionManager::Actions $actions .= new;
-  my Str $id = $listbox.get-selection[0];
+  my Str $id = $action-id.get-text;
   $actions.modify-action( $id, $raw-action);
 
   $dialog.set-status("The action '$id' is succesfully modified");
@@ -436,23 +422,36 @@ method do-rename-act (
 }
 
 #-------------------------------------------------------------------------------
-method set-data(
-  Label() :$row-widget, GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id,
+method set-data (
+  Label() :$row-widget, Widget :$action-id,
   Entry :$aspec-title, TextView :$aspec-cmd, Entry :$aspec-path,
   Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic, Entry :$aspec-shell
 ) {
-  my SessionManager::Actions $actions .= new;
   my Str $id = $row-widget.get-text;
-  $action-id.set-text($id);
 
   my SessionManager::Sessions $sessions .= new;
   my Bool $aid-in-use = $sessions.is-action-in-use($id);
   $action-id.set-css-classes($aid-in-use ?? "in-use" !! "not-in-use", 'abc');
+  self.set-input-fields(
+    :$id, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
+    :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
+  );
+}
 
+#-------------------------------------------------------------------------------
+method set-input-fields (
+  Str :$id, Widget :$action-id,
+  Entry :$aspec-title, TextView :$aspec-cmd, Entry :$aspec-path,
+  Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
+  Entry :$aspec-pic, Entry :$aspec-shell
+) {
 #TODO show tooltip over fields with filled in variables
-
+  my SessionManager::Actions $actions .= new;
   my Hash $action-object = $actions.get-raw-action($id);
+
+  $action-id.set-text($id);
+
   with $aspec-title { .set-text($action-object<t> // ''); }
   with $aspec-cmd {
     my TextBuffer() $tb = .get-buffer;
