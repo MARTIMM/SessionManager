@@ -208,10 +208,10 @@ method do-add-variable (
   }
 
   else {
-    my Str $var = $vspec.get-text;
-    $!variables.add-variable( $variable, $var);
-    $variables-lb.append-list($var);
-    $dialog.set-status("Variable $variable added with '$var'");
+    my Str $spec = $vspec.get-text;
+    $!variables.add-variable( $variable, $spec);
+    $variables-lb.append-list($spec);
+    $dialog.set-status("Variable $variable added with '$spec'");
 
 
 #    my Int $c = $!variables.get-n-variables;
