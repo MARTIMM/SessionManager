@@ -89,7 +89,7 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
 
       my ( $ww, $wh) = $config.get-window-vsize;
       self.set-min-content-width($iw + 2 * .get-spacing + 15);
-      self.set-size-request( $wh, $ww);
+      self.set-size-request( $ww, $wh);
     }
   }
 
