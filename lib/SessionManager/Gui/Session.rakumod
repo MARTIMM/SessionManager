@@ -68,12 +68,12 @@ has Grid $!session-manager-box;
 
 has GnomeTools::Gtk::Theming $!theme;
 
-has Mu $!app-window;
+#has Mu $!app-window;
 
 #-------------------------------------------------------------------------------
 submethod BUILD (
   Str:D :$!session-id, Hash:D :$!manage-session,
-  Grid :$!session-manager-box, Mu :$!app-window
+  Grid :$!session-manager-box, #Mu :$!app-window
 ) {
   $!theme .= new;
 }
@@ -130,15 +130,16 @@ method session-actions (
       if $!session-manager-box.get-child-at( 0, $x) {
         $!session-manager-box.remove-row($x);
       }
-      $!app-window.set-default-size($config.get-window-hsize) if ? $!app-window;
+#      $!app-window.set-default-size($config.get-window-hsize);
     }
 
     else {
       if $!session-manager-box.get-child-at( $x, 0) {
         $!session-manager-box.remove-column($x);
       }
-      $!app-window.set-default-size($config.get-window-vsize) if ? $!app-window;
+#      $!app-window.set-default-size($config.get-window-vsize);
     }
+
 #note "$?LINE $config.get-window-size(), ", ? $!app-window;
 
 #    else {

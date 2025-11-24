@@ -55,7 +55,7 @@ has GnomeTools::Gtk::Theming $!theme;
 has Box $!box;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
+submethod BUILD ( Grid :$session-manager-box, #`{{Mu :$app-window }}  ) {
 
   my SessionManager::Config $config .= instance;
   my GtkOrientation $orientation =
@@ -98,7 +98,7 @@ submethod BUILD ( Grid :$session-manager-box, Mu :$app-window ) {
   for @$session-ids -> $session-id {
     my SessionManager::Gui::Session $session .= new(
       :$session-id, :manage-session($sessions.get-session($session-id)),
-      :$session-manager-box, :$app-window
+      :$session-manager-box #, :$app-window
     );
 
     $!box.append($session.session-button);
