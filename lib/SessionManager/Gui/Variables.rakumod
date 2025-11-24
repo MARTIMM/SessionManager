@@ -213,7 +213,6 @@ method do-add-variable (
     $variables-lb.append-list($spec);
     $dialog.set-status("Variable $variable added with '$spec'");
 
-
 #    my Int $c = $!variables.get-n-variables;
 #    $vlist.attach( $ln, 0, $c, 1, 1);
 #    $vlist.attach( $lv, 1, $c, 1, 1);
