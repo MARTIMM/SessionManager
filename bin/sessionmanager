@@ -20,7 +20,7 @@ my Str $*config-directory;
 
 my SessionManager::Gui::Application $manager .= new;
 
-usage() if my $ecode = $manager.go-ahead;
+usage() if my $ecode = $manager.exit-code;
 exit($ecode);
 
 sub usage ( ) {
