@@ -32,8 +32,8 @@ constant Grid = Gnome::Gtk4::Grid;
 
 constant APP_ID is export = 'io.github.martimm.session-manager';
 
-constant LocalOptions = [<version h help>];
-constant RemoteOptions = [ |<v verbose legacy> ];
+constant LocalOptions = [<version help|h>];
+constant RemoteOptions = [ |<verbose|v legacy> ];
 
 has GnomeTools::Gtk::Application $!application;
 has Int $.exit-code = 0;
@@ -59,92 +59,76 @@ submethod BUILD ( --> Int ) {
 
 #-------------------------------------------------------------------------------
 method local-options ( --> Int ) {
+
+  # get-options() dies when unknown options are passed
+  CATCH { default { .message.note; $!exit-code = 1; return $!exit-code; } }
+
   # By default, continue to proces remote options and/or activation of
   # primary instance
-  my Int $exit-code = -1;
+  $!exit-code = -1;
 
+  # Keeps all options from @*ARGS because of :!overwrite.
   # Local options which do not need a config file or primary instance
-  my $o = get-options( |LocalOptions, |RemoteOptions);
+  my $o = get-options( |LocalOptions, |RemoteOptions, :!overwrite);
   if $o<version> {
     say "Version of dispatcher is $*manager-version";
-    $exit-code = 0;
+    $!exit-code = 0;
   }
 
   if $o<h>:exists or $o<help>:exists {
     # When set to 1, the main program will always show the help message
-    $exit-code = 1;
+    $!exit-code = 1;
   }
 
-  # 
-  if $exit-code == -1 {
-    $exit-code = 2;
-  }
-
-  $exit-code
+  $!exit-code
 }
 
 #-------------------------------------------------------------------------------
-method remote-options ( Array $arguments, Bool :$remote  --> Int ) {
+method remote-options ( Bool :$is-remote --> Int ) {
+  $!exit-code = 0;
 
-  my Capture $o = get-options-from( $arguments, |RemoteOptions);
+  # Eats all options from @*ARGS by :overwrite
+  my Capture $o = get-options( |RemoteOptions, :overwrite);
 
-  if $o<v>:exists or $o<verbose>:exists {
+  if $o<verbose>:exists {
     $*verbose = True;
   }
 
-#  unless ?$!app-window and $!app-window.is-valid {
-    # Check all arguments, skip first arg, $args[0] == programname
-    for @$arguments -> $a {
+  if ?$o<legacy> {
+    $*legacy = ?$o<legacy>;
+  }
 
-      # Skip all options starting with a '-'
-      if $a !~~ m/^ '-' / {
-        # Only one argument possible
-        $*config-directory = $a;
-
-        # And must be a directory
-        if $*config-directory.IO !~~ :d {
-          note "\nConfiguration directory '$*config-directory' not found";
-          return 1;
-        }
-        last;
-      }
+  if ?@*ARGS {
+    $*config-directory = @*ARGS[0];
+    if $*config-directory.IO ~~ :d and
+       $*config-directory.IO.absolute.Str ne
+         '/home/marcel/Languages/Raku/Projects/SessionManager'
+    {
+      # Now initialize configuration.
+      my SessionManager::Config $config .= instance;
     }
 
-    # if name is empty -> error
-    if !$*config-directory {
-      note "\nYou must specify a sesion directory";
-      return 1;
+    else {
+      $!exit-code = 1;
+      note "\nConfiguration path '$*config-directory' is not a directory (or wrong one)";
     }
-
-#`{{
-    my Bool $load-manual-build-config = False;
-    if $o<m>:exists or $o<load-manual-build-config>:exists {
-      $load-manual-build-config = $o<load-manual-build-config>.Bool;
-    }
-    my SessionManager::Config $config .= instance(:$load-manual-build-config);
-}}
-    my SessionManager::Config $config .= instance;
-
-    if ?$o<legacy> {
-      $*legacy = ?$o<legacy>;
-    }
-#  }
-
-  # finish up
-  if $remote {
-#    self.setup-window;
   }
 
   else {
-    $!application.activate;
+    $!exit-code = 1;
+    note "\nYou must specify a sesion directory";
   }
+
+  # finish up
+  $!application.activate unless $is-remote;
 
   0
 }
 
 #-------------------------------------------------------------------------------
 method shutdown ( ) {
-  self.save-config;
+  note "Shutdown";
+  self.save-config unless $!exit-code;
 }
 
 #-------------------------------------------------------------------------------
