@@ -39,9 +39,7 @@ has GnomeTools::Gtk::Application $!application;
 has Int $.exit-code = 0;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( --> Int ) {
-#  my SessionManager::Gui::Config $config-edit .= instance;
-
+submethod BUILD ( ) {
   with $!application .= new(
     :app-id(APP_ID), :app-flags(G_APPLICATION_HANDLES_COMMAND_LINE)
   ) {
@@ -52,7 +50,7 @@ submethod BUILD ( --> Int ) {
     .process-local-options( self, 'local-options');
     .process-remote-options( self, 'remote-options');
 
-    $!exit-code = .run
+    $!exit-code = .run;
   }
 }
 
@@ -100,12 +98,19 @@ method remote-options ( Bool :$is-remote --> Int ) {
 
   if ?@*ARGS {
     $*config-directory = @*ARGS[0];
-    if $*config-directory.IO ~~ :d and
-       $*config-directory.IO.absolute.Str ne
-         '/home/marcel/Languages/Raku/Projects/SessionManager'
+    if $*config-directory.IO.absolute.Str eq
+       "$*HOME/Languages/Raku/Projects/SessionManager"
     {
+      $!exit-code = 1;
+      note "\nConfiguration path '$*config-directory' cannot be in my projects dir";
+    }
+
+    elsif $*config-directory.IO ~~ :d {
       # Now initialize configuration.
       my SessionManager::Config $config .= instance;
+
+      # finish up
+      $!application.activate unless $is-remote;
     }
 
     else {
@@ -119,15 +124,11 @@ method remote-options ( Bool :$is-remote --> Int ) {
     note "\nYou must specify a sesion directory";
   }
 
-  # finish up
-  $!application.activate unless $is-remote;
-
-  0
+  $!exit-code
 }
 
 #-------------------------------------------------------------------------------
 method shutdown ( ) {
-  note "Shutdown";
   self.save-config unless $!exit-code;
 }
 
