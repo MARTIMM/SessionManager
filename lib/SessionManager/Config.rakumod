@@ -72,8 +72,8 @@ note "$?LINE $i, $png-file, %?RESOURCES{$i}.gist()";
 method new ( ) { !!! }
 
 #-------------------------------------------------------------------------------
-method instance ( *%options --> SessionManager::Config ) {
-  $instance //= self.bless(|%options);
+method instance ( --> SessionManager::Config ) {
+  $instance //= self.bless;
 
   $instance
 }
