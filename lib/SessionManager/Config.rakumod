@@ -72,7 +72,9 @@ note "$?LINE $i, $png-file, %?RESOURCES{$i}.gist()";
 method new ( ) { !!! }
 
 #-------------------------------------------------------------------------------
-method instance ( --> SessionManager::Config ) {
+method instance ( Bool :$reinit = False --> SessionManager::Config ) {
+note "$?LINE config $reinit, $instance.gist()"; 
+  $instance = Any if $reinit;
   $instance //= self.bless;
 
   $instance
