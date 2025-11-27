@@ -82,12 +82,13 @@ method local-options ( --> Int ) {
 }
 
 #-------------------------------------------------------------------------------
-method remote-options ( Bool :$is-remote --> Int ) {
+method remote-options ( Array $args, Bool :$is-remote --> Int ) {
   $!exit-code = 0;
+note "$?LINE $args.gist()";
 
   # Eats all options from @*ARGS by :overwrite
-  my Capture $o = get-options( |RemoteOptions, :overwrite);
-
+  my Capture $o = get-options-from( $args, |RemoteOptions, :overwrite);
+note "$?LINE $args.gist()";
   if $o<verbose>:exists {
     $*verbose = True;
   }
@@ -96,8 +97,8 @@ method remote-options ( Bool :$is-remote --> Int ) {
     $*legacy = ?$o<legacy>;
   }
 
-  if ?@*ARGS {
-    $*config-directory = @*ARGS[0];
+  if ?@$args {
+    $*config-directory = $args[1];
     if $*config-directory.IO.absolute.Str eq
        "$*HOME/Languages/Raku/Projects/SessionManager"
     {
@@ -107,10 +108,13 @@ method remote-options ( Bool :$is-remote --> Int ) {
 
     elsif $*config-directory.IO ~~ :d {
       # Now initialize configuration.
-      my SessionManager::Config $config .= instance;
+      my SessionManager::Config $config .= instance(:reinit);
+      $!application.set-window-content(
+        self.window-content, self.menu, :title($config.get-window-title)
+      );
 
       # finish up
-      $!application.activate unless $is-remote;
+#      $!application.activate unless $is-remote;
     }
 
     else {
@@ -144,10 +148,10 @@ method shutdown ( ) {
 # because we don't need to create two gui's. This is completely automatically
 # done.
 method app-activate ( ) {
-  my SessionManager::Config $config .= instance;
-  $!application.set-window-content(
-    self.window-content, self.menu, :title($config.get-window-title)
-  );
+#  my SessionManager::Config $config .= instance;
+#  $!application.set-window-content(
+#    self.window-content, self.menu, :title($config.get-window-title)
+#  );
 }
 
 #-------------------------------------------------------------------------------
