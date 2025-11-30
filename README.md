@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-Dispatcher - A program to start a session environment
+SessionManager - A program to start a session environment
 
 
 ## Documentation
