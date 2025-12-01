@@ -2,7 +2,7 @@
 
 ## Synopsis
 
-SessionManager - A program to start a session environment
+SessionManager - A program to start session environments
 
 
 ## Documentation
