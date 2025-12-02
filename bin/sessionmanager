@@ -1,7 +1,7 @@
 #!/usr/bin/env -S rakudo -Ilib
 
 use v6.d;
-use lib '/home/marcel/Languages/Raku/Projects/GnomeTools/lib';
+#use lib '/home/marcel/Languages/Raku/Projects/GnomeTools/lib';
 
 %*ENV<IGNORE_GNOME_DEPRECATION_MESSAGES> = 1;
 
