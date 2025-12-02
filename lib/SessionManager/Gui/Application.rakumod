@@ -12,8 +12,9 @@ use Gnome::Gio::T-ioenums:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 
+use GnomeTools::Gio::Menu;
+
 use GnomeTools::Gtk::Application;
-use GnomeTools::Gtk::Menu;
 
 use SessionManager::Actions;
 use SessionManager::Sessions;
@@ -167,28 +168,28 @@ method window-content ( --> Grid ) {
 }
 
 #-------------------------------------------------------------------------------
-method menu ( --> GnomeTools::Gtk::Menu ) {
+method menu ( --> GnomeTools::Gio::Menu ) {
 
   my SessionManager::Gui::Actions $action-edit .= instance;
   my SessionManager::Gui::Variables $variable-edit .= instance;
   my SessionManager::Gui::Sessions $session-edit .= instance;
   my SessionManager::Gui::Config $config-edit .= instance;
 
-  my GnomeTools::Gtk::Menu $bar .= new;
-  my GnomeTools::Gtk::Menu $parent-menu = $bar;
-  with my GnomeTools::Gtk::Menu $m1 .= new( :$parent-menu, :name<File>) {
+  my GnomeTools::Gio::Menu $bar .= new;
+  my GnomeTools::Gio::Menu $parent-menu = $bar;
+  with my GnomeTools::Gio::Menu $m1 .= new( :$parent-menu, :name<File>) {
     $parent-menu = $m1;
-    with my GnomeTools::Gtk::Menu $sc1 .= new( :$parent-menu, :section(Str)) {
+    with my GnomeTools::Gio::Menu $sc1 .= new( :$parent-menu, :section(Str)) {
       .item( 'Modify Configuration', $config-edit, 'modify-configuration');
       .item( 'Restart', self, 'file-restart');
     }
-    with my GnomeTools::Gtk::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
+    with my GnomeTools::Gio::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
       .item( 'Quit', self, 'file-quit');
     }
   }
 
   $parent-menu = $bar;
-  with my GnomeTools::Gtk::Menu $m2 .= new( :$parent-menu, :name<Sessions>) {
+  with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Sessions>) {
     .item( 'Add/Rename', $session-edit, 'add-rename');
     .item( 'Add/Rename Group', $session-edit, 'add-rename-group');
     .item( 'Delete Group', $session-edit, 'delete-group');
@@ -196,14 +197,14 @@ method menu ( --> GnomeTools::Gtk::Menu ) {
     .item( 'Delete', $session-edit, 'delete');
   }
 
-  with my GnomeTools::Gtk::Menu $m3 .= new( :$parent-menu, :name<Actions>) {
+  with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Actions>) {
     .item( 'Create', $action-edit, 'create-action');
     .item( 'Modify', $action-edit, 'modify-action');
     .item( 'Rename id', $action-edit, 'rename-id');
     .item( 'Delete', $action-edit, 'delete');
   }
 
-  with my GnomeTools::Gtk::Menu $m4 .= new( :$parent-menu, :name<Variables>) {
+  with my GnomeTools::Gio::Menu $m4 .= new( :$parent-menu, :name<Variables>) {
     .item( 'Add Modify', $variable-edit, 'add-modify');
     .item( 'Delete', $variable-edit, 'delete');
   }
@@ -270,7 +271,7 @@ use NativeCall;
 
 use Getopt::Long;
 
-use GnomeTools::Gtk::Menu;
+use GnomeTools::Gio::Menu;
 
 use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
@@ -482,7 +483,7 @@ method setup-window ( ) {
 
     my SessionManager::Config $config .= instance;
 
-    my GnomeTools::Gtk::Menu $menu-bar = self.make-menu;
+    my GnomeTools::Gio::Menu $menu-bar = self.make-menu;
     $menu-bar.set-actions($!application);
     $!application.set-menubar($menu-bar.get-menu);
     .set-show-menubar(True);
@@ -498,28 +499,28 @@ method setup-window ( ) {
 }
 
 #-------------------------------------------------------------------------------
-method make-menu ( --> GnomeTools::Gtk::Menu ) {
+method make-menu ( --> GnomeTools::Gio::Menu ) {
 
   my SessionManager::Gui::Actions $action-edit .= instance;
   my SessionManager::Gui::Variables $variable-edit .= instance;
   my SessionManager::Gui::Sessions $session-edit .= instance;
   my SessionManager::Gui::Config $config-edit .= instance;
 
-  my GnomeTools::Gtk::Menu $bar .= new;
-  my GnomeTools::Gtk::Menu $parent-menu = $bar;
-  with my GnomeTools::Gtk::Menu $m1 .= new( :$parent-menu, :name<File>) {
+  my GnomeTools::Gio::Menu $bar .= new;
+  my GnomeTools::Gio::Menu $parent-menu = $bar;
+  with my GnomeTools::Gio::Menu $m1 .= new( :$parent-menu, :name<File>) {
     $parent-menu = $m1;
-    with my GnomeTools::Gtk::Menu $sc1 .= new( :$parent-menu, :section(Str)) {
+    with my GnomeTools::Gio::Menu $sc1 .= new( :$parent-menu, :section(Str)) {
       .item( 'Modify Configuration', $config-edit, 'modify-configuration');
       .item( 'Restart', self, 'file-restart');
     }
-    with my GnomeTools::Gtk::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
+    with my GnomeTools::Gio::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
       .item( 'Quit', self, 'file-quit');
     }
   }
 
   $parent-menu = $bar;
-  with my GnomeTools::Gtk::Menu $m2 .= new( :$parent-menu, :name<Sessions>) {
+  with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Sessions>) {
     .item( 'Add/Rename', $session-edit, 'add-rename');
     .item( 'Add/Rename Group', $session-edit, 'add-rename-group');
     .item( 'Delete Group', $session-edit, 'delete-group');
@@ -527,14 +528,14 @@ method make-menu ( --> GnomeTools::Gtk::Menu ) {
     .item( 'Delete', $session-edit, 'delete');
   }
 
-  with my GnomeTools::Gtk::Menu $m3 .= new( :$parent-menu, :name<Actions>) {
+  with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Actions>) {
     .item( 'Create', $action-edit, 'create-action');
     .item( 'Modify', $action-edit, 'modify-action');
     .item( 'Rename id', $action-edit, 'rename-id');
     .item( 'Delete', $action-edit, 'delete');
   }
 
-  with my GnomeTools::Gtk::Menu $m4 .= new( :$parent-menu, :name<Variables>) {
+  with my GnomeTools::Gio::Menu $m4 .= new( :$parent-menu, :name<Variables>) {
     .item( 'Add Modify', $variable-edit, 'add-modify');
     .item( 'Delete', $variable-edit, 'delete');
   }
