@@ -26,20 +26,15 @@
     "SessionManager::Command": "lib/SessionManager/Command.rakumod",
     "SessionManager::Config": "lib/SessionManager/Config.rakumod",
     "SessionManager::RunActionCommand": "lib/SessionManager/RunActionCommand.rakumod",
-    "SessionManager::Session": "lib/SessionManager/Session.rakumod",
+    "SessionManager::Sessions": "lib/SessionManager/Sessions.rakumod",
     "SessionManager::Variables": "lib/SessionManager/Variables.rakumod"
   },
 
   "depends": [
-    "Gnome::Gtk4:api<2>", "GnomeTools", "YAMLish", "Getopt::Long",
+    "Gnome::Gtk4:api<2>", "GnomeTools", "YAMLish", "Getopt::Long"
   ],
 
   "resources": [
-    "bookmark.png",
-    "config-icon.jpg",
-    "fastforward.png",
-    "sessionmanager-icon.png",
-
     "manager.css", "manager-changes.css"
   ],
 
