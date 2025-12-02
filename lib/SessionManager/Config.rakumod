@@ -40,21 +40,6 @@ submethod BUILD ( ) {
   mkdir $*config-directory ~ '/Pictures', 0o700
         unless ($*config-directory ~ '/Pictures').IO.e;
 
-#`{{
-  # It is supposed to copy files to a controllable location See also issue #5746
-  # at https://github.com/rakudo/rakudo/issues/5746.
-  # Are used in the css file and must be accessable in a known path. Rest can
-  # be retrieved from the resources.
-  my Str $png-file;
-  for <
-    config-icon.jpg bookmark.png fastforward.png sessionmanager-icon.png
-  > -> $i {
-    $png-file = [~] $*config-directory, '/Pictures/Overlay/', $i;
-note "$?LINE $i, $png-file, %?RESOURCES{$i}.gist()";
-    %?RESOURCES{"overlay-icons/$i"}.copy($png-file) unless $png-file.IO.e;
-  }
-}}
-
   # Copy style sheets to data directory and load into program
   my Str $css-path = $*config-directory ~ '/Config/manager.css';
   %?RESOURCES<manager.css>.copy($css-path);
