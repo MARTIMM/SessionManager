@@ -84,11 +84,11 @@ method local-options ( --> Int ) {
 #-------------------------------------------------------------------------------
 method remote-options ( Array $args, Bool :$is-remote --> Int ) {
   $!exit-code = 0;
-note "$?LINE $args.gist()";
+#note "$?LINE $args.gist()";
 
   # Eats all options from @*ARGS by :overwrite
   my Capture $o = get-options-from( $args, |RemoteOptions, :overwrite);
-note "$?LINE $args.gist()";
+#note "$?LINE $args.gist()";
   if $o<verbose>:exists {
     $*verbose = True;
   }
