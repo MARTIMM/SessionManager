@@ -326,27 +326,15 @@ method add-remove-actions ( N-Object $parameter ) {
   ) {
     my DropDown $groups-dd .= new;
     $groups-dd.set-events;
+
     my DropDown $sessions-dd .= new;
     $sessions-dd.set-events;
+
     my Label $grouptitle .= new-label;
     my Label $sessiontitle .= new-label;
 
 #    my ListBox $sessions-actions-list;
     my ListBox $all-actions-list;
-
-    # Fill the sessions list.
-    my @session-ids = $!sessions.get-session-ids.sort;
-    $sessions-dd.append(@session-ids);
-    $sessions-dd.select(@session-ids[0]);
-
-    # Create the listbox to list all actions.
-    $all-actions-list .= new(:multi);
-    my ScrolledWindow $sw2 = $all-actions-list.set-list(
-      [|$actions.get-action-ids]
-    );
-
-    # Fill the groups list.
-    $groups-dd.append(|$!sessions.get-group-ids(@session-ids[0]).sort);
 
     # Trap changes in the sessions list
     $sessions-dd.set-selection-changed(
@@ -360,12 +348,26 @@ method add-remove-actions ( N-Object $parameter ) {
       :$grouptitle, :$all-actions-list
     );
 
+    # Fill the sessions list.
+    my @session-ids = $!sessions.get-session-ids.sort;
+    $sessions-dd.append(@session-ids);
+    $sessions-dd.select(@session-ids[0]);
+
+    # Create the listbox to list all actions.
+    $all-actions-list .= new(:multi);
+    my ScrolledWindow $sw2 = $all-actions-list.set-list(
+      [|$actions.get-action-ids]
+    );
+
+    # Fill the groups list.
+    #$groups-dd.append(|$!sessions.get-group-ids(@session-ids[0]).sort);
+
     # Call the callback routine once to fillout the titles of session and group
     # and make the sessions actions list visible in the actions listbox
-    self.set-grouplist(
-      :$sessions-dd, :$groups-dd, :$sessiontitle, :$grouptitle, 
-      :$all-actions-list
-    );
+#    self.set-grouplist(
+#      :$sessions-dd, :$groups-dd, :$sessiontitle, :$grouptitle, 
+#      :$all-actions-list
+#    );
 
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, $sessiontitle);
@@ -464,6 +466,7 @@ method set-grouplist (
   my Str $sessionid = $sessions-dd.get-text;
   return unless ?$sessionid;
 
+  $groups-dd.remove(0..^$groups-dd.get-n-items());
   $groups-dd.append($!sessions.get-group-ids($sessionid).sort);
 
   my Str $group-name = $groups-dd.get-text // '';
