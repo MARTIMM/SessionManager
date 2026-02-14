@@ -154,7 +154,7 @@ method create-action ( N-Object $parameter = N-Object --> Str ) {
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :3columns);
-    .add-content( 'Action id', [1, $action-id, 2, $aspec-title]);
+    .add-content( 'Action id', $action-id, $aspec-title);
     .add-content( 'Command', $aspec-cmd, :3columns);
     .add-content( 'Shell', $aspec-shell, :3columns);
     .add-content( 'Path', $aspec-path, :3columns);
@@ -270,11 +270,11 @@ method modify-action (
       .add-content( 'Current actions', $scrolled-listbox, :3columns);
     }
 
-    .add-content( 'Action id', [ 1, $action-id, 2, $aspec-title]);
+    .add-content( 'Action id', $action-id, $aspec-title);
     .add-content( 'Command', $aspec-cmd, :3columns);
     .add-content( 'Shell', $aspec-shell, :3columns);
     .add-content( 'Path', $aspec-path, :3columns);
-    .add-content( 'Wait', [ 2, $aspec-wait, 1, $aspec-log]);
+    .add-content( 'Wait', $aspec-wait, $aspec-log);
     .add-content( 'Icon', $aspec-icon, :3columns);
     .add-content( 'Picture', $aspec-pic, :3columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
@@ -362,7 +362,7 @@ method rename-id ( N-Object $parameter ) {
     );
 
     .add-content( 'Current actions', $scrolled-listbox, :3columns);
-    .add-content( 'Action id', [ 1, $action-id, 2, $aspec-title]);
+    .add-content( 'Action id', $action-id, $aspec-title);
     .add-content( 'Command', $aspec-cmd, :3columns);
     .add-content( 'Shell', $aspec-shell, :3columns);
     .add-content( 'Path', $aspec-path, :3columns);
