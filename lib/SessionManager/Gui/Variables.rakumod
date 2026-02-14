@@ -13,14 +13,12 @@ use Gnome::N::N-Object:api<2>;
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListBox;
+use GnomeTools::Gtk::ListView;
 
 use Gnome::Gtk4::ScrolledWindow:api<2>;
-#use Gnome::Gtk4::ListBox:api<2>;
-#use Gnome::Gtk4::ListBoxRow:api<2>;
-#use Gnome::Gtk4::Grid:api<2>;
+use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
-#use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 
 #-------------------------------------------------------------------------------
@@ -30,13 +28,13 @@ constant ConfigPath = '/Config/variables.yaml';
 my SessionManager::Gui::Variables $instance;
 
 constant ListBox = GnomeTools::Gtk::ListBox;
+constant ListView = GnomeTools::Gtk::ListView;
 
 constant Entry = Gnome::Gtk4::Entry;
-#constant ListBox = Gnome::Gtk4::ListBox;
 constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
-#constant Grid = Gnome::Gtk4::Grid;
+constant Grid = Gnome::Gtk4::Grid;
 constant Box = Gnome::Gtk4::Box;
 
 has SessionManager::Variables $!variables;
@@ -129,12 +127,22 @@ method add-modify ( N-Object $parameter ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Variable'), :add-statusbar, :!modal
   ) {
-
     my Entry $vname .= new-entry;
     my Entry $vspec .= new-entry;
-    my ListBox $variables-lb .= new(
-      :object(self), :method<set-data>, :$vname, :$vspec,
-    );
+#    my ListBox $variables-lb .= new(
+#      :object(self), :method<set-data>, :$vname, :$vspec,
+#    );
+
+    my ListView $variables .= new(:!multi-select);
+    $variables.set-setup( self, 'setup-item');
+    $variables.set-bind( self, 'bind-item');
+#    $variables.set-unbind( self, 'unbind-item');
+    $variables.set-teardown( self, 'teardown-item');
+
+    $variables.set-selection-changed( self, 'selection-changed', :$dialog);
+
+    $variables.append($!variables.get-variables);
+
 
 #`{{
     my Int $row-count = 0;
@@ -162,22 +170,23 @@ method add-modify ( N-Object $parameter ) {
     }
 }}
 
-    my ScrolledWindow $sw = $variables-lb.set-list(
-      [ |($!variables.get-variables)]
-    );
+#    my ScrolledWindow $sw = $variables-lb.set-list(
+#      [ |($!variables.get-variables)]
+#    );
 
-    .add-content( 'Variable list', $sw, :4rows);
+#    .add-content( 'Variable list', $sw, :4rows);
+    .add-content( 'Variable list', $variables, :4rows);
     .add-content( 'Variable name', $vname);
     .add-content( 'Specification', $vspec);
 
     .add-button(
       self, 'do-add-variable', 'Add', :$dialog,
-      :$vname, :$vspec, :$variables-lb
+      :$vname, :$vspec, :$variables, #:$variables-lb
     );
 
     .add-button(
       self, 'do-rename-variable', 'Rename', :$dialog,
-      :$vname, :$vspec, :$variables-lb
+      :$vname, :$vspec, :$variables, #:$variables-lb
     );
 
     .add-button(
@@ -193,7 +202,7 @@ method add-modify ( N-Object $parameter ) {
 #-------------------------------------------------------------------------------
 method do-add-variable (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
-  Entry :$vspec, ListBox :$variables-lb#, Grid :$vlist
+  Entry :$vspec, ListView :$variables, #ListBox :$variables-lb#, Grid :$vlist
 ) {
 #  my Bool $sts-ok = False;
 
@@ -210,7 +219,7 @@ method do-add-variable (
   else {
     my Str $spec = $vspec.get-text;
     $!variables.add-variable( $variable, $spec);
-    $variables-lb.append-list($spec);
+#    $variables-lb.append-list($spec);
     $dialog.set-status("Variable $variable added with '$spec'");
 
 #    my Int $c = $!variables.get-n-variables;
@@ -225,7 +234,7 @@ method do-add-variable (
 #-------------------------------------------------------------------------------
 method do-rename-variable (
   GnomeTools::Gtk::Dialog :$dialog, ListBoxRow() :$row,
-  Entry :$vname, Entry :$vspec, ListBox :$variables-lb
+  Entry :$vname, Entry :$vspec, ListView :$variables, #ListBox :$variables-lb
 ) {
   my Str $variable = $vname.get-text;
 
@@ -238,6 +247,7 @@ method do-rename-variable (
   }
 
   else {
+#`{{
     # Change the entry in the listbox, returns array of possible selections
     my Str $original-name = $variables-lb.get-selection()[0];
 
@@ -251,6 +261,7 @@ method do-rename-variable (
     # Change the row in the listbox
     $variables-lb.reset-list([ | $!variables.get-variables ]);
     $dialog.set-status("Renamed successfully everything");
+}}
   }
 
   # Keep dialog open for other edits
@@ -310,5 +321,37 @@ method set-data(
 #-------------------------------------------------------------------------------
 method delete ( N-Object $parameter ) {
   note "$?LINE";
+}
+
+#-------------------------------------------------------------------------------
+#--[Listview callbacks]---------------------------------------------------------
+#-------------------------------------------------------------------------------
+method setup-item ( --> Gnome::Gtk4::Widget ) {
+  my Label $name .= new;
+  my Label $value .= new;
+  with my Grid $grid .= new-grid {
+    .attach( $name, 0, 0, 1, 1);
+    .attach( $value, 0, 1, 1, 1);
+  }
+
+  $grid;
+}
+
+#-------------------------------------------------------------------------------
+method bind-item ( Gnome::Gtk4::Grid() $grid, Str $var-name ) {
+note "$?LINE $var-name, $!variables.get-variable($var-name)";
+  my Label() $name = $grid.get-child-at( 0, 0);
+  $name.set-text($var-name);
+
+  my Str $var-value = $!variables.get-variable($var-name);
+  my Label() $value = $grid.get-child-at( 0, 1);
+  $value.set-text($var-value);
+}
+
+#-------------------------------------------------------------------------------
+#method unbind-item
+
+#-------------------------------------------------------------------------------
+method teardown-item ( ) {
 }
 
