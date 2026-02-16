@@ -19,6 +19,8 @@ use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
+use Gnome::Gtk4::Image:api<2>;
+use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 
 #-------------------------------------------------------------------------------
@@ -29,13 +31,16 @@ my SessionManager::Gui::Variables $instance;
 
 constant ListBox = GnomeTools::Gtk::ListBox;
 constant ListView = GnomeTools::Gtk::ListView;
+constant Dialog = GnomeTools::Gtk::Dialog;
 
 constant Entry = Gnome::Gtk4::Entry;
 constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Grid = Gnome::Gtk4::Grid;
+constant Button = Gnome::Gtk4::Button;
 constant Box = Gnome::Gtk4::Box;
+constant Image = Gnome::Gtk4::Image;
 
 has SessionManager::Variables $!variables;
 
@@ -124,7 +129,7 @@ method substitute-vars ( Str $t --> Str ) {
 #-------------------------------------------------------------------------------
 method add-modify ( N-Object $parameter ) {
 
-  with my GnomeTools::Gtk::Dialog $dialog .= new(
+  with my Dialog $dialog .= new(
     :dialog-header('Modify Variable'), :add-statusbar, :!modal
   ) {
     my Entry $vname .= new-entry;
@@ -139,9 +144,13 @@ method add-modify ( N-Object $parameter ) {
 #    $variables.set-unbind( self, 'unbind-item');
     $variables.set-teardown( self, 'teardown-item');
 
-    $variables.set-selection-changed( self, 'selection-changed', :$dialog);
+    $variables.append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
+#    $variables.append($!variables.get-variables[^3]);
 
-    $variables.append($!variables.get-variables);
+    $variables.set-selection-changed(
+      self, 'selection-changed', :$dialog, :$vname, :$vspec
+    );
+
 
 
 #`{{
@@ -175,7 +184,7 @@ method add-modify ( N-Object $parameter ) {
 #    );
 
 #    .add-content( 'Variable list', $sw, :4rows);
-    .add-content( 'Variable list', $variables, :4rows);
+    .add-content( 'Variable list', $variables);
     .add-content( 'Variable name', $vname);
     .add-content( 'Specification', $vspec);
 
@@ -186,7 +195,7 @@ method add-modify ( N-Object $parameter ) {
 
     .add-button(
       self, 'do-rename-variable', 'Rename', :$dialog,
-      :$vname, :$vspec, :$variables, #:$variables-lb
+      :$vname, :$vspec, :$variables
     );
 
     .add-button(
@@ -195,13 +204,14 @@ method add-modify ( N-Object $parameter ) {
 
     .add-button( $dialog, 'destroy-dialog', 'Done');
 
+    .set-size-request( 600, 800);
     .show-dialog;
   }
 }
 
 #-------------------------------------------------------------------------------
 method do-add-variable (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname,
+  Dialog :$dialog, Entry :$vname,
   Entry :$vspec, ListView :$variables, #ListBox :$variables-lb#, Grid :$vlist
 ) {
 #  my Bool $sts-ok = False;
@@ -233,7 +243,7 @@ method do-add-variable (
 
 #-------------------------------------------------------------------------------
 method do-rename-variable (
-  GnomeTools::Gtk::Dialog :$dialog, ListBoxRow() :$row,
+  Dialog :$dialog, ListBoxRow() :$row,
   Entry :$vname, Entry :$vspec, ListView :$variables, #ListBox :$variables-lb
 ) {
   my Str $variable = $vname.get-text;
@@ -268,9 +278,7 @@ method do-rename-variable (
  }
 
 #-------------------------------------------------------------------------------
-method do-modify-variable (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$vname, Entry :$vspec
-) {
+method do-modify-variable ( Dialog :$dialog, Entry :$vname, Entry :$vspec ) {
 #  my Bool $sts-ok = False;
 
   my Str $variable = $vname.get-text;
@@ -288,6 +296,139 @@ method do-modify-variable (
 #  $dialog.destroy-dialog if $sts-ok;
 }
 
+#-------------------------------------------------------------------------------
+method delete ( N-Object $parameter ) {
+  note "$?LINE";
+}
+
+#-------------------------------------------------------------------------------
+#--[Listview callbacks]---------------------------------------------------------
+#-------------------------------------------------------------------------------
+method setup-item ( --> Gnome::Gtk4::Widget ) {
+  my Label $name = self.make-label;
+  my Label $value = self.make-label;
+  my Image $used = self.make-image;
+  my Button $remove = self.make-button( 'user-trash-symbolic', $name);
+
+  with my Grid $grid .= new-grid {
+#    .set-top-margin(5);
+    .attach( $used, 0, 0, 2, 2);
+    .attach( $name, 2, 0, 1, 1);
+    .attach( $value, 2, 1, 1, 1);
+    .attach( $remove, 3, 0, 2, 2);
+  }
+
+  $grid;
+}
+
+#-------------------------------------------------------------------------------
+method make-label ( --> Label ) {
+  with my Label $label .= new-label {
+    .set-halign(GTK_ALIGN_START);
+    .set-justify(GTK_JUSTIFY_LEFT);
+    .set-hexpand(True);
+  }
+
+  $label
+}
+
+#-------------------------------------------------------------------------------
+method make-image ( --> Image ) {
+  with my Image $image .= new-image {
+#    .set-halign(GTK_ALIGN_START);
+#    .set-justify(GTK_JUSTIFY_LEFT);
+    .set-size-request( 50, 50);
+    .set-margin-end(10);
+  }
+
+  $image
+}
+
+#-------------------------------------------------------------------------------
+method make-button ( Str $icon-name, Label $name --> Button ) {
+  with my Button $button .= new-button {
+#    .set-halign(GTK_ALIGN_START);
+#    .set-justify(GTK_JUSTIFY_LEFT);
+    .set-size-request( 50, 50);
+    .set-margin-start(10);
+#    .set-icon-name($icon-name);
+    my Str $resource = 'Delete.png';
+    my Image $button-image .= new-image;
+    $button-image.set-from-file(%?RESOURCES{$resource});
+    .set-child($button-image);
+
+    .register-signal( self, 'remove-variable', 'clicked', :$name);
+  }
+
+  $button
+}
+
+#-------------------------------------------------------------------------------
+method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
+  my Str $value = $!variables.substitute-vars($!variables.get-variable($name));
+  self.set-text-at( 2, 0, $name, $grid);
+  self.set-text-at( 2, 1, $value, $grid);
+  
+  # Check if variable is used in the variables store
+  my Bool $name-inuse = $!variables.is-var-in-use($name);
+
+  # If variable is not in use in the variable store, check the
+  # use of it in the actions store.
+  if !$name-inuse {
+    my SessionManager::Actions $actions .= new;
+    $name-inuse = $actions.is-var-in-use($name);
+
+    # If variable is not in use in the actions store, check the
+    # use of it in the sessions store.
+    if !$name-inuse {
+      my SessionManager::Sessions $sessions .= new;
+      $name-inuse = $sessions.is-var-in-use($name);
+    }
+  }
+
+  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  my Button() $remove = $grid.get-child-at( 3, 0);
+  $remove.set-sensitive(!$name-inuse);
+}
+
+#-------------------------------------------------------------------------------
+method set-text-at ( Int $row, Int $col, Str $text, Gnome::Gtk4::Grid $grid ) {
+  my Label() $label = $grid.get-child-at( $row, $col);
+  $label.set-text($text);
+}
+
+#-------------------------------------------------------------------------------
+method set-image-at (
+  Int $row, Int $col, Str $color, Str $name,
+  Bool $name-inuse, Gnome::Gtk4::Grid $grid
+) {
+  my Str $on-off = $name-inuse ?? 'on' !! 'off';
+  my Image() $used = $grid.get-child-at( $row, $col);
+  my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
+  $used.set-from-file(%?RESOURCES{$resource});
+}
+
+#-------------------------------------------------------------------------------
+#method unbind-item
+
+#-------------------------------------------------------------------------------
+method teardown-item ( ) {
+}
+
+#-------------------------------------------------------------------------------
+method selection-changed (
+  UInt $pos, @selections, Dialog :$dialog, Entry :$vname, Entry :$vspec
+) {
+note "$?LINE $pos, @selections.gist(), ";
+  my Str $name = @selections[0];
+  $vname.set-text($name);
+  my Str $value = $!variables.get-variable($name);
+  $vspec.set-text($value);
+}
+
+
+
+=finish
 #-------------------------------------------------------------------------------
 method set-data(
   ListBox :$listbox, Label() :$row-widget, ListBoxRow() :$row,
@@ -317,41 +458,3 @@ method set-data(
   $vspec.set-has-tooltip(True);
   $vspec.set-tooltip-text($!variables.substitute-vars($value));
 }
-
-#-------------------------------------------------------------------------------
-method delete ( N-Object $parameter ) {
-  note "$?LINE";
-}
-
-#-------------------------------------------------------------------------------
-#--[Listview callbacks]---------------------------------------------------------
-#-------------------------------------------------------------------------------
-method setup-item ( --> Gnome::Gtk4::Widget ) {
-  my Label $name .= new;
-  my Label $value .= new;
-  with my Grid $grid .= new-grid {
-    .attach( $name, 0, 0, 1, 1);
-    .attach( $value, 0, 1, 1, 1);
-  }
-
-  $grid;
-}
-
-#-------------------------------------------------------------------------------
-method bind-item ( Gnome::Gtk4::Grid() $grid, Str $var-name ) {
-note "$?LINE $var-name, $!variables.get-variable($var-name)";
-  my Label() $name = $grid.get-child-at( 0, 0);
-  $name.set-text($var-name);
-
-  my Str $var-value = $!variables.get-variable($var-name);
-  my Label() $value = $grid.get-child-at( 0, 1);
-  $value.set-text($var-value);
-}
-
-#-------------------------------------------------------------------------------
-#method unbind-item
-
-#-------------------------------------------------------------------------------
-method teardown-item ( ) {
-}
-
