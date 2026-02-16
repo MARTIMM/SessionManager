@@ -35,7 +35,8 @@
   ],
 
   "resources": [
-    "manager.css", "manager-changes.css"
+    "manager.css", "manager-changes.css",
+    "green-off-256.png", "green-on-256.png", "Delete.png"
   ],
 
   "source-url": "git://github.com/MARTIMM/SessionManager.git"
