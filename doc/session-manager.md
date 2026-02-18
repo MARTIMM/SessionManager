@@ -64,7 +64,7 @@ The purpose of this program is that it can quickly setup an environment for some
     Type=Application
     ```
 
-* Variables
+### Variables
   * [x] Storage in **root**/Config/variables.yaml
   * [x] Add common variables for e.g. $HOME, root paths of config, and images.
   * [x] Add a variable
@@ -75,7 +75,14 @@ The purpose of this program is that it can quickly setup an environment for some
     * [ ] Before remove check its use in variables, actions, and sessions.
     * [ ] Cleanup unused variables
 
-* Actions:
+##### Variable data
+```plantuml
+@startyaml
+variable name: value
+@endyaml
+```
+
+### Actions:
   * [x] Storage in **root**/Config/actions.yaml.
   * [x] Add an action.
   * [x] Rename an action id.
@@ -94,7 +101,23 @@ The purpose of this program is that it can quickly setup an environment for some
     * [ ] Visibility in overlay.
     * [ ] Change css class of action icon in session group.
 
-* Sessions
+##### Action data
+```plantuml
+@startyaml
+action id: 
+  "D":  []
+  "c": command
+  "i": picture visible when --legacy is used
+  "l": logging, true or false
+  "o": overlay picture
+  "p": work path of command
+  "sh": shell command
+  "t": action title
+  "w": wait after finish
+@endyaml
+```
+
+### Sessions
   * [x] Storage in **root**/Config/sessions.yaml
   * [x] Add a session
   * Session group levels
@@ -108,6 +131,24 @@ The purpose of this program is that it can quickly setup an environment for some
   * Session focus
     * [ ] Change title of application window
     * [ ] Change css class of session icon in toolbar
+
+##### Session data
+```plantuml
+@startyaml
+session id: 
+  group1: 
+    actions: 
+      - action id
+      - second id
+  group2:
+    actions: 
+      - action id
+      - second id
+  "icon": session picture
+  "over": session overlay picture
+  "title": session title
+@endyaml
+```
 
 ### Application Directory Layout
 
