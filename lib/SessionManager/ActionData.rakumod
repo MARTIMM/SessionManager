@@ -216,7 +216,7 @@ method subst-vars ( Str:D $original-var, Str:D $new-var ) {
   my Str $id = $!id;
 
   for $raw-action.keys -> $type {
-    next unless $type ~~ Str;
+    next unless $raw-action{$type} ~~ Str;
     my Str $v = $raw-action{$type};
     $v ~~ s:g/ '$' $original-var (<-[\w-]>?) /\$$new-var$0/;
     $raw-action{$type} = $v;
