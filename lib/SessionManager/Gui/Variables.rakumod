@@ -194,8 +194,7 @@ method add-modify ( N-Object $parameter ) {
     );
 
     .add-button(
-      self, 'do-rename-variable', 'Rename', :$dialog,
-      :$vname, :$vspec, :$variables
+      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$variables
     );
 
     .add-button(
@@ -243,8 +242,7 @@ method do-add-variable (
 
 #-------------------------------------------------------------------------------
 method do-rename-variable (
-  Dialog :$dialog, ListBoxRow() :$row,
-  Entry :$vname, Entry :$vspec, ListView :$variables, #ListBox :$variables-lb
+  Dialog :$dialog, Entry :$vname, ListView :$variables
 ) {
   my Str $variable = $vname.get-text;
 
@@ -257,21 +255,20 @@ method do-rename-variable (
   }
 
   else {
-#`{{
     # Change the entry in the listbox, returns array of possible selections
-    my Str $original-name = $variables-lb.get-selection()[0];
+    my Str $original-name = $variables.get-selection()[0];
 
     # Rename the use of the variable in the variables hash.
     $!variables.rename-variable( $original-name, $variable);
-#note "$?LINE $variable, $original-name, $variables-lb.get-selection()[0]";
+note "$?LINE $variable, $original-name, $variables.get-selection(:rows)[0]";
     # Rename the use of the variable in the actions list.
     my SessionManager::Actions $actions .= new;
     $actions.subst-vars( $original-name, $variable);
 
     # Change the row in the listbox
-    $variables-lb.reset-list([ | $!variables.get-variables ]);
+    my UInt $original-pos = $variables.get-selection(:rows)[0];
+    $variables.splice( $original-pos, 1, ($variable,));
     $dialog.set-status("Renamed successfully everything");
-}}
   }
 
   # Keep dialog open for other edits
@@ -352,9 +349,8 @@ method make-button ( Str $icon-name, Label $name --> Button ) {
     .set-size-request( 50, 50);
     .set-margin-start(10);
 #    .set-icon-name($icon-name);
-    my Str $resource = 'Delete.png';
     my Image $button-image .= new-image;
-    $button-image.set-from-file(%?RESOURCES{$resource});
+    $button-image.set-from-file(%?RESOURCES<Delete.png>);
     .set-child($button-image);
 
     .register-signal( self, 'remove-variable', 'clicked', :$name);
@@ -412,7 +408,8 @@ method set-image-at (
 #method unbind-item
 
 #-------------------------------------------------------------------------------
-method teardown-item ( ) {
+method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
+  $grid.clear-object;
 }
 
 #-------------------------------------------------------------------------------
