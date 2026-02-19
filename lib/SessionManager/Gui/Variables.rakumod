@@ -12,10 +12,10 @@ use Gnome::N::N-Object:api<2>;
 
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
-use GnomeTools::Gtk::ListBox;
-use GnomeTools::Gtk::ListView;
+#use GnomeTools::Gtk::ListBox;
+#use GnomeTools::Gtk::ListView;
 
-use Gnome::Gtk4::ScrolledWindow:api<2>;
+#use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
@@ -29,14 +29,14 @@ unit class SessionManager::Gui::Variables;
 constant ConfigPath = '/Config/variables.yaml';
 my SessionManager::Gui::Variables $instance;
 
-constant ListBox = GnomeTools::Gtk::ListBox;
+#constant ListBox = GnomeTools::Gtk::ListBox;
 constant ListView = GnomeTools::Gtk::ListView;
 constant Dialog = GnomeTools::Gtk::Dialog;
 
 constant Entry = Gnome::Gtk4::Entry;
-constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
+#constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
-constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
+#constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Grid = Gnome::Gtk4::Grid;
 constant Button = Gnome::Gtk4::Button;
 constant Box = Gnome::Gtk4::Box;
@@ -134,54 +134,19 @@ method add-modify ( N-Object $parameter ) {
   ) {
     my Entry $vname .= new-entry;
     my Entry $vspec .= new-entry;
-#    my ListBox $variables-lb .= new(
-#      :object(self), :method<set-data>, :$vname, :$vspec,
-#    );
 
     my ListView $variables .= new(:!multi-select);
-    $variables.set-setup( self, 'setup-item');
+    $variables.set-setup( self, 'setup-item', :$dialog);
     $variables.set-bind( self, 'bind-item');
 #    $variables.set-unbind( self, 'unbind-item');
     $variables.set-teardown( self, 'teardown-item');
-
-    $variables.append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
-#    $variables.append($!variables.get-variables[^3]);
 
     $variables.set-selection-changed(
       self, 'selection-changed', :$dialog, :$vname, :$vspec
     );
 
-
-
-#`{{
-    my Int $row-count = 0;
-    my Grid $vlist .= new-grid;
-    $vlist.set-column-spacing(15);
-    for $!variables.get-variables.sort({$^a.lc cmp $^b.lc}) -> $v {
-      with my Label $ln .= new-label {
-        .set-text($v);
-        .set-justify(GTK_JUSTIFY_LEFT);
-        .set-halign(GTK_ALIGN_START);
-      }
-      with my Label $lv .= new-label {
-        .set-text($!variables.get-variable($v));
-        .set-justify(GTK_JUSTIFY_LEFT);
-        .set-halign(GTK_ALIGN_START);
-      }
-
-      $vlist.attach( $ln, 0, $row-count, 1, 1);
-      $vlist.attach( $lv, 1, $row-count, 1, 1);
-      $row-count++;
-    }
-    with my ScrolledWindow $sw .= new-scrolledwindow {
-      .set-child($vlist);
-      .set-size-request( 850, 300);
-    }
-}}
-
-#    my ScrolledWindow $sw = $variables-lb.set-list(
-#      [ |($!variables.get-variables)]
-#    );
+    $variables.append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
+#    $variables.append($!variables.get-variables[^3]);
 
 #    .add-content( 'Variable list', $sw, :4rows);
     .add-content( 'Variable list', $variables);
@@ -189,8 +154,7 @@ method add-modify ( N-Object $parameter ) {
     .add-content( 'Specification', $vspec);
 
     .add-button(
-      self, 'do-add-variable', 'Add', :$dialog,
-      :$vname, :$vspec, :$variables, #:$variables-lb
+      self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec, :$variables
     );
 
     .add-button(
@@ -210,11 +174,8 @@ method add-modify ( N-Object $parameter ) {
 
 #-------------------------------------------------------------------------------
 method do-add-variable (
-  Dialog :$dialog, Entry :$vname,
-  Entry :$vspec, ListView :$variables, #ListBox :$variables-lb#, Grid :$vlist
+  Dialog :$dialog, Entry :$vname, Entry :$vspec, ListView :$variables
 ) {
-#  my Bool $sts-ok = False;
-
   my Str $variable = $vname.get-text;
 
   if !$variable {
@@ -230,14 +191,7 @@ method do-add-variable (
     $!variables.add-variable( $variable, $spec);
 #    $variables-lb.append-list($spec);
     $dialog.set-status("Variable $variable added with '$spec'");
-
-#    my Int $c = $!variables.get-n-variables;
-#    $vlist.attach( $ln, 0, $c, 1, 1);
-#    $vlist.attach( $lv, 1, $c, 1, 1);
-#    $sts-ok = True;
   }
-
-#  $dialog.destroy-dialog if $sts-ok;
 }
 
 #-------------------------------------------------------------------------------
@@ -301,11 +255,11 @@ method delete ( N-Object $parameter ) {
 #-------------------------------------------------------------------------------
 #--[Listview callbacks]---------------------------------------------------------
 #-------------------------------------------------------------------------------
-method setup-item ( --> Gnome::Gtk4::Widget ) {
+method setup-item ( Dialog :$dialog --> Gnome::Gtk4::Widget ) {
   my Label $name = self.make-label;
   my Label $value = self.make-label;
   my Image $used = self.make-image;
-  my Button $remove = self.make-button( 'user-trash-symbolic', $name);
+  my Button $remove = self.make-button( 'user-trash-symbolic', $name, $dialog);
 
   with my Grid $grid .= new-grid {
 #    .set-top-margin(5);
@@ -342,18 +296,22 @@ method make-image ( --> Image ) {
 }
 
 #-------------------------------------------------------------------------------
-method make-button ( Str $icon-name, Label $name --> Button ) {
+method make-button (
+  Str $icon-name, Label $name, Dialog $dialog  --> Button
+) {
   with my Button $button .= new-button {
 #    .set-halign(GTK_ALIGN_START);
 #    .set-justify(GTK_JUSTIFY_LEFT);
     .set-size-request( 50, 50);
     .set-margin-start(10);
+    .set-margin-end(20);
 #    .set-icon-name($icon-name);
-    my Image $button-image .= new-image;
-    $button-image.set-from-file(%?RESOURCES<Delete.png>);
+    my Image $button-image .= new-from-icon-name($icon-name);
+    $button-image.set-pixel-size(64);
+#      .set-from-file(%?RESOURCES<Delete.png>);
     .set-child($button-image);
 
-    .register-signal( self, 'remove-variable', 'clicked', :$name);
+    .register-signal( self, 'remove-variable', 'clicked', :$name, :$dialog);
   }
 
   $button
@@ -364,7 +322,15 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   my Str $value = $!variables.substitute-vars($!variables.get-variable($name));
   self.set-text-at( 2, 0, $name, $grid);
   self.set-text-at( 2, 1, $value, $grid);
-  
+
+  my Bool $name-inuse = self.check-variable-inuse($name);
+  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  my Button() $remove = $grid.get-child-at( 3, 0);
+  $remove.set-sensitive(!$name-inuse);
+}
+
+#-------------------------------------------------------------------------------
+method check-variable-inuse ( Str:D $name --> Bool ) {
   # Check if variable is used in the variables store
   my Bool $name-inuse = $!variables.is-var-in-use($name);
 
@@ -381,10 +347,8 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
       $name-inuse = $sessions.is-var-in-use($name);
     }
   }
-
-  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
-  my Button() $remove = $grid.get-child-at( 3, 0);
-  $remove.set-sensitive(!$name-inuse);
+  
+  $name-inuse
 }
 
 #-------------------------------------------------------------------------------
@@ -416,14 +380,27 @@ method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
 method selection-changed (
   UInt $pos, @selections, Dialog :$dialog, Entry :$vname, Entry :$vspec
 ) {
-note "$?LINE $pos, @selections.gist(), ";
   my Str $name = @selections[0];
   $vname.set-text($name);
   my Str $value = $!variables.get-variable($name);
   $vspec.set-text($value);
 }
 
+#-------------------------------------------------------------------------------
+method remove-variable ( Label :$name, Dialog :$dialog ) {
+  # Remove but check first if in use. It is possible that the entry
+  # is changed because several dialogs can be opened next to each other
+  # changing its state.
+  my Str $name-var = $name.get-text;
+  if self.check-variable-inuse($name-var) {
+    $dialog.set-status("Variable '$name-var' is in use");
+  }
 
+  else {
+    $!variables.remove-variable($name-var);
+    $dialog.set-status("Variable '$name-var' removed");
+  }
+}
 
 =finish
 #-------------------------------------------------------------------------------

@@ -116,7 +116,9 @@ method rename-variable ( Str:D $old-var, Str:D $new-var ) {
 }
 
 #-------------------------------------------------------------------------------
-#method set-temporary ( Hash:D $temporary ) { }
+method remove-variable ( Str:D $name ) {
+  $variables{$name}:delete;
+}
 
 #-------------------------------------------------------------------------------
 method substitute-vars ( Str $t --> Str ) {
