@@ -205,10 +205,11 @@ method menu ( --> GnomeTools::Gio::Menu ) {
   }
 
   with my GnomeTools::Gio::Menu $m4 .= new( :$parent-menu, :name<Variables>) {
-    .item( 'Add Modify', $variable-edit, 'add-modify');
+    .item( 'Add', $variable-edit, 'add');
+    .item( 'Modify', $variable-edit, 'modify');
     .item( 'Delete', $variable-edit, 'delete');
   }
-  
+
   $bar
 }
 
