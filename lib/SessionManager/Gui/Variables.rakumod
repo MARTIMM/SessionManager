@@ -13,7 +13,7 @@ use Gnome::N::N-Object:api<2>;
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 #use GnomeTools::Gtk::ListBox;
-#use GnomeTools::Gtk::ListView;
+use GnomeTools::Gtk::ListView;
 
 #use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
@@ -59,75 +59,8 @@ method instance ( --> SessionManager::Gui::Variables ) {
   $instance
 }
 
-#`{{
-#-------------------------------------------------------------------------------
-method add ( Hash:D $variables ) {
-  $!variables = %( | $!variables, | $variables);
-}
-
-#-------------------------------------------------------------------------------
-method add-from-yaml ( Str:D $path ) {
-  die "File $path not found or unreadable" unless $path.IO.r;
-  $!variables = %( | $!variables, | load-yaml($path.IO.slurp));
-}
-
-#-------------------------------------------------------------------------------
-method save ( ) {
-  ($*config-directory ~ ConfigPath).IO.spurt(save-yaml($!variables));
-}
-
-#-------------------------------------------------------------------------------
-method load ( ) {
-  if ($*config-directory ~ ConfigPath).IO.r {
-    $!variables = load-yaml(($*config-directory ~ ConfigPath).IO.slurp);
-  }
-}
-
-#-------------------------------------------------------------------------------
-method set-temporary ( Hash:D $!temporary ) { }
-
-#-------------------------------------------------------------------------------
-method substitute-vars ( Str $t --> Str ) {
-
-  my Str $text = $t;
-
-  while $text ~~ m/ '$' $<variable-name> = <[\w-]>+ / {
-    my Str $name = $/<variable-name>.Str;
-#note "$?LINE $name";
-    # Look in the variables Hash
-    if $!variables{$name}:exists {
-      $text ~~ s:g/ '$' $name (<-[\w-]>?) /$!variables{$name}$0/;
-    }
-
-    # Look in the temporary Hash
-    elsif $!temporary{$name}:exists {
-      $text ~~ s:g/ '$' $name (<-[\w-]>?) /$!temporary{$name}$0/;
-    }
-
-    # Look in the environment
-    elsif %*ENV{$name}:exists {
-      $text ~~ s:g/ '$' $name (<-[\w-]>?) /%*ENV{$name}$0/;
-    }
-
-    # Fail and block variable by substituting $ for __
-    else {
-      note "No substitution yet or variable \$$name" if $*verbose;
-      $text ~~ s:g/ '$' $name (<-[\w-]>?) /___$name$0/;
-    }
-#note "$?LINE $text";
-  }
-
-  # Not substituted names are replaced by the original variable format
-  $text ~~ s:g/ '___' (<[\w-]>+) /\$$0/;
-
-  $text
-}
-}}
-
-#-------------------------------------------------------------------------------
-# Calls from menubar entries
-#-------------------------------------------------------------------------------
-method add-modify ( N-Object $parameter ) {
+#--[menu entry add]-------------------------------------------------------------
+method add ( N-Object $parameter ) {
 
   with my Dialog $dialog .= new(
     :dialog-header('Modify Variable'), :add-statusbar, :!modal
@@ -136,7 +69,7 @@ method add-modify ( N-Object $parameter ) {
     my Entry $vspec .= new-entry;
 
     my ListView $variables .= new(:!multi-select);
-    $variables.set-setup( self, 'setup-item', :$dialog);
+    $variables.set-setup( self, 'setup-item', :!add-button, :$dialog);
     $variables.set-bind( self, 'bind-item');
 #    $variables.set-unbind( self, 'unbind-item');
     $variables.set-teardown( self, 'teardown-item');
@@ -145,8 +78,8 @@ method add-modify ( N-Object $parameter ) {
       self, 'selection-changed', :$dialog, :$vname, :$vspec
     );
 
-    $variables.append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
-#    $variables.append($!variables.get-variables[^3]);
+#    $variables.append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
+    $variables.append($!variables.get-variables[^2]);
 
 #    .add-content( 'Variable list', $sw, :4rows);
     .add-content( 'Variable list', $variables);
@@ -156,7 +89,7 @@ method add-modify ( N-Object $parameter ) {
     .add-button(
       self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec, :$variables
     );
-
+#`{{
     .add-button(
       self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$variables
     );
@@ -164,7 +97,7 @@ method add-modify ( N-Object $parameter ) {
     .add-button(
       self, 'do-modify-variable', 'Modify', :$dialog, :$vname, :$vspec
     );
-
+}}
     .add-button( $dialog, 'destroy-dialog', 'Done');
 
     .set-size-request( 600, 800);
@@ -191,6 +124,54 @@ method do-add-variable (
     $!variables.add-variable( $variable, $spec);
 #    $variables-lb.append-list($spec);
     $dialog.set-status("Variable $variable added with '$spec'");
+  }
+}
+
+#--[menu entry modify]----------------------------------------------------------
+method modify ( N-Object $parameter ) {
+
+  with my Dialog $dialog .= new(
+    :dialog-header('Modify Variable'), :add-statusbar, :!modal
+  ) {
+    my Entry $vname .= new-entry;
+    my Entry $vspec .= new-entry;
+
+    my ListView $variables .= new(:!multi-select);
+    $variables.set-setup( self, 'setup-item', :!add-button, :$dialog);
+    $variables.set-bind( self, 'bind-item');
+#    $variables.set-unbind( self, 'unbind-item');
+    $variables.set-teardown( self, 'teardown-item');
+
+    $variables.set-selection-changed(
+      self, 'selection-changed', :$dialog, :$vname, :$vspec
+    );
+note $?LINE;
+
+#    $variables.append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
+    $variables.append($!variables.get-variables[^3]);
+note $?LINE;
+
+#    .add-content( 'Variable list', $sw, :4rows);
+    .add-content( 'Variable list', $variables);
+    .add-content( 'Variable name', $vname);
+    .add-content( 'Specification', $vspec);
+
+    .add-button(
+      self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec, :$variables
+    );
+
+    .add-button(
+      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$variables
+    );
+
+    .add-button(
+      self, 'do-modify-variable', 'Modify', :$dialog, :$vname, :$vspec
+    );
+
+    .add-button( $dialog, 'destroy-dialog', 'Done');
+
+    .set-size-request( 600, 800);
+    .show-dialog;
   }
 }
 
@@ -248,28 +229,75 @@ method do-modify-variable ( Dialog :$dialog, Entry :$vname, Entry :$vspec ) {
 }
 
 #-------------------------------------------------------------------------------
-method delete ( N-Object $parameter ) {
-  note "$?LINE";
-}
-
-#-------------------------------------------------------------------------------
-#--[Listview callbacks]---------------------------------------------------------
-#-------------------------------------------------------------------------------
-method setup-item ( Dialog :$dialog --> Gnome::Gtk4::Widget ) {
+method setup-item (
+  Bool :$add-button = False, Dialog :$dialog,
+  ListView() :_native-object($variables) --> Gnome::Gtk4::Widget
+) {
   my Label $name = self.make-label;
   my Label $value = self.make-label;
   my Image $used = self.make-image;
-  my Button $remove = self.make-button( 'user-trash-symbolic', $name, $dialog);
 
   with my Grid $grid .= new-grid {
 #    .set-top-margin(5);
     .attach( $used, 0, 0, 2, 2);
     .attach( $name, 2, 0, 1, 1);
     .attach( $value, 2, 1, 1, 1);
-    .attach( $remove, 3, 0, 2, 2);
+    if $add-button {
+      my Button $remove = self.make-button(
+        'user-trash-symbolic', $name, $dialog, $variables
+      );
+      .attach( $remove, 3, 0, 2, 2);
+    }
   }
 
   $grid;
+}
+
+#-------------------------------------------------------------------------------
+method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
+  my Str $value = $!variables.substitute-vars($!variables.get-variable($name));
+  self.set-text-at( 2, 0, $name, $grid);
+  self.set-text-at( 2, 1, $value, $grid);
+
+  my Bool $name-inuse = self.check-variable-inuse($name);
+  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+
+  # Check if remove button is added
+  my N-Object $n-remove = $grid.get-child-at( 3, 0);
+  if ?$n-remove {
+    my Button() $remove = $n-remove;
+    $remove.set-sensitive(!$name-inuse);
+  }
+}
+
+#-------------------------------------------------------------------------------
+method check-variable-inuse ( Str:D $name --> Bool ) {
+  # Check if variable is used in the variables store
+  my Bool $name-inuse = $!variables.is-var-in-use($name);
+
+  # If variable is not in use in the variable store, check the
+  # use of it in the actions store.
+  if !$name-inuse {
+    my SessionManager::Actions $actions .= new;
+    $name-inuse = $actions.is-var-in-use($name);
+
+    # If variable is not in use in the actions store, check the
+    # use of it in the sessions store.
+    if !$name-inuse {
+      my SessionManager::Sessions $sessions .= new;
+      $name-inuse = $sessions.is-var-in-use($name);
+    }
+  }
+  
+  $name-inuse
+}
+
+#-------------------------------------------------------------------------------
+#method unbind-item
+
+#-------------------------------------------------------------------------------
+method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
+  $grid.clear-object;
 }
 
 #-------------------------------------------------------------------------------
@@ -297,7 +325,7 @@ method make-image ( --> Image ) {
 
 #-------------------------------------------------------------------------------
 method make-button (
-  Str $icon-name, Label $name, Dialog $dialog  --> Button
+  Str $icon-name, Label $name, Dialog $dialog, ListView $variables  --> Button
 ) {
   with my Button $button .= new-button {
 #    .set-halign(GTK_ALIGN_START);
@@ -311,44 +339,22 @@ method make-button (
 #      .set-from-file(%?RESOURCES<Delete.png>);
     .set-child($button-image);
 
-    .register-signal( self, 'remove-variable', 'clicked', :$name, :$dialog);
+    .register-signal(
+      self, 'do-remove-variable', 'clicked', :$name, :$dialog, :$variables
+    );
   }
 
   $button
 }
 
 #-------------------------------------------------------------------------------
-method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
-  my Str $value = $!variables.substitute-vars($!variables.get-variable($name));
-  self.set-text-at( 2, 0, $name, $grid);
-  self.set-text-at( 2, 1, $value, $grid);
-
-  my Bool $name-inuse = self.check-variable-inuse($name);
-  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
-  my Button() $remove = $grid.get-child-at( 3, 0);
-  $remove.set-sensitive(!$name-inuse);
-}
-
-#-------------------------------------------------------------------------------
-method check-variable-inuse ( Str:D $name --> Bool ) {
-  # Check if variable is used in the variables store
-  my Bool $name-inuse = $!variables.is-var-in-use($name);
-
-  # If variable is not in use in the variable store, check the
-  # use of it in the actions store.
-  if !$name-inuse {
-    my SessionManager::Actions $actions .= new;
-    $name-inuse = $actions.is-var-in-use($name);
-
-    # If variable is not in use in the actions store, check the
-    # use of it in the sessions store.
-    if !$name-inuse {
-      my SessionManager::Sessions $sessions .= new;
-      $name-inuse = $sessions.is-var-in-use($name);
-    }
-  }
-  
-  $name-inuse
+method selection-changed (
+  UInt $pos, @selections, Dialog :$dialog, Entry :$vname, Entry :$vspec
+) {
+  my Str $name = @selections[0];
+  $vname.set-text($name);
+  my Str $value = $!variables.get-variable($name);
+  $vspec.set-text($value);
 }
 
 #-------------------------------------------------------------------------------
@@ -368,26 +374,56 @@ method set-image-at (
   $used.set-from-file(%?RESOURCES{$resource});
 }
 
-#-------------------------------------------------------------------------------
-#method unbind-item
+#--[menu entry delete]----------------------------------------------------------
+method delete ( N-Object $parameter ) {
 
-#-------------------------------------------------------------------------------
-method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
-  $grid.clear-object;
+  with my Dialog $dialog .= new(
+    :dialog-header('Modify Variable'), :add-statusbar, :!modal
+  ) {
+#    my Entry $vname .= new-entry;
+#    my Entry $vspec .= new-entry;
+
+    my ListView $variables .= new(:!multi-select);
+    $variables.set-setup( self, 'setup-item', :add-button, :$dialog);
+    $variables.set-bind( self, 'bind-item');
+#    $variables.set-unbind( self, 'unbind-item');
+    $variables.set-teardown( self, 'teardown-item');
+
+#    $variables.set-selection-changed(
+#      self, 'selection-changed', :$dialog, :$vname, :$vspec
+#    );
+
+    $variables.append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
+#    $variables.append($!variables.get-variables[^3]);
+
+#    .add-content( 'Variable list', $sw, :4rows);
+#    .add-content( 'Variable list', $variables);
+#    .add-content( 'Variable name', $vname);
+#    .add-content( 'Specification', $vspec);
+#`{{
+    .add-button(
+      self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec, :$variables
+    );
+
+    .add-button(
+      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$variables
+    );
+
+    .add-button(
+      self, 'do-modify-variable', 'Modify', :$dialog, :$vname, :$vspec
+    );
+}}
+    .add-button( $dialog, 'destroy-dialog', 'Done');
+
+    .set-size-request( 600, 800);
+    .show-dialog;
+  }
 }
 
 #-------------------------------------------------------------------------------
-method selection-changed (
-  UInt $pos, @selections, Dialog :$dialog, Entry :$vname, Entry :$vspec
+method do-remove-variable (
+  Label :$name, Dialog :$dialog, ListView :$variables
 ) {
-  my Str $name = @selections[0];
-  $vname.set-text($name);
-  my Str $value = $!variables.get-variable($name);
-  $vspec.set-text($value);
-}
-
-#-------------------------------------------------------------------------------
-method remove-variable ( Label :$name, Dialog :$dialog ) {
   # Remove but check first if in use. It is possible that the entry
   # is changed because several dialogs can be opened next to each other
   # changing its state.
@@ -397,6 +433,7 @@ method remove-variable ( Label :$name, Dialog :$dialog ) {
   }
 
   else {
+    $variables.splice();
     $!variables.remove-variable($name-var);
     $dialog.set-status("Variable '$name-var' removed");
   }
