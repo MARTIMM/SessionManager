@@ -30,9 +30,7 @@ constant ListView = GnomeTools::Gtk::ListView;
 constant Dialog = GnomeTools::Gtk::Dialog;
 
 constant Entry = Gnome::Gtk4::Entry;
-#constant ListBoxRow = Gnome::Gtk4::ListBoxRow;
 constant Label = Gnome::Gtk4::Label;
-#constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Grid = Gnome::Gtk4::Grid;
 constant Button = Gnome::Gtk4::Button;
 constant Box = Gnome::Gtk4::Box;
@@ -42,8 +40,8 @@ constant Image = Gnome::Gtk4::Image;
 my SessionManager::Gui::Variables $instance;
 
 has Dialog $!dialog;
-has Entry $!vname;
-has Entry $!vspec;
+has Entry $!variable-name;
+has Entry $!variable-spec;
 
 has SessionManager::Variables $!variables;
 has ListView $!variables-view;
@@ -64,8 +62,8 @@ method instance ( --> SessionManager::Gui::Variables ) {
 #--[menu entry add]-------------------------------------------------------------
 method add ( N-Object $parameter ) {
 
-  $!vname .= new-entry;
-  $!vspec .= new-entry;
+  $!variable-name .= new-entry;
+  $!variable-spec .= new-entry;
 
   with $!variables-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
@@ -83,8 +81,8 @@ method add ( N-Object $parameter ) {
     :dialog-header('Add Variable'), :add-statusbar, :!modal
   ) {
     .add-content( 'Variable list', $!variables-view);
-    .add-content( 'Variable name', $!vname);
-    .add-content( 'Specification', $!vspec);
+    .add-content( 'Variable name', $!variable-name);
+    .add-content( 'Specification', $!variable-spec);
 
     .add-button( self, 'do-add-variable', 'Add');
     .add-button( $!dialog, 'destroy-dialog', 'Done');
@@ -96,7 +94,7 @@ method add ( N-Object $parameter ) {
 
 #-------------------------------------------------------------------------------
 method do-add-variable ( ) {
-  my Str $variable = $!vname.get-text;
+  my Str $variable = $!variable-name.get-text;
 
   if !$variable {
     $!dialog.set-status("No variable name specified");
@@ -107,17 +105,19 @@ method do-add-variable ( ) {
   }
 
   else {
-    my Str $spec = $!vspec.get-text;
+    my Str $spec = $!variable-spec.get-text;
     $!variables.add-variable( $variable, $spec);
-    $!dialog.set-status("Variable $variable added with '$spec'");
+    $!dialog.set-status("Variable '$variable' added with '$spec'");
+    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    $!variables-view.splice( $original-pos, 0, $variable);
   }
 }
 
 #--[menu entry modify]----------------------------------------------------------
 method modify ( N-Object $parameter ) {
 
-  $!vname .= new-entry;
-  $!vspec .= new-entry;
+  $!variable-name .= new-entry;
+  $!variable-spec .= new-entry;
 
   with $!variables-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
@@ -131,16 +131,16 @@ method modify ( N-Object $parameter ) {
 #    .append($!variables.get-variables[^2]);
   }
 
-  with my Dialog $dialog .= new(
+  with $!dialog .= new(
     :dialog-header('Modify Variable'), :add-statusbar, :!modal
   ) {
     .add-content( 'Variable list', $!variables-view);
-    .add-content( 'Variable name', $!vname);
-    .add-content( 'Specification', $!vspec);
+    .add-content( 'Variable name', $!variable-name);
+    .add-content( 'Specification', $!variable-spec);
 
     .add-button( self, 'do-rename-variable', 'Rename');
     .add-button( self, 'do-modify-variable', 'Modify');
-    .add-button( $dialog, 'destroy-dialog', 'Done');
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
 
     .set-size-request( 600, 800);
     .show-dialog;
@@ -149,7 +149,7 @@ method modify ( N-Object $parameter ) {
 
 #-------------------------------------------------------------------------------
 method do-rename-variable ( ) {
-  my Str $variable = $!vname.get-text;
+  my Str $variable = $!variable-name.get-text;
 
   if !$variable {
     $!dialog.set-status("No variable name specified");
@@ -160,19 +160,19 @@ method do-rename-variable ( ) {
   }
 
   else {
-    # Change the entry in the listbox, returns array of possible selections
+    # Change the entry in the listview, returns array of possible selections
     my Str $original-name = $!variables-view.get-selection()[0];
 
     # Rename the use of the variable in the variables hash.
     $!variables.rename-variable( $original-name, $variable);
-note "$?LINE $variable, $original-name, $!variables-view.get-selection(:rows)[0]";
+
     # Rename the use of the variable in the actions list.
     my SessionManager::Actions $actions .= new;
     $actions.subst-vars( $original-name, $variable);
 
-    # Change the row in the listbox
+    # Change the row in the listview
     my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
-    $!variables-view.splice( $original-pos, 1, ($variable,));
+    $!variables-view.splice( $original-pos, 1, $variable);
     $!dialog.set-status("Renamed successfully everything");
   }
 
@@ -181,14 +181,70 @@ note "$?LINE $variable, $original-name, $!variables-view.get-selection(:rows)[0]
 
 #-------------------------------------------------------------------------------
 method do-modify-variable ( ) {
-  my Str $variable = $!vname.get-text;
+  my Str $variable = $!variable-name.get-text;
   if !$variable {
     $!dialog.set-status("No variable name specified");
   }
 
   else {
-    $!variables.set-variable( $variable, my Str $vtext = $!vspec.get-text);
-    $!dialog.set-status("Variable $variable modified to '$vtext'");
+    my Str $variable-spec = $!variable-spec.get-text;
+    $!variables.set-variable( $variable, $variable-spec);
+    $!dialog.set-status("Variable $variable modified to '$variable-spec'");
+
+    # Change the row in the listview
+    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    $!variables-view.splice( $original-pos, 1, $variable);
+    $!dialog.set-status("Renamed successfully everything");
+  }
+}
+
+#--[menu entry delete]----------------------------------------------------------
+method delete ( N-Object $parameter ) {
+
+  $!variable-name .= new-entry;
+  $!variable-spec .= new-entry;
+
+  with $!variables-view .= new(:!multi-select) {
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+    .set-selection-changed( self, 'selection-changed');
+
+    .append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
+#    .append($!variables.get-variables[^2]);
+  }
+
+  with $!dialog .= new(
+    :dialog-header('Modify Variable'), :add-statusbar, :!modal
+  ) {
+    .add-content( 'Variable list', $!variables-view);
+    .add-content( 'Variable name', $!variable-name);
+
+    .add-button( self, 'do-remove-variable', 'Remove');
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
+
+    .set-size-request( 600, 800);
+    .show-dialog;
+  }
+}
+
+#-------------------------------------------------------------------------------
+method do-remove-variable ( ) {
+  # Remove but check first if in use. It is possible that the entry
+  # is changed because several dialogs can be opened next to each other
+  # changing its state.
+  my Str $name-var = $!variable-name.get-text;
+  if self.check-variable-inuse($name-var) {
+    $!dialog.set-status("Variable '$name-var' is in use");
+  }
+
+  else {
+    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    $!variables-view.splice( $original-pos, 1);
+    $!variables.remove-variable($name-var);
+    $!dialog.set-status("Variable '$name-var' removed");
   }
 }
 
@@ -199,18 +255,9 @@ method setup-item ( ) {
   my Image $used = self.make-image;
 
   with my Grid $grid .= new-grid {
-#    .set-top-margin(5);
     .attach( $used, 0, 0, 2, 2);
     .attach( $name, 2, 0, 1, 1);
     .attach( $value, 2, 1, 1, 1);
-#`{{
-    if $add-button {
-      my Button $remove = self.make-button(
-        'user-trash-symbolic', $name, $dialog, $variables
-      );
-      .attach( $remove, 3, 0, 2, 2);
-    }
-}}
   }
 
   $grid;
@@ -224,15 +271,6 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
 
   my Bool $name-inuse = self.check-variable-inuse($name);
   self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
-
-#`{{
-  # Check if remove button is added
-  my N-Object $n-remove = $grid.get-child-at( 3, 0);
-  if ?$n-remove {
-    my Button() $remove = $n-remove;
-    $remove.set-sensitive(!$name-inuse);
-  }
-}}
 }
 
 #-------------------------------------------------------------------------------
@@ -279,49 +317,19 @@ method make-label ( --> Label ) {
 #-------------------------------------------------------------------------------
 method make-image ( --> Image ) {
   with my Image $image .= new-image {
-#    .set-halign(GTK_ALIGN_START);
-#    .set-justify(GTK_JUSTIFY_LEFT);
-    .set-size-request( 50, 50);
+    .set-size-request( 40, 40);
     .set-margin-end(10);
   }
 
   $image
 }
 
-#`{{
 #-------------------------------------------------------------------------------
-method make-button (
-  Str $icon-name, Label $name, Dialog $dialog, ListView $variables  --> Button
-) {
-  with my Button $button .= new-button {
-#    .set-halign(GTK_ALIGN_START);
-#    .set-justify(GTK_JUSTIFY_LEFT);
-    .set-size-request( 50, 50);
-    .set-margin-start(10);
-    .set-margin-end(20);
-#    .set-icon-name($icon-name);
-    my Image $button-image .= new-from-icon-name($icon-name);
-    $button-image.set-pixel-size(64);
-#      .set-from-file(%?RESOURCES<Delete.png>);
-    .set-child($button-image);
-
-    .register-signal(
-      self, 'do-remove-variable', 'clicked', :$name, :$dialog, :$variables
-    );
-  }
-
-  $button
-}
-}}
-
-#-------------------------------------------------------------------------------
-method selection-changed (
-  UInt $pos, @selections, Dialog :$dialog, Entry :$vname, Entry :$vspec
-) {
+method selection-changed ( UInt $pos, @selections ) {
   my Str $name = @selections[0];
-  $vname.set-text($name);
+  $!variable-name.set-text($name);
   my Str $value = $!variables.get-variable($name);
-  $vspec.set-text($value);
+  $!variable-spec.set-text($value);
 }
 
 #-------------------------------------------------------------------------------
@@ -339,100 +347,4 @@ method set-image-at (
   my Image() $used = $grid.get-child-at( $row, $col);
   my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
   $used.set-from-file(%?RESOURCES{$resource});
-}
-
-#--[menu entry delete]----------------------------------------------------------
-method delete ( N-Object $parameter ) {
-
-  with my Dialog $dialog .= new(
-    :dialog-header('Modify Variable'), :add-statusbar, :!modal
-  ) {
-#    my Entry $vname .= new-entry;
-#    my Entry $vspec .= new-entry;
-
-    my ListView $variables .= new(:!multi-select);
-    $variables.set-setup( self, 'setup-item', :add-button, :$dialog);
-    $variables.set-bind( self, 'bind-item');
-#    $variables.set-unbind( self, 'unbind-item');
-    $variables.set-teardown( self, 'teardown-item');
-
-#    $variables.set-selection-changed(
-#      self, 'selection-changed', :$dialog, :$vname, :$vspec
-#    );
-
-    $variables.append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
-#    $variables.append($!variables.get-variables[^3]);
-
-#    .add-content( 'Variable list', $sw, :4rows);
-#    .add-content( 'Variable list', $variables);
-#    .add-content( 'Variable name', $vname);
-#    .add-content( 'Specification', $vspec);
-#`{{
-    .add-button(
-      self, 'do-add-variable', 'Add', :$dialog, :$vname, :$vspec, :$variables
-    );
-
-    .add-button(
-      self, 'do-rename-variable', 'Rename', :$dialog, :$vname, :$variables
-    );
-
-    .add-button(
-      self, 'do-modify-variable', 'Modify', :$dialog, :$vname, :$vspec
-    );
-}}
-    .add-button( $dialog, 'destroy-dialog', 'Done');
-
-    .set-size-request( 600, 800);
-    .show-dialog;
-  }
-}
-
-#-------------------------------------------------------------------------------
-method do-remove-variable (
-  Label :$name, Dialog :$dialog, ListView :$variables
-) {
-  # Remove but check first if in use. It is possible that the entry
-  # is changed because several dialogs can be opened next to each other
-  # changing its state.
-  my Str $name-var = $name.get-text;
-  if self.check-variable-inuse($name-var) {
-    $dialog.set-status("Variable '$name-var' is in use");
-  }
-
-  else {
-    $variables.splice();
-    $!variables.remove-variable($name-var);
-    $dialog.set-status("Variable '$name-var' removed");
-  }
-}
-
-=finish
-#-------------------------------------------------------------------------------
-method set-data(
-  ListBox :$listbox, Label() :$row-widget, ListBoxRow() :$row,
-  Entry :$vname, Entry :$vspec
-) {
-  my SessionManager::Config $config .= instance;
-  my Label() $l = $row.get-child;
-  my Str $v = $l.get-text;
-
-  my Bool $vid-inuse = $!variables.is-var-in-use($v);
-  if !$vid-inuse {
-    my SessionManager::Actions $actions .= new;
-    $vid-inuse = $actions.is-var-in-use($v);
-  }
-
-  if !$vid-inuse {
-    my SessionManager::Sessions $sessions .= new;
-    $vid-inuse = $sessions.is-var-in-use($v);
-  }
-
-  $vname.set-text($v);
-  $vname.set-css-classes($vid-inuse ?? "in-use" !! "not-in-use");
-  
-  my Str $value = $!variables.get-variable($l.get-text);
-  $vspec.set-text($value);
-
-  $vspec.set-has-tooltip(True);
-  $vspec.set-tooltip-text($!variables.substitute-vars($value));
 }
