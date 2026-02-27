@@ -198,9 +198,9 @@ method menu ( --> GnomeTools::Gio::Menu ) {
   }
 
   with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Actions>) {
-    .item( 'Create', $action-edit, 'create-action');
-    .item( 'Modify', $action-edit, 'modify-action');
-    .item( 'Rename id', $action-edit, 'rename-id');
+    .item( 'Create', $action-edit, 'create');
+    .item( 'Modify', $action-edit, 'modify');
+    .item( 'Rename id', $action-edit, 'rename');
     .item( 'Delete', $action-edit, 'delete');
   }
 
