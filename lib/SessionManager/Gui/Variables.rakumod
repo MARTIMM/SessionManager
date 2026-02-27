@@ -75,6 +75,9 @@ method add ( N-Object $parameter ) {
 
     .append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
 #    .append($!variables.get-variables[^2]);
+
+    # Select the first one
+    .set-selection(0);
   }
 
   with $!dialog .= new(
@@ -129,6 +132,9 @@ method modify ( N-Object $parameter ) {
 
     .append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
 #    .append($!variables.get-variables[^2]);
+
+    # Select the first one
+    .set-selection(0);
   }
 
   with $!dialog .= new(
@@ -214,6 +220,9 @@ method delete ( N-Object $parameter ) {
 
     .append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
 #    .append($!variables.get-variables[^2]);
+
+    # Select the first one
+    .set-selection(0);
   }
 
   with $!dialog .= new(
