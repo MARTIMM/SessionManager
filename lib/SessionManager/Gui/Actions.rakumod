@@ -15,24 +15,33 @@ use Gnome::N::N-Object:api<2>;
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListBox;
+use GnomeTools::Gtk::ListView;
 
 use Gnome::Gtk4::TextBuffer:api<2>;
 use Gnome::Gtk4::T-textiter:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Switch:api<2>;
+use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::TextView:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
+use Gnome::Gtk4::Image:api<2>;
+use Gnome::Gtk4::Button:api<2>;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Actions;
 
 constant ListBox = GnomeTools::Gtk::ListBox;
+constant ListView = GnomeTools::Gtk::ListView;
+constant Dialog = GnomeTools::Gtk::Dialog;
 
+constant Image = Gnome::Gtk4::Image;
+constant Button = Gnome::Gtk4::Button;
 constant Entry = Gnome::Gtk4::Entry;
 constant Switch = Gnome::Gtk4::Switch;
+constant Grid = Gnome::Gtk4::Grid;
 constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant TextView = Gnome::Gtk4::TextView;
@@ -47,10 +56,27 @@ my SessionManager::Gui::Actions $instance;
 
 has Hash $!data-ids;
 has Str $!id-to-return-from-dialog = '';
+has SessionManager::Actions $!actions;
+has SessionManager::Sessions $!sessions;
+
+has Dialog $!dialog;
+has ListView $!actions-view;
+
+has Entry $!action-id;
+has Entry $!aspec-title;
+has TextView $!aspec-cmd;
+has Entry $!aspec-shell;
+has Entry $!aspec-path;
+has Entry $!aspec-wait;
+has Switch $!aspec-log;
+has Entry $!aspec-icon;
+has Entry $!aspec-pic;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   $!data-ids = %();
+  $!sessions .= new;
+  $!actions .= new;
 }
 
 #-------------------------------------------------------------------------------
@@ -119,60 +145,73 @@ method create ( N-Object $parameter ) {
 }
 }}
 
-#-------------------------------------------------------------------------------
+#--[menu entry create]----------------------------------------------------------
 # Parameter is ignored but is needed here because native gnome routine calls it
 # with an argument when called from a menu. Default value is set to the
 # undefined N-Object so other methods can call it without an argument.
-method create-action ( N-Object $parameter = N-Object --> Str ) {
+method create ( N-Object $parameter = N-Object --> Str ) {
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Create Action'), :add-statusbar, :!modal
   ) {
 #TODO some fields should be multiline text
-    my Entry $action-id .= new-entry;
-    my Entry $aspec-title .= new-entry;
-    my TextView $aspec-cmd .= new-textview;
-    my Entry $aspec-shell .= new-entry;
-    my Entry $aspec-path .= new-entry;
-    my Entry $aspec-wait .= new-entry;
-    my Switch $aspec-log .= new-switch;
-    my Entry $aspec-icon .= new-entry;
-    my Entry $aspec-pic .= new-entry;
+  $!action-id .= new-entry;
+  $!aspec-title .= new-entry;
+  $!aspec-cmd .= new-textview;
+  $!aspec-shell .= new-entry;
+  $!aspec-path .= new-entry;
+  $!aspec-wait .= new-entry;
+  $!aspec-log .= new-switch;
+  $!aspec-icon .= new-entry;
+  $!aspec-pic .= new-entry;
 #TODO add fields for variables and environment
 
-    # Set placeholder texts when optional
-    $aspec-path.set-placeholder-text('optional');
-    $aspec-wait.set-placeholder-text('optional');
-    $aspec-icon.set-placeholder-text('optional');
-    $aspec-pic.set-placeholder-text('optional');
+  # Set placeholder texts when optional
+  $!aspec-path.set-placeholder-text('optional');
+  $!aspec-wait.set-placeholder-text('optional');
+  $!aspec-icon.set-placeholder-text('optional');
+  $!aspec-pic.set-placeholder-text('optional');
 
-    my ListBox $listbox;
+  with $!actions-view .= new(:!multi-select) {
+#    .set-events;
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+    .set-selection-changed( self, 'set-input-fields');
+
+    .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+#    .append($!actions.get-action-idss[^2]);
+
+    # Select the first one
+    .set-selection(0);
+  }
+#`{{
+    my ListView $listbox;
     my ScrolledWindow $scrolled-listbox;
     ( $listbox, $scrolled-listbox) = self.scrollable-list(
       :$dialog, :!modal, :$action-id, :$aspec-title, :$aspec-cmd,
       :$aspec-path, :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic,
       :$aspec-shell
     );
-
-    .add-content( 'Current actions', $scrolled-listbox, :3columns);
-    .add-content( 'Action id', $action-id, $aspec-title);
-    .add-content( 'Command', $aspec-cmd, :3columns);
-    .add-content( 'Shell', $aspec-shell, :3columns);
-    .add-content( 'Path', $aspec-path, :3columns);
-    .add-content( 'Wait', $aspec-wait, $aspec-log);
-    .add-content( 'Icon', $aspec-icon, :3columns);
-    .add-content( 'Picture', $aspec-pic, :3columns);
+}}
+#    .add-content( 'Current actions', $scrolled-listbox, :3columns);
+    .add-content( 'Current actions', $!actions-view, :3columns);
+    .add-content( 'Action id', $!action-id, $!aspec-title);
+    .add-content( 'Command', $!aspec-cmd, :3columns);
+    .add-content( 'Shell', $!aspec-shell, :3columns);
+    .add-content( 'Path', $!aspec-path, :3columns);
+    .add-content( 'Wait', $!aspec-wait, $!aspec-log);
+    .add-content( 'Icon', $!aspec-icon, :3columns);
+    .add-content( 'Picture', $!aspec-pic, :3columns);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
-    .add-button(
-      self, 'do-create-act', 'Create', :$dialog, :$action-id,
-      :$aspec-title, :$aspec-cmd, :$aspec-shell, :$aspec-path,
-      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic
-    );
-
+    .add-button( self, 'do-create-act', 'Create');
     .add-button( $dialog, 'destroy-dialog', 'Cancel');
 
+    .set-size-request( 600, 800);
     .show-dialog;
   }
 
@@ -227,10 +266,8 @@ method do-create-act (
   $dialog.destroy-dialog if $ok;
 }
 
-#-------------------------------------------------------------------------------
-method modify-action (
-  N-Object $parameter = N-Object, Str :$target-id = '' --> Str
-) {
+#--[menu entry modify]----------------------------------------------------------
+method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
 
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Modify Action'), :add-statusbar, :!modal
@@ -332,8 +369,8 @@ method do-modify-act (
   $dialog.destroy-dialog;
 }
 
-#-------------------------------------------------------------------------------
-method rename-id ( N-Object $parameter ) {
+#--[menu entry rename]----------------------------------------------------------
+method rename ( N-Object $parameter ) {
   note "$?LINE ";
   with my GnomeTools::Gtk::Dialog $dialog .= new(
     :dialog-header('Rename Action'), :add-statusbar, :!modal
@@ -411,8 +448,7 @@ method do-rename-act (
     $actions.rename-action( $id, $new-id);
 
     # Change the use of actions in sessions
-    my SessionManager::Sessions $sessions .= new;
-    $sessions.rename-group-actions( $id, $new-id);
+    $!sessions.rename-group-actions( $id, $new-id);
 
     # Change text in listbox row
     $id-label.set-text($new-id);
@@ -430,8 +466,7 @@ method set-data (
 ) {
   my Str $id = $row-widget.get-text;
 
-  my SessionManager::Sessions $sessions .= new;
-  my Bool $aid-in-use = $sessions.is-action-in-use($id);
+  my Bool $aid-in-use = $!sessions.is-action-in-use($id);
   $action-id.set-css-classes($aid-in-use ?? "in-use" !! "not-in-use", 'abc');
   self.set-input-fields(
     :$id, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
@@ -440,20 +475,21 @@ method set-data (
 }
 
 #-------------------------------------------------------------------------------
-method set-input-fields (
-  Str :$id, Widget :$action-id,
+method set-input-fields ( UInt $pos, @selections,
+  Str :id($old-id), Widget :$action-id,
   Entry :$aspec-title, TextView :$aspec-cmd, Entry :$aspec-path,
   Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic, Entry :$aspec-shell
 ) {
 #TODO show tooltip over fields with filled in variables
-  my SessionManager::Actions $actions .= new;
-  my Hash $action-object = $actions.get-raw-action($id);
+#  $!actions .= new;
+  my $id = @selections[0];
+  my Hash $action-object = $!actions.get-raw-action($id);
 
-  $action-id.set-text($id);
+  $!action-id.set-text($id);
 
-  with $aspec-title { .set-text($action-object<t> // ''); }
-  with $aspec-cmd {
+  with $!aspec-title { .set-text($action-object<t> // ''); }
+  with $!aspec-cmd {
     my TextBuffer() $tb = .get-buffer;
     if ? my $s = $action-object<c> {
       $tb.set-text( $s, $s.chars);
@@ -464,15 +500,15 @@ method set-input-fields (
     }
   }
 
-  with $aspec-path { .set-text($action-object<p> // ''); }
-  with $aspec-wait { .set-text($action-object<w> // ''); }
-  with $aspec-log { .set-state($action-object<l>.Bool); }
-  with $aspec-icon { .set-text($action-object<o> // ''); }
-  with $aspec-pic { .set-text($action-object<i> // ''); }
-  with $aspec-shell { .set-placeholder-text($action-object<sh>); }
+  with $!aspec-path { .set-text($action-object<p> // ''); }
+  with $!aspec-wait { .set-text($action-object<w> // ''); }
+  with $!aspec-log { .set-state($action-object<l>.Bool); }
+  with $!aspec-icon { .set-text($action-object<o> // ''); }
+  with $!aspec-pic { .set-text($action-object<i> // ''); }
+  with $!aspec-shell { .set-placeholder-text($action-object<sh>); }
 }
 
-#-------------------------------------------------------------------------------
+#--[menu entry delete]----------------------------------------------------------
 method delete ( N-Object $parameter ) {
   note "$?LINE delete";
 }
@@ -498,3 +534,90 @@ method get-text ( TextView:D $textview --> Str ) {
 
   $tb.get-text( $t0, $te, False)
 }
+
+#-------------------------------------------------------------------------------
+method setup-item ( ) {
+  my Label $action-id = self.make-label;
+  my Label $action-value = self.make-label;
+  my Image $used = self.make-image;
+
+  with my Grid $grid .= new-grid {
+    .attach( $used, 0, 0, 2, 2);
+    .attach( $action-id, 2, 0, 1, 1);
+    .attach( $action-value, 2, 1, 1, 1);
+  }
+
+  $grid;
+}
+
+#-------------------------------------------------------------------------------
+method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
+  my Hash $action-object = $!actions.get-raw-action($name);
+  self.set-text-at( 2, 0, $name, $grid);
+  self.set-text-at( 2, 1, $action-object<t>//'', $grid);
+
+  my Bool $name-inuse = self.check-action-inuse($name);
+  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+}
+
+#-------------------------------------------------------------------------------
+method check-action-inuse ( Str:D $name --> Bool ) {
+  # Check if action is used in the sessions store
+  $!sessions.is-action-in-use($name);
+}
+
+#-------------------------------------------------------------------------------
+#method unbind-item
+
+#-------------------------------------------------------------------------------
+method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
+  $grid.clear-object;
+}
+
+#-------------------------------------------------------------------------------
+method make-label ( --> Label ) {
+  with my Label $label .= new-label {
+    .set-halign(GTK_ALIGN_START);
+    .set-justify(GTK_JUSTIFY_LEFT);
+    .set-hexpand(True);
+  }
+
+  $label
+}
+
+#-------------------------------------------------------------------------------
+method make-image ( --> Image ) {
+  with my Image $image .= new-image {
+    .set-size-request( 40, 40);
+    .set-margin-end(10);
+  }
+
+  $image
+}
+
+#-------------------------------------------------------------------------------
+method set-text-at ( Int $row, Int $col, Str $text, Gnome::Gtk4::Grid $grid ) {
+  my Label() $label = $grid.get-child-at( $row, $col);
+  $label.set-text($text);
+}
+
+#-------------------------------------------------------------------------------
+method set-image-at (
+  Int $row, Int $col, Str $color, Str $name,
+  Bool $name-inuse, Gnome::Gtk4::Grid $grid
+) {
+  my Str $on-off = $name-inuse ?? 'on' !! 'off';
+  my Image() $used = $grid.get-child-at( $row, $col);
+  my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
+  $used.set-from-file(%?RESOURCES{$resource});
+}
+
+#`{{
+#-------------------------------------------------------------------------------
+method selection-changed ( UInt $pos, @selections ) {
+  my Str $name = @selections[0];
+  $!variable-name.set-text($name);
+  my Str $value = $!variables.get-variable($name);
+  $!variable-spec.set-text($value);
+}
+}}
