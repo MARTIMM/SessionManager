@@ -150,7 +150,7 @@ method create ( N-Object $parameter ) {
 # with an argument when called from a menu. Default value is set to the
 # undefined N-Object so other methods can call it without an argument.
 method create ( N-Object $parameter = N-Object --> Str ) {
-  with my GnomeTools::Gtk::Dialog $dialog .= new(
+  with $!dialog .= new(
     :dialog-header('Create Action'), :add-statusbar, :!modal
   ) {
 #TODO some fields should be multiline text
@@ -209,7 +209,7 @@ method create ( N-Object $parameter = N-Object --> Str ) {
 #    .add-content( '', my Entry $aspec- .= new-entry);
 
     .add-button( self, 'do-create-act', 'Create');
-    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+    .add-button( $!dialog, 'destroy-dialog', 'Cancel');
 
     .set-size-request( 600, 800);
     .show-dialog;
@@ -219,51 +219,51 @@ method create ( N-Object $parameter = N-Object --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
-method do-create-act (
-  GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, Entry :$aspec-title,
-  TextView :$aspec-cmd, Entry :$aspec-path, Entry :$aspec-wait,
-  Switch :$aspec-log, Entry :$aspec-icon, Entry :$aspec-pic, Entry :$aspec-shell
-) {
-  my SessionManager::Actions $actions .= new;
-  my Str $id = $action-id.get-text;
-  my Bool $ok = False;
+method do-create-act ( ) {
+  my Str $id = $!action-id.get-text;
+#  my Bool $ok = False;
+
+note $?LINE, ', ', $!actions.get-action-ids;
 
   if !$id {
-    $dialog.set-status('The action id may not be empty');
+    $!dialog.set-status('The action id may not be empty');
   }
 
-  elsif $id ~~ any(|$actions.get-action-ids.keys) {
-    $dialog.set-status('This action id is already defined');
+  elsif $id ~~ any(|$!actions.get-action-ids.keys) {
+    $!dialog.set-status('This action id is already defined');
   }
 
   else {
     my SessionManager::Config $config .= instance;
     my Hash $raw-action = %();
-    $raw-action<t> = $aspec-title.get-text;
+    $raw-action<t> = $!aspec-title.get-text;
 #`{{
     my TextBuffer() $tb = $aspec-cmd.get-buffer;
     my N-TextIter() $t0 = $tb.get-start-iter;
     my N-TextIter() $te = $tb.get-end-iter;
     $raw-action<c> = $tb.get-text( $t0, $te, False);
 }}
-    $raw-action<c> = self.get-text($aspec-cmd);
-    $raw-action<o> = $config.set-picture($aspec-icon.get-text);
-    $raw-action<i> = $config.set-picture($aspec-pic.get-text);
-    $raw-action<l> = $aspec-log.get-state;
-    $raw-action<w> = $aspec-wait.get-text.Int;
-    $raw-action<p> = $aspec-path.get-text;
-    $raw-action<sh> = $aspec-shell.get-text;
+    $raw-action<c> = self.get-text($!aspec-cmd);
+    $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
+    $raw-action<i> = $config.set-picture($!aspec-pic.get-text);
+    $raw-action<l> = $!aspec-log.get-state;
+    $raw-action<w> = $!aspec-wait.get-text.Int;
+    $raw-action<p> = $!aspec-path.get-text;
+    $raw-action<sh> = $!aspec-shell.get-text;
 
-    $actions.add-action( $raw-action, :$id);
+    $!actions.add-action( $raw-action, :$id);
 #    my SessionManager::ActionData $ad = $actions.get-action($id);
 #    $ad.set-shell($aspec-shell.get-text);
 
-#    $dialog.set-status("The action '$id' is succesfully created");
+#    $!dialog.set-status("The action '$id' is succesfully created");
     $!id-to-return-from-dialog = $id;
-    $ok = True;
+#    $ok = True;
+    $!dialog.set-status("Added action '$id'");
+    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+    $!actions-view.splice( $original-pos, 0, $id);
   }
 
-  $dialog.destroy-dialog if $ok;
+#  $!dialog.destroy-dialog if $ok;
 }
 
 #--[menu entry modify]----------------------------------------------------------
