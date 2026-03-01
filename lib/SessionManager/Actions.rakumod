@@ -127,6 +127,11 @@ method modify-action ( Str:D $id, Hash $raw-action ) {
 }
 
 #-------------------------------------------------------------------------------
+method delete-action ( Str:D $id ) {
+  $data-ids{$id}:delete;
+}
+
+#-------------------------------------------------------------------------------
 # Substitute changed variable in the raw actions Hash.
 method subst-vars ( Str $original-var, Str $new-var ) {
   for $data-ids.keys -> $id {
