@@ -149,7 +149,7 @@ method create ( N-Object $parameter ) {
 # Parameter is ignored but is needed here because native gnome routine calls it
 # with an argument when called from a menu. Default value is set to the
 # undefined N-Object so other methods can call it without an argument.
-method create ( N-Object $parameter = N-Object --> Str ) {
+method create ( N-Object $parameter = N-Object ) {
   self.init-fields;
 
   with $!actions-view .= new(:!multi-select) {
