@@ -55,7 +55,7 @@ constant Widget = Gnome::Gtk4::Widget;
 my SessionManager::Gui::Actions $instance;
 
 has Hash $!data-ids;
-has Str $!id-to-return-from-dialog = '';
+#has Str $!id-to-return-from-dialog = '';
 has SessionManager::Actions $!actions;
 has SessionManager::Sessions $!sessions;
 
@@ -150,29 +150,9 @@ method create ( N-Object $parameter ) {
 # with an argument when called from a menu. Default value is set to the
 # undefined N-Object so other methods can call it without an argument.
 method create ( N-Object $parameter = N-Object --> Str ) {
-  with $!dialog .= new(
-    :dialog-header('Create Action'), :add-statusbar, :!modal
-  ) {
-#TODO some fields should be multiline text
-  $!action-id .= new-entry;
-  $!aspec-title .= new-entry;
-  $!aspec-cmd .= new-textview;
-  $!aspec-shell .= new-entry;
-  $!aspec-path .= new-entry;
-  $!aspec-wait .= new-entry;
-  $!aspec-log .= new-switch;
-  $!aspec-icon .= new-entry;
-  $!aspec-pic .= new-entry;
-#TODO add fields for variables and environment
-
-  # Set placeholder texts when optional
-  $!aspec-path.set-placeholder-text('optional');
-  $!aspec-wait.set-placeholder-text('optional');
-  $!aspec-icon.set-placeholder-text('optional');
-  $!aspec-pic.set-placeholder-text('optional');
+  self.init-fields;
 
   with $!actions-view .= new(:!multi-select) {
-#    .set-events;
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
 #    .set-unbind( self, 'unbind-item');
@@ -186,16 +166,47 @@ method create ( N-Object $parameter = N-Object --> Str ) {
     # Select the first one
     .set-selection(0);
   }
-#`{{
-    my ListView $listbox;
-    my ScrolledWindow $scrolled-listbox;
-    ( $listbox, $scrolled-listbox) = self.scrollable-list(
-      :$dialog, :!modal, :$action-id, :$aspec-title, :$aspec-cmd,
-      :$aspec-path, :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic,
-      :$aspec-shell
-    );
-}}
-#    .add-content( 'Current actions', $scrolled-listbox, :3columns);
+
+  with $!dialog .= new(
+    :dialog-header('Create Action'), :add-statusbar, :modal
+  ) {
+    self.add-fields-to-content;
+
+    .add-button( self, 'do-create-act', 'Create');
+    .add-button( $!dialog, 'destroy-dialog', 'Cancel');
+
+    .set-size-request( 800, 800);
+    .show-dialog;
+  }
+
+#  $!id-to-return-from-dialog
+}
+
+#-------------------------------------------------------------------------------
+method init-fields ( Bool :$id-is-label = False ) {
+#TODO some fields should be multiline text
+  $!action-id .= new-entry;
+  $!action-id.set-sensitive(!$id-is-label);
+  $!aspec-title .= new-entry;
+  $!aspec-cmd .= new-textview;
+  $!aspec-shell .= new-entry;
+  $!aspec-path .= new-entry;
+  $!aspec-wait .= new-entry;
+  $!aspec-log .= new-switch;
+  $!aspec-icon .= new-entry;
+  $!aspec-pic .= new-entry;
+#TODO add fields for variables and environment
+
+  # Set pl$aspec-cmdceholder texts when optional
+  $!aspec-path.set-placeholder-text('optional');
+  $!aspec-wait.set-placeholder-text('optional');
+  $!aspec-icon.set-placeholder-text('optional');
+  $!aspec-pic.set-placeholder-text('optional');
+}
+
+#-------------------------------------------------------------------------------
+method add-fields-to-content ( ) {
+  with $!dialog {
     .add-content( 'Current actions', $!actions-view, :3columns);
     .add-content( 'Action id', $!action-id, $!aspec-title);
     .add-content( 'Command', $!aspec-cmd, :3columns);
@@ -207,29 +218,17 @@ method create ( N-Object $parameter = N-Object --> Str ) {
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
-
-    .add-button( self, 'do-create-act', 'Create');
-    .add-button( $!dialog, 'destroy-dialog', 'Cancel');
-
-    .set-size-request( 600, 800);
-    .show-dialog;
   }
-
-  $!id-to-return-from-dialog
 }
 
 #-------------------------------------------------------------------------------
 method do-create-act ( ) {
   my Str $id = $!action-id.get-text;
-#  my Bool $ok = False;
-
-note $?LINE, ', ', $!actions.get-action-ids;
-
   if !$id {
     $!dialog.set-status('The action id may not be empty');
   }
 
-  elsif $id ~~ any(|$!actions.get-action-ids.keys) {
+  elsif $id ~~ any(|$!actions.get-action-ids) {
     $!dialog.set-status('This action id is already defined');
   }
 
@@ -256,7 +255,7 @@ note $?LINE, ', ', $!actions.get-action-ids;
 #    $ad.set-shell($aspec-shell.get-text);
 
 #    $!dialog.set-status("The action '$id' is succesfully created");
-    $!id-to-return-from-dialog = $id;
+#    $!id-to-return-from-dialog = $id;
 #    $ok = True;
     $!dialog.set-status("Added action '$id'");
     my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
@@ -268,79 +267,44 @@ note $?LINE, ', ', $!actions.get-action-ids;
 
 #--[menu entry modify]----------------------------------------------------------
 method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
+  self.init-fields;
 
-  with my GnomeTools::Gtk::Dialog $dialog .= new(
-    :dialog-header('Modify Action'), :add-statusbar, :!modal
+  with $!actions-view .= new(:!multi-select) {
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+    .set-selection-changed( self, 'set-input-fields');
+
+    .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+#    .append($!actions.get-action-idss[^2]);
+
+    # Select the first one
+    .set-selection(0);
+  }
+
+  with $!dialog .= new(
+    :dialog-header('Modify Action'), :add-statusbar, :modal
   ) {
-    my Label $action-id .= new-label;
-    my Entry $aspec-title .= new-entry;
-    my TextView $aspec-cmd .= new-textview;
-    my Entry $aspec-shell .= new-entry;
-    my Entry $aspec-path .= new-entry;
-    my Entry $aspec-wait .= new-entry;
-    my Switch $aspec-log .= new-switch;
-    my Entry $aspec-icon .= new-entry;
-    my Entry $aspec-pic .= new-entry;
+    self.add-fields-to-content;
 
-    # Set pl$aspec-cmdceholder texts when optional
-    $aspec-path.set-placeholder-text('optional');
-    $aspec-wait.set-placeholder-text('optional');
-    $aspec-icon.set-placeholder-text('optional');
-    $aspec-pic.set-placeholder-text('optional');
+    .add-button( self, 'do-modify-act', 'Modify');
+    .add-button( $!dialog, 'destroy-dialog', 'Cancel');
 
-    my ListBox $listbox;
-    my ScrolledWindow $scrolled-listbox;
-
-    if ?$target-id {
-      self.set-input-fields(
-        :id($target-id), :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
-        :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
-      );
-    }
-
-    else {
-      ( $listbox, $scrolled-listbox) = self.scrollable-list(
-        :$dialog, :$action-id, :$aspec-title, :$aspec-cmd,
-        :$aspec-path, :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic,
-        :$aspec-shell
-      );
-      .add-content( 'Current actions', $scrolled-listbox, :3columns);
-    }
-
-    .add-content( 'Action id', $action-id, $aspec-title);
-    .add-content( 'Command', $aspec-cmd, :3columns);
-    .add-content( 'Shell', $aspec-shell, :3columns);
-    .add-content( 'Path', $aspec-path, :3columns);
-    .add-content( 'Wait', $aspec-wait, $aspec-log);
-    .add-content( 'Icon', $aspec-icon, :3columns);
-    .add-content( 'Picture', $aspec-pic, :3columns);
-#    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
-#    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
-#    .add-content( '', my Entry $aspec- .= new-entry);
-
-    .add-button( self, 'do-modify-act', 'Modify', :$dialog, :$action-id,
-      :$aspec-title, :$aspec-cmd, :$aspec-path, :$aspec-wait,
-      :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
-    );
-
-    .add-button( $dialog, 'destroy-dialog', 'Cancel');
+    .set-size-request( 800, 800);
     .show-dialog;
   }
 
-  $!id-to-return-from-dialog
+#  $!id-to-return-from-dialog
 }
 
 #-------------------------------------------------------------------------------
-method do-modify-act (
-  GnomeTools::Gtk::Dialog :$dialog, Label :$action-id,
-  Entry :$aspec-title, TextView :$aspec-cmd, Entry :$aspec-shell,
-  Entry :$aspec-path, Entry :$aspec-wait, Switch :$aspec-log,
-  Entry :$aspec-icon, Entry :$aspec-pic
-) {
+method do-modify-act ( ) {
 #  my Bool $ok = False;
   my SessionManager::Config $config .= instance;
   my Hash $raw-action = %();
-  $raw-action<t> = $aspec-title.get-text;
+  $raw-action<t> = $!aspec-title.get-text;
 
 #`{{
   my TextBuffer() $tb = $aspec-cmd.get-buffer;
@@ -349,24 +313,27 @@ method do-modify-act (
   $tb.get-bounds( $t0, $te);
   $raw-action<c> = $tb.get-text( $t0, $te, False);
 }}
-  $raw-action<c> = self.get-text($aspec-cmd);
+  $raw-action<c> = self.get-text($!aspec-cmd);
 
-  $raw-action<o> = $config.set-picture($aspec-icon.get-text);
-  $raw-action<i> = $config.set-picture($aspec-pic.get-text);
-  $raw-action<l> = $aspec-log.get-state;
-  $raw-action<w> = $aspec-wait.get-text.Int;
-  $raw-action<p> = $aspec-path.get-text;
-  $raw-action<sh> = $aspec-shell.get-text;
+  $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
+  $raw-action<i> = $config.set-picture($!aspec-pic.get-text);
+  $raw-action<l> = $!aspec-log.get-state;
+  $raw-action<w> = $!aspec-wait.get-text.Int;
+  $raw-action<p> = $!aspec-path.get-text;
+  $raw-action<sh> = $!aspec-shell.get-text;
 
 #note "$?LINE $raw-action.gist()";
   my SessionManager::Actions $actions .= new;
-  my Str $id = $action-id.get-text;
+  my Str $id = $!action-id.get-text;
   $actions.modify-action( $id, $raw-action);
 
-  $dialog.set-status("The action '$id' is succesfully modified");
+  $!dialog.set-status("The action '$id' is succesfully modified");
+  
+  my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+  $!actions-view.splice( $original-pos, 0, $id);
 
-  $!id-to-return-from-dialog = $id;
-  $dialog.destroy-dialog;
+#  $!id-to-return-from-dialog = $id;
+#  $dialog.destroy-dialog;
 }
 
 #--[menu entry rename]----------------------------------------------------------
