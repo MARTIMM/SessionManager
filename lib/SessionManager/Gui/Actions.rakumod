@@ -183,7 +183,7 @@ method create ( N-Object $parameter = N-Object --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
-method init-fields ( Bool :$id-is-sensitive = True ) {
+method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!action-id .= new-entry {
     .set-sensitive($id-is-sensitive);
@@ -194,26 +194,35 @@ method init-fields ( Bool :$id-is-sensitive = True ) {
 
   with $!aspec-cmd .= new-textview {
     .set-size-request( -1, 100);
+    .set-sensitive(!$id-only);
   }
 
-  $!aspec-shell .= new-entry;
+  with $!aspec-shell .= new-entry {
+    .set-sensitive(!$id-only);
+  }
 
   with $!aspec-path .= new-entry {
     .set-placeholder-text('optional');
+    .set-sensitive(!$id-only);
   }
 
   with $!aspec-wait .= new-entry {
     .set-placeholder-text('optional');
+    .set-sensitive(!$id-only);
   }
 
-  $!aspec-log .= new-switch;
+  with $!aspec-log .= new-switch {
+    .set-sensitive(!$id-only);
+  }
 
   with $!aspec-icon .= new-entry {
     .set-placeholder-text('optional');
+    .set-sensitive(!$id-only);
   }
 
   with $!aspec-pic .= new-entry {
     .set-placeholder-text('optional');
+    .set-sensitive(!$id-only);
   }
 
 #TODO add fields for variables and environment
@@ -221,7 +230,6 @@ method init-fields ( Bool :$id-is-sensitive = True ) {
 #  $!aspec-env.set-size-request( -1, 100);
 #  $!aspec-temp-vars .= new-textview;
 #  $!aspec-temp-vars.set-size-request( -1, 100);
-
 }
 
 #-------------------------------------------------------------------------------
@@ -284,7 +292,7 @@ method do-create-act ( ) {
 
 #--[menu entry modify]----------------------------------------------------------
 method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
-  self.init-fields;
+  self.init-fields(:!id-is-sensitive);
 
   with $!actions-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
@@ -353,7 +361,7 @@ method do-modify-act ( ) {
 
 #--[menu entry rename]----------------------------------------------------------
 method rename ( N-Object $parameter ) {
-  self.init-fields;
+  self.init-fields(:id-only);
 
   with $!actions-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
