@@ -190,7 +190,9 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-placeholder-text('unique action id');
   }
 
-  $!aspec-title .= new-entry;
+  with $!aspec-title .= new-entry {
+    .set-sensitive(!$id-only);
+  }
 
   with $!aspec-cmd .= new-textview {
     .set-size-request( -1, 100);
@@ -285,6 +287,7 @@ method do-create-act ( ) {
 #    $!dialog.set-status("The action '$id' is succesfully created");
 #    $!id-to-return-from-dialog = $id;
     $!dialog.set-status("Added action '$id'");
+
     my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
     $!actions-view.splice( $original-pos, 0, $id);
   }
@@ -488,7 +491,49 @@ method set-input-fields ( UInt $pos, @selections,
 
 #--[menu entry delete]----------------------------------------------------------
 method delete ( N-Object $parameter ) {
-  note "$?LINE delete";
+  self.init-fields( :!id-is-sensitive, :id-only);
+
+  with $!actions-view .= new(:!multi-select) {
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+    .set-selection-changed( self, 'set-input-fields');
+
+    .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+#    .append($!actions.get-action-idss[^2]);
+
+    # Select the first one
+    .set-selection(0);
+  }
+
+  with $!dialog .= new(
+    :dialog-header('Delete Action'), :add-statusbar, :modal
+  ) {
+    self.add-fields-to-content;
+
+    .add-button( self, 'do-delete-act', 'Delete');
+    .add-button( $!dialog, 'destroy-dialog', 'Cancel');
+
+    .set-size-request( 800, 800);
+    .show-dialog;
+  }
+}
+
+#-------------------------------------------------------------------------------
+method do-delete-act ( ) {
+  my Str $id = $!action-id.get-text;
+  if self.check-action-inuse($id) {
+    $!dialog.set-status("Cannot delete id. Id '$id' is still in use.");
+  }
+
+  else {
+    $!dialog.set-status("Deleting '$id' successful");
+
+    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+    $!actions-view.splice( $original-pos, 1);
+  }
 }
 
 #-------------------------------------------------------------------------------
