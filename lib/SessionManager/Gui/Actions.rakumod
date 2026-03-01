@@ -183,25 +183,45 @@ method create ( N-Object $parameter = N-Object --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
-method init-fields ( Bool :$id-is-label = False ) {
-#TODO some fields should be multiline text
-  $!action-id .= new-entry;
-  $!action-id.set-sensitive(!$id-is-label);
-  $!aspec-title .= new-entry;
-  $!aspec-cmd .= new-textview;
-  $!aspec-shell .= new-entry;
-  $!aspec-path .= new-entry;
-  $!aspec-wait .= new-entry;
-  $!aspec-log .= new-switch;
-  $!aspec-icon .= new-entry;
-  $!aspec-pic .= new-entry;
-#TODO add fields for variables and environment
+method init-fields ( Bool :$id-is-sensitive = True ) {
 
-  # Set pl$aspec-cmdceholder texts when optional
-  $!aspec-path.set-placeholder-text('optional');
-  $!aspec-wait.set-placeholder-text('optional');
-  $!aspec-icon.set-placeholder-text('optional');
-  $!aspec-pic.set-placeholder-text('optional');
+  with $!action-id .= new-entry {
+    .set-sensitive($id-is-sensitive);
+    .set-placeholder-text('unique action id');
+  }
+
+  $!aspec-title .= new-entry;
+
+  with $!aspec-cmd .= new-textview {
+    .set-size-request( -1, 100);
+  }
+
+  $!aspec-shell .= new-entry;
+
+  with $!aspec-path .= new-entry {
+    .set-placeholder-text('optional');
+  }
+
+  with $!aspec-wait .= new-entry {
+    .set-placeholder-text('optional');
+  }
+
+  $!aspec-log .= new-switch;
+
+  with $!aspec-icon .= new-entry {
+    .set-placeholder-text('optional');
+  }
+
+  with $!aspec-pic .= new-entry {
+    .set-placeholder-text('optional');
+  }
+
+#TODO add fields for variables and environment
+#  $!aspec-env .= new-textview;
+#  $!aspec-env.set-size-request( -1, 100);
+#  $!aspec-temp-vars .= new-textview;
+#  $!aspec-temp-vars.set-size-request( -1, 100);
+
 }
 
 #-------------------------------------------------------------------------------
@@ -256,13 +276,10 @@ method do-create-act ( ) {
 
 #    $!dialog.set-status("The action '$id' is succesfully created");
 #    $!id-to-return-from-dialog = $id;
-#    $ok = True;
     $!dialog.set-status("Added action '$id'");
     my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
     $!actions-view.splice( $original-pos, 0, $id);
   }
-
-#  $!dialog.destroy-dialog if $ok;
 }
 
 #--[menu entry modify]----------------------------------------------------------
@@ -301,7 +318,6 @@ method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
 
 #-------------------------------------------------------------------------------
 method do-modify-act ( ) {
-#  my Bool $ok = False;
   my SessionManager::Config $config .= instance;
   my Hash $raw-action = %();
   $raw-action<t> = $!aspec-title.get-text;
@@ -333,53 +349,36 @@ method do-modify-act ( ) {
   $!actions-view.splice( $original-pos, 0, $id);
 
 #  $!id-to-return-from-dialog = $id;
-#  $dialog.destroy-dialog;
 }
 
 #--[menu entry rename]----------------------------------------------------------
 method rename ( N-Object $parameter ) {
-  note "$?LINE ";
-  with my GnomeTools::Gtk::Dialog $dialog .= new(
+  self.init-fields;
+
+  with $!actions-view .= new(:!multi-select) {
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+    .set-selection-changed( self, 'set-input-fields');
+
+    .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+#    .append($!actions.get-action-idss[^2]);
+
+    # Select the first one
+    .set-selection(0);
+  }
+
+  with $!dialog .= new(
     :dialog-header('Rename Action'), :add-statusbar, :!modal
   ) {
-    my Entry $action-id .= new-entry;
-    my Entry $aspec-title .= new-entry;
-    my TextView $aspec-cmd .= new-textview;
-    my Entry $aspec-shell .= new-entry;
-    my Entry $aspec-path .= new-entry;
-    my Entry $aspec-wait .= new-entry;
-    my Switch $aspec-log .= new-switch;
-    my Entry $aspec-icon .= new-entry;
-    my Entry $aspec-pic .= new-entry;
+    self.add-fields-to-content;
 
-    # Set placeholder texts when optional
-    $aspec-path.set-placeholder-text('optional');
-    $aspec-wait.set-placeholder-text('optional');
-    $aspec-icon.set-placeholder-text('optional');
-    $aspec-pic.set-placeholder-text('optional');
+    .add-button( self, 'do-rename-act', 'Rename');
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
 
-    my ListBox $listbox;
-    my ScrolledWindow $scrolled-listbox;
-    ( $listbox, $scrolled-listbox) = self.scrollable-list(
-      :$dialog, :$action-id, :$aspec-title, :$aspec-cmd, :$aspec-path,
-      :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
-    );
-
-    .add-content( 'Current actions', $scrolled-listbox, :3columns);
-    .add-content( 'Action id', $action-id, $aspec-title);
-    .add-content( 'Command', $aspec-cmd, :3columns);
-    .add-content( 'Shell', $aspec-shell, :3columns);
-    .add-content( 'Path', $aspec-path, :3columns);
-    .add-content( 'Wait', $aspec-wait, $aspec-log);
-    .add-content( 'Icon', $aspec-icon, :3columns);
-    .add-content( 'Picture', $aspec-pic, :3columns);
-
-    .add-button(
-      self, 'do-rename-act', 'Rename', :$dialog, :$action-id, :$listbox
-    );
-
-    .add-button( $dialog, 'destroy-dialog', 'Done');
-
+    .set-size-request( 800, 800);
     .show-dialog;
   }
 }
@@ -388,15 +387,15 @@ method rename ( N-Object $parameter ) {
 method do-rename-act (
   GnomeTools::Gtk::Dialog :$dialog, Entry :$action-id, ListBox :$listbox
 ) {
-  my SessionManager::Actions $actions .= new;
-  my Str $new-id = $action-id.get-text;
+#  my SessionManager::Actions $actions .= new;
+  my Str $new-id = $!action-id.get-text;
 
   if !$new-id {
-    $dialog.set-status('An action id may not be empty');
+    $!dialog.set-status('An action id may not be empty');
   }
 
-  elsif $new-id ~~ any(|$actions.get-action-ids) {
-    $dialog.set-status('This action id is already defined');
+  elsif $new-id ~~ any(|$!actions.get-action-ids) {
+    $!dialog.set-status('This action id is already defined');
   }
 
   else {
@@ -407,20 +406,24 @@ method do-rename-act (
     #}
 
     # Get selected id, listbox is not in multi select so always one selection
-    my Array $widgets = $listbox.get-selection(:get-widgets);
-    my Label() $id-label = $widgets[0];
+    my Str $old-id = $!actions-view.get-selection()[0];
 
-    # Get the id and change the actions and action data
-    my Str $id = $id-label.get-text;
-    $actions.rename-action( $id, $new-id);
+#    my Array $widgets = $listbox.get-selection(:get-widgets);
+#    my Label() $id-label = $widgets[0];
+
+#    # Get the id and change the actions and action data
+#    my Str $id = $id-label.get-text;
+    $!actions.rename-action( $old-id, $new-id);
 
     # Change the use of actions in sessions
-    $!sessions.rename-group-actions( $id, $new-id);
+    $!sessions.rename-group-actions( $old-id, $new-id);
+
+    $!dialog.set-status('Renamed everything successfully');
+    #$id-label.set-text($new-id);
 
     # Change text in listbox row
-    $id-label.set-text($new-id);
-
-    $dialog.set-status('Renamed everything successfully');
+    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+    $!actions-view.splice( $original-pos, 1, $new-id);
   }
 }
 
