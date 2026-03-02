@@ -16,6 +16,8 @@ use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
+use Gnome::Gtk4::Grid:api<2>;
+use Gnome::Gtk4::T-enums:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -40,6 +42,7 @@ constant Entry = Gnome::Gtk4::Entry;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Label = Gnome::Gtk4::Label;
 constant Widget = Gnome::Gtk4::Widget;
+constant Grid = Gnome::Gtk4::Grid;
 
 has Entry $!sessionid-e;
 has Entry $!sessiontitle-e;
@@ -52,11 +55,15 @@ has DropDown $!sessions-dd;
 # Fill the session drop down with the session ids and select the first one
 #has @!session-ids;
 
+has SessionManager::Actions $!actions;
+
 has Dialog $!dialog;
+has ListView $!actions-view;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   $!sessions .= new;
+  $!actions .= new;
 }
 
 #-------------------------------------------------------------------------------
@@ -95,6 +102,7 @@ method add-rename ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
+#method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
   $!sessionid-e .= new-entry;
   $!sessiontitle-e .= new-entry;
@@ -287,43 +295,58 @@ method delete-group ( N-Object $parameter, ) {
 method add-remove-actions ( N-Object $parameter ) {
   my Actions $actions .= new;
 
+  my DropDown $groups-dd .= new;
+  $groups-dd.set-events;
+
+  my DropDown $sessions-dd .= new;
+  $sessions-dd.set-events;
+
+  my Label $grouptitle .= new-label;
+  my Label $sessiontitle .= new-label;
+
+#    my ListBox $sessions-actions-list;
+#  my ListBox $all-actions-list;
+  with $!actions-view .= new(:multi-select) {
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+#    .set-selection-changed( self, 'set-input-fields');
+
+    .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+#    .append($!actions.get-action-idss[^2]);
+
+    # Select the first one
+    .set-selection(0);
+  }
+
+  # Trap changes in the sessions list
+  $sessions-dd.set-selection-changed(
+    self, 'set-grouplist', :$sessions-dd, :$groups-dd,
+    :$sessiontitle, :$grouptitle#, :$all-actions-list
+  );
+
+  # Trap changes in the group list
+  $groups-dd.set-selection-changed(
+    self, 'set-grouptitle', :$sessions-dd, :$groups-dd,
+    :$grouptitle#, :$all-actions-list
+  );
+
+  # Fill the sessions list.
+  my @session-ids = $!sessions.get-session-ids.sort;
+  $sessions-dd.append(@session-ids);
+  $sessions-dd.select(@session-ids[0]);
+
+  # Create the listbox to list all actions.
+#  $all-actions-list .= new(:multi);
+#  my ScrolledWindow $sw2 = $all-actions-list.set-list(
+#    [|$actions.get-action-ids]
+#  );
+
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session'), :!modal, :add-statusbar
   ) {
-    my DropDown $groups-dd .= new;
-    $groups-dd.set-events;
-
-    my DropDown $sessions-dd .= new;
-    $sessions-dd.set-events;
-
-    my Label $grouptitle .= new-label;
-    my Label $sessiontitle .= new-label;
-
-#    my ListBox $sessions-actions-list;
-    my ListBox $all-actions-list;
-
-    # Trap changes in the sessions list
-    $sessions-dd.set-selection-changed(
-      self, 'set-grouplist', :$sessions-dd, :$groups-dd,
-      :$sessiontitle, :$grouptitle#, :$all-actions-list
-    );
-
-    # Trap changes in the group list
-    $groups-dd.set-selection-changed(
-      self, 'set-grouptitle', :$sessions-dd, :$groups-dd,
-      :$grouptitle, :$all-actions-list
-    );
-
-    # Fill the sessions list.
-    my @session-ids = $!sessions.get-session-ids.sort;
-    $sessions-dd.append(@session-ids);
-    $sessions-dd.select(@session-ids[0]);
-
-    # Create the listbox to list all actions.
-    $all-actions-list .= new(:multi);
-    my ScrolledWindow $sw2 = $all-actions-list.set-list(
-      [|$actions.get-action-ids]
-    );
 
     # Fill the groups list.
     #$groups-dd.append(|$!sessions.get-group-ids(@session-ids[0]).sort);
@@ -338,33 +361,34 @@ method add-remove-actions ( N-Object $parameter ) {
     # Add entries and dropdown widgets
     .add-content( 'Current session', $sessions-dd, $sessiontitle);
     .add-content( 'Current group', $groups-dd, $grouptitle);
-    .add-content( 'All Actions list', $sw2, :2columns);
+    .add-content( 'All Actions list', $!actions-view);
 
     # Add buttons
     # Show a dialog to add an action
     .add-button(
       self, 'add-action', 'Add Action', :$dialog,
-      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
+#      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
     );
 
     # Show a dialog to modify an action
     .add-button(
       self, 'modify-action', 'Modify Action', :$dialog,
-      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
+#      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
     );
 
     # Show a dialog to delete an action
     .add-button(
       self, 'remove-action', 'Remove Action', :$dialog,
-      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
+#      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
     );
 
     # Finish dialog
     .add-button(
       self, 'set-actions', 'Done', :$dialog,
-      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
+#      :listbox($all-actions-list), :$sessions-dd, :$groups-dd
     );
 
+    .set-size-request( 800, 800);
     .show-dialog;
   }
 }
@@ -465,3 +489,94 @@ method delete (
   N-Object $parameter
 ) {
 }
+
+#-------------------------------------------------------------------------------
+method setup-item ( ) {
+  my Label $action-id = self.make-label;
+  my Label $action-value = self.make-label;
+#  my Image $used = self.make-image;
+
+  with my Grid $grid .= new-grid {
+#    .attach( $used, 0, 0, 2, 2);
+    .attach( $action-id, 2, 0, 1, 1);
+    .attach( $action-value, 2, 1, 1, 1);
+  }
+
+  $grid;
+}
+
+#-------------------------------------------------------------------------------
+method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
+  my Hash $action-object = $!actions.get-raw-action($name);
+  self.set-text-at( 2, 0, $name, $grid);
+  self.set-text-at( 2, 1, $action-object<t>//'', $grid);
+
+#  my Bool $name-inuse = self.check-action-inuse($name);
+#  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+}
+
+#-------------------------------------------------------------------------------
+method check-action-inuse ( Str:D $name --> Bool ) {
+  # Check if action is used in the sessions store
+  $!sessions.is-action-in-use($name);
+}
+
+#-------------------------------------------------------------------------------
+#method unbind-item
+
+#-------------------------------------------------------------------------------
+method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
+  $grid.clear-object;
+}
+
+#-------------------------------------------------------------------------------
+method make-label ( --> Label ) {
+  with my Label $label .= new-label {
+    .set-halign(GTK_ALIGN_START);
+    .set-justify(GTK_JUSTIFY_LEFT);
+    .set-hexpand(True);
+  }
+
+  $label
+}
+
+#`{{
+#-------------------------------------------------------------------------------
+method make-image ( --> Image ) {
+  with my Image $image .= new-image {
+    .set-size-request( 40, 40);
+    .set-margin-end(10);
+  }
+
+  $image
+}
+}}
+
+#-------------------------------------------------------------------------------
+method set-text-at ( Int $row, Int $col, Str $text, Gnome::Gtk4::Grid $grid ) {
+  my Label() $label = $grid.get-child-at( $row, $col);
+  $label.set-text($text);
+}
+
+#`{{
+#-------------------------------------------------------------------------------
+method set-image-at (
+  Int $row, Int $col, Str $color, Str $name,
+  Bool $name-inuse, Gnome::Gtk4::Grid $grid
+) {
+  my Str $on-off = $name-inuse ?? 'on' !! 'off';
+  my Image() $used = $grid.get-child-at( $row, $col);
+  my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
+  $used.set-from-file(%?RESOURCES{$resource});
+}
+}}
+
+#`{{
+#-------------------------------------------------------------------------------
+method selection-changed ( UInt $pos, @selections ) {
+  my Str $name = @selections[0];
+  $!variable-name.set-text($name);
+  my Str $value = $!variables.get-variable($name);
+  $!variable-spec.set-text($value);
+}
+}}
