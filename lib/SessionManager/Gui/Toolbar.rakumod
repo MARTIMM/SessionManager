@@ -55,7 +55,7 @@ has GnomeTools::Gtk::Theming $!theme;
 has Box $!box;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Grid :$session-manager-box, #`{{Mu :$app-window }}  ) {
+submethod BUILD ( Grid :$session-manager-box, #`{{Mu :$app-window }} ) {
 
   my SessionManager::Config $config .= instance;
   my GtkOrientation $orientation =
