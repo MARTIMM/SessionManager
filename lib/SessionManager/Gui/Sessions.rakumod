@@ -41,6 +41,19 @@ constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Label = Gnome::Gtk4::Label;
 constant Widget = Gnome::Gtk4::Widget;
 
+has Entry $!sessionid-e;
+has Entry $!sessiontitle-e;
+has Entry $!sessionoverlay-e;
+has Entry $!sessionicon-e;
+
+# Setup the dropdown to show the session ids
+has DropDown $!sessions-dd;
+
+# Fill the session drop down with the session ids and select the first one
+#has @!session-ids;
+
+has Dialog $!dialog;
+
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   $!sessions .= new;
@@ -56,167 +69,121 @@ method instance ( --> SessionManager::Gui::Sessions ) {
   $instance
 }
 
-#-------------------------------------------------------------------------------
-# Calls from menubar entries
-#-------------------------------------------------------------------------------
+#--[menu entry add-rename]------------------------------------------------------
 method add-rename ( N-Object $parameter ) {
 #  my Actions $actions .= instance;
+  self.init-fields;
 
-  with my Dialog $dialog .= new(
+  with $!dialog .= new(
     :dialog-header('Add or Rename Session'), :!modal, :add-statusbar, :600width
   ) {
-    my Entry $sessionid-e .= new-entry;
-    my Entry $sessiontitle-e .= new-entry;
-    my Entry $sessionoverlay-e .= new-entry;
-    my Entry $sessionicon-e .= new-entry;
-
-    # Setup the dropdown to show the session ids
-    my DropDown $sessions-dd .= new;
-
-    # Fill the session drop down with the session ids and select the first one
-    my @session-ids = $!sessions.get-session-ids.sort;
-
-    # Trap changes in the sessions list
-    #$sessions-dd.trap-dropdown-changes(
-#`{{
-    $sessions-dd.set-events( :object(self), 
-      'trap-select-session', :$sessions-dd,
-      :$sessionid-e, :$sessiontitle-e,
-      :$sessionicon-e, :$sessionoverlay-e
-    );
-}}
-    $sessions-dd.set-events;
-    $sessions-dd.set-selection-changed(
-      self, 'trap-select-session', :$sessions-dd,
-      :$sessionid-e, :$sessiontitle-e,
-      :$sessionicon-e, :$sessionoverlay-e
-    );
-
-#    $sessions-dd.set-setup();
-#    $sessions-dd.set-bind();
-#    $sessions-dd.set-unbind();
-#    $sessions-dd.set-teardown();
-
-    if @session-ids.elems {
-      $sessions-dd.append(@session-ids);
-      $sessions-dd.select(@session-ids[0]);
-    }
-
     # Add entries and dropdown widgets in the dialog
-    .add-content( 'Session list', $sessions-dd, :4columns);
-    .add-content( 'Id and title', $sessionid-e, $sessiontitle-e);
-    .add-content( 'Icon', $sessionoverlay-e, :4columns);
-    .add-content( 'Picture', $sessionicon-e, :4columns);
+    .add-content( 'Session list', $!sessions-dd);
+    .add-content( 'Session id', $!sessionid-e);
+    .add-content( 'Title', $!sessiontitle-e);
+    .add-content( 'Icon', $!sessionoverlay-e);
+    .add-content( 'Picture', $!sessionicon-e);
 
     # Add buttons to the dialog
-    .add-button(
-      self, 'do-add-session', 'Add', :$dialog,
-      :$sessions-dd, :$sessionid-e, :$sessiontitle-e,
-      :$sessionicon-e, :$sessionoverlay-e
-    );
-
-    .add-button(
-      self, 'do-rename-session', 'Rename', :$dialog,
-      :$sessions-dd, :$sessionid-e
-    );
-
-    .add-button(
-      self, 'do-change-session', 'Change', :$dialog,
-      :$sessions-dd, :$sessionid-e, :$sessiontitle-e,
-      :$sessionicon-e, :$sessionoverlay-e
-    );
-
-    .add-button( $dialog, 'destroy-dialog', 'Done');
+    .add-button( self, 'do-add-session', 'Add');
+    .add-button( self, 'do-rename-session', 'Rename');
+    .add-button( self, 'do-change-session', 'Change');
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
 
     .show-dialog;
   }
 }
 
 #-------------------------------------------------------------------------------
-# Selecting from session dropdown must set the id and title text entry
-method trap-select-session (
-#method selection-changed (
-  DropDown :$sessions-dd,
-  Entry :$sessionid-e, Entry :$sessiontitle-e,
-  Entry :$sessionicon-e, Entry :$sessionoverlay-e
-) {
-  my Str $sid = $sessions-dd.get-text;
-  $sessionid-e.set-text($sid);
-  $sessiontitle-e.set-text($!sessions.get-session-title($sid));
-  $sessionicon-e.set-text($!sessions.get-session-icon($sid));
-  $sessionoverlay-e.set-text($!sessions.get-session-overlay($sid));
+method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
+  $!sessionid-e .= new-entry;
+  $!sessiontitle-e .= new-entry;
+  $!sessionicon-e .= new-entry;
+  $!sessionoverlay-e .= new-entry;
+
+  # Setup the dropdown to show the session ids
+  $!sessions-dd .= new;
+  $!sessions-dd.set-events;
+  $!sessions-dd.set-selection-changed( self, 'trap-select-session');
+
+  # Fill the session drop down with the session ids and select the first one
+  my @session-ids = $!sessions.get-session-ids.sort;
+  if @session-ids.elems {
+    $!sessions-dd.append(@session-ids);
+    $!sessions-dd.select(@session-ids[0]);
+  }
 }
 
 #-------------------------------------------------------------------------------
-method do-add-session (
-  Dialog :$dialog, DropDown :$sessions-dd,
-  Entry :$sessionid-e, Entry :$sessiontitle-e,
-  Entry :$sessionicon-e, Entry :$sessionoverlay-e
-) {
+# Selecting from session dropdown must set the id and title text entry
+method trap-select-session ( ) {
+  my Str $sid = $!sessions-dd.get-text;
+  $!sessionid-e.set-text($sid);
+  $!sessiontitle-e.set-text($!sessions.get-session-title($sid));
+  $!sessionicon-e.set-text($!sessions.get-session-icon($sid));
+  $!sessionoverlay-e.set-text($!sessions.get-session-overlay($sid));
+}
+
+#-------------------------------------------------------------------------------
+method do-add-session ( ) {
 note $?LINE;
-  my Str $sid = $sessionid-e.get-text;
-  my Str $current-sid = $sessions-dd.get-text;
+  my Str $sid = $!sessionid-e.get-text;
+  my Str $current-sid = $!sessions-dd.get-text;
 
 note "$?LINE $sid eq $current-sid";
 
   if $sid eq $current-sid {
-    $dialog.set-status("$sid already defined");
+    $!dialog.set-status("$sid already defined");
   }
 
   else {
     # Set the title, icon and overlay of the session
-    $!sessions.set-session-title( $sid, $sessiontitle-e.get-text);
-    $!sessions.set-session-icon( $sid, $sessionicon-e.get-text);
-    $!sessions.set-session-overlay( $sid, $sessionoverlay-e.get-text);
+    $!sessions.set-session-title( $sid, $!sessiontitle-e.get-text);
+    $!sessions.set-session-icon( $sid, $!sessionicon-e.get-text);
+    $!sessions.set-session-overlay( $sid, $!sessionoverlay-e.get-text);
 
     # Always add a group with an actions key
     $!sessions.set-group-actions( $sid, 'group1', []);
 
     # Add to the dropdown list and select
-    $sessions-dd.add-selection($sid);
-    $sessions-dd.select($sid);
+    $!sessions-dd.add-selection($sid);
+    $!sessions-dd.select($sid);
 
     # Success
-    $dialog.set-status("$sid successfully added");
+    $!dialog.set-status("$sid successfully added");
   }
 }
 
 #-------------------------------------------------------------------------------
-method do-change-session (
-  Dialog :$dialog, DropDown :$sessions-dd,
-  Entry :$sessionid-e, Entry :$sessiontitle-e,
-  Entry :$sessionicon-e, Entry :$sessionoverlay-e
-) {
+method do-change-session ( ) {
   my SessionManager::Config $config .= instance;
-  my Str $sid = $sessionid-e.get-text;
-  my Str $current-sid = $sessions-dd.get-text;
+  my Str $sid = $!sessionid-e.get-text;
+  my Str $current-sid = $!sessions-dd.get-text;
 
   # Change the title, icon and overlay of the session
-  $!sessions.set-session-title( $sid, $sessiontitle-e.get-text);
+  $!sessions.set-session-title( $sid, $!sessiontitle-e.get-text);
   $!sessions.set-session-icon(
-    $sid, $config.set-picture($sessionicon-e.get-text)
+    $sid, $config.set-picture($!sessionicon-e.get-text)
   );
   $!sessions.set-session-overlay(
-    $sid, $config.set-picture($sessionoverlay-e.get-text)
+    $sid, $config.set-picture($!sessionoverlay-e.get-text)
   );
 
   # Success
-  $dialog.set-status("$sid successfully changed");
+  $!dialog.set-status("$sid successfully changed");
 }
 
 #-------------------------------------------------------------------------------
-method do-rename-session (
-  Dialog :$dialog, DropDown :$sessions-dd, Entry :$sessionid-e
-) {
-  my Str $new-sid = $sessionid-e.get-text;
-  my Str $current-sid = $sessions-dd.get-text;
+method do-rename-session ( ) {
+  my Str $new-sid = $!sessionid-e.get-text;
+  my Str $current-sid = $!sessions-dd.get-text;
   if $new-sid eq $current-sid {
-    $dialog.set-status("$new-sid already defined");
+    $!dialog.set-status("$new-sid already defined");
   }
 
   else {
     $!sessions.rename-session( $current-sid, $new-sid);
-    $dialog.set-status("$current-sid successfully renamed to $new-sid");
+    $!dialog.set-status("$current-sid successfully renamed to $new-sid");
   }
 }
 
@@ -422,8 +389,8 @@ method add-action (
   Dialog :$dialog, ListBox :$listbox,
   DropDown :$sessions-dd, DropDown :$groups-dd
 ) {
-  my SessionManager::Gui::Actions $action .= instance;
-  my Str $action-id = $action.create-action;
+  my SessionManager::Gui::Actions $actions .= instance;
+  my Str $action-id = $actions.create-action;
 
   if ?$action-id {
     my Str $c-session = $sessions-dd.get-text;
