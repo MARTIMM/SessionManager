@@ -49,13 +49,12 @@ constant TextBuffer = Gnome::Gtk4::TextBuffer;
 constant Widget = Gnome::Gtk4::Widget;
 #constant TextIter = Gnome::Gtk4::TextIter;
 
-#has SessionManager::Actions $!actions;
-
 #-------------------------------------------------------------------------------
 my SessionManager::Gui::Actions $instance;
 
 has Hash $!data-ids;
 #has Str $!id-to-return-from-dialog = '';
+
 has SessionManager::Actions $!actions;
 has SessionManager::Sessions $!sessions;
 
