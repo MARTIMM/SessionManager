@@ -78,7 +78,6 @@ method instance ( --> SessionManager::Gui::Sessions ) {
 
 #--[menu entry add-rename]------------------------------------------------------
 method add-rename ( N-Object $parameter ) {
-#  my Actions $actions .= instance;
   self.init-fields;
 
   with $!dialog .= new(
@@ -197,8 +196,6 @@ method do-rename-session ( ) {
 
 #-------------------------------------------------------------------------------
 method add-rename-group ( N-Object $parameter, ) {
-#  my Actions $actions .= instance;
-
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session Group'), :!modal, :add-statusbar
   ) {
@@ -293,7 +290,7 @@ method delete-group ( N-Object $parameter, ) {
 
 #-------------------------------------------------------------------------------
 method add-remove-actions ( N-Object $parameter ) {
-  my Actions $actions .= new;
+#  my Actions $actions .= new;
 
   my DropDown $groups-dd .= new;
   $groups-dd.set-events;
@@ -413,8 +410,8 @@ method add-action (
   Dialog :$dialog, ListBox :$listbox,
   DropDown :$sessions-dd, DropDown :$groups-dd
 ) {
-  my SessionManager::Gui::Actions $actions .= instance;
-  my Str $action-id = $actions.create-action;
+  my SessionManager::Gui::Actions $gui-actions .= instance;
+  my Str $action-id = $gui-actions.create-action;
 
   if ?$action-id {
     my Str $c-session = $sessions-dd.get-text;
