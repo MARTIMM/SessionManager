@@ -214,6 +214,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!aspec-log .= new-switch {
     .set-sensitive(!$id-only);
+    .set-size-request( 50, -1);
   }
 
   with $!aspec-icon .= new-entry {
@@ -236,14 +237,14 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #-------------------------------------------------------------------------------
 method add-fields-to-content ( ) {
   with $!dialog {
-    .add-content( 'Current actions', $!actions-view, :3columns);
-    .add-content( 'Action id', $!action-id, $!aspec-title);
-    .add-content( 'Command', $!aspec-cmd, :3columns);
-    .add-content( 'Shell', $!aspec-shell, :3columns);
-    .add-content( 'Path', $!aspec-path, :3columns);
+    .add-content( 'Current actions', 5, $!actions-view);
+    .add-content( 'Action id', $!action-id, 4, $!aspec-title);
+    .add-content( 'Command', 5, $!aspec-cmd);
+    .add-content( 'Shell', $!aspec-shell, 4);
+    .add-content( 'Path', 5, $!aspec-path);
     .add-content( 'Wait', $!aspec-wait, $!aspec-log);
-    .add-content( 'Icon', $!aspec-icon, :3columns);
-    .add-content( 'Picture', $!aspec-pic, :3columns);
+    .add-content( 'Icon', 5, $!aspec-icon);
+    .add-content( 'Picture', 5, $!aspec-pic);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
@@ -307,7 +308,8 @@ method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
     .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
 #    .append($!actions.get-action-idss[^2]);
 
-    # Select the first one
+    #TODO select target id: $target-id if defined. Otherwise
+    # select the first one
     .set-selection(0);
   }
 
