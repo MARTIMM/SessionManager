@@ -406,35 +406,32 @@ method set-actions (
 }
 
 #-------------------------------------------------------------------------------
-method add-action (
-  Dialog :$dialog, ListBox :$listbox,
-  DropDown :$sessions-dd, DropDown :$groups-dd
-) {
+method add-action ( ) {
   my SessionManager::Gui::Actions $gui-actions .= instance;
-  my Str $action-id = $gui-actions.create-action;
-
+  #my Str $action-id = 
+  $gui-actions.create;
+#`{{
   if ?$action-id {
     my Str $c-session = $sessions-dd.get-text;
     my Str $c-group = $groups-dd.get-text;
     $!sessions.set-group-actions( $c-session, $c-group, $action-id);
     $listbox.reset-list($!sessions.get-group-actions( $c-session, $c-group));
   }
+}}
 }
 
 #-------------------------------------------------------------------------------
-method modify-action (
-  Dialog :$dialog, ListBox :$listbox,
-  DropDown :$sessions-dd, DropDown :$groups-dd
-) {
-  my SessionManager::Gui::Actions $action .= instance;
-  my Str $action-id = $listbox.get-selection()[0] // '';
+method modify-action ( ) {
+  my SessionManager::Gui::Actions $gui-actions .= instance;
+  my Str $action-id = $!actions-view.get-selection()[0] // '';
   if ?$action-id {
-    $action.modify-action(:target-id($action-id));
+    $gui-actions.modify(:target-id($action-id));
   }
 
   else {
-    $dialog.set-status('Please select an action id from the list');
+    $!dialog.set-status('Please select an action id from the list');
   }
+
 #`{{
   if ?$action-id {
     my Str $c-session = $sessions-dd.get-text;
