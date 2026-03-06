@@ -192,6 +192,7 @@ method menu ( --> GnomeTools::Gio::Menu ) {
   with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Sessions>) {
     .item( 'Add', $session-edit, 'add');
     .item( 'Rename', $session-edit, 'rename');
+    .item( 'Modify', $session-edit, 'change');
     .item( 'Delete', $session-edit, 'delete');
   }
 
