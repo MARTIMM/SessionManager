@@ -112,6 +112,83 @@ method add ( N-Object $parameter ) {
   }
 }
 
+#-------------------------------------------------------------------------------
+method do-add-session ( ) {
+  my Str $sid = $!session-id.get-text;
+  my Str $current-sid = $!sessions-dd.get-text;
+
+  if $sid eq $current-sid {
+    $!dialog.set-status("$sid already defined");
+  }
+
+  else {
+    # Set the title, icon and overlay of the session
+    $!sessions.set-session-title( $sid, $!session-title.get-text);
+    $!sessions.set-session-icon( $sid, $!session-icon.get-text);
+    $!sessions.set-session-overlay( $sid, $!session-overlay.get-text);
+
+    # Always add a group with an actions key
+    $!sessions.set-group-actions( $sid, 'group1', []);
+
+    # Add to the dropdown list and select
+    $!sessions-dd.append($sid);
+    $!sessions-dd.select($sid);
+
+    # Success
+    $!dialog.set-status("$sid successfully added");
+  }
+}
+
+#--[menu entry sessions change]-------------------------------------------------
+method change ( N-Object $parameter ) {
+  self.init-fields(:!id-is-sensitive);
+  $!sessions-dd.set-selection-changed( self, 'trap-select-session');
+
+  # Fill the session drop down with the session ids and select the first one
+  my @session-ids = $!sessions.get-session-ids.sort;
+  if @session-ids.elems {
+    $!sessions-dd.append(@session-ids);
+  }
+
+  with $!dialog .= new(
+    :dialog-header('Change Session'), :!modal, :add-statusbar, :600width
+  ) {
+    # Add entries and dropdown widgets in the dialog
+    .add-content( 'Session list', $!sessions-dd);
+    .add-content( 'Session id', $!session-id);
+    .add-content( 'Title', $!session-title);
+    .add-content( 'Icon', $!session-overlay);
+    .add-content( 'Picture', $!session-icon);
+
+    # Add buttons to the dialog
+#    .add-button( self, 'do-add-session', 'Add');
+#    .add-button( self, 'do-rename-session', 'Rename');
+    .add-button( self, 'do-change-session', 'Change');
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
+
+    .show-dialog;
+  }
+}
+
+#-------------------------------------------------------------------------------
+method do-change-session ( ) {
+  my SessionManager::Config $config .= instance;
+  my Str $sid = $!session-id.get-text;
+#  my Str $current-sid = $!sessions-dd.get-text;
+
+  # Change the title, icon and overlay of the session
+  $!sessions.set-session-title( $sid, $!session-title.get-text);
+  $!sessions.set-session-icon(
+    $sid, $config.set-picture($!session-icon.get-text)
+  );
+  $!sessions.set-session-overlay(
+    $sid, $config.set-picture($!session-overlay.get-text)
+  );
+
+  # Success
+  $!dialog.set-status("$sid successfully changed");
+}
+
 #--[menu entry sessions rename]-------------------------------------------------
 method rename ( N-Object $parameter ) {
   self.init-fields(:id-only);
@@ -141,52 +218,6 @@ method rename ( N-Object $parameter ) {
 
     .show-dialog;
   }
-}
-
-#-------------------------------------------------------------------------------
-method do-add-session ( ) {
-  my Str $sid = $!session-id.get-text;
-  my Str $current-sid = $!sessions-dd.get-text;
-
-  if $sid eq $current-sid {
-    $!dialog.set-status("$sid already defined");
-  }
-
-  else {
-    # Set the title, icon and overlay of the session
-    $!sessions.set-session-title( $sid, $!session-title.get-text);
-    $!sessions.set-session-icon( $sid, $!session-icon.get-text);
-    $!sessions.set-session-overlay( $sid, $!session-overlay.get-text);
-
-    # Always add a group with an actions key
-    $!sessions.set-group-actions( $sid, 'group1', []);
-
-    # Add to the dropdown list and select
-    $!sessions-dd.append($sid);
-    $!sessions-dd.select($sid);
-
-    # Success
-    $!dialog.set-status("$sid successfully added");
-  }
-}
-
-#-------------------------------------------------------------------------------
-method do-change-session ( ) {
-  my SessionManager::Config $config .= instance;
-  my Str $sid = $!session-id.get-text;
-  my Str $current-sid = $!sessions-dd.get-text;
-
-  # Change the title, icon and overlay of the session
-  $!sessions.set-session-title( $sid, $!session-title.get-text);
-  $!sessions.set-session-icon(
-    $sid, $config.set-picture($!session-icon.get-text)
-  );
-  $!sessions.set-session-overlay(
-    $sid, $config.set-picture($!session-overlay.get-text)
-  );
-
-  # Success
-  $!dialog.set-status("$sid successfully changed");
 }
 
 #-------------------------------------------------------------------------------
@@ -234,8 +265,8 @@ method delete ( N-Object $parameter ) {
   }
 }
 
-#-------------------------------------------------------------------------------
-method add-rename-group ( N-Object $parameter, ) {
+#--[menu entry add group]-------------------------------------------------------
+method add-group ( N-Object $parameter ) {
   with my Dialog $dialog .= new(
     :dialog-header('Modify Session Group'), :!modal, :add-statusbar
   ) {
@@ -300,12 +331,14 @@ method do-change-group ( ) {
   $!dialog.set-status("$group is succesfully changed");
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method delete-group ( N-Object $parameter, ) {
   note "Delete group";
 }
+}}
 
-#-------------------------------------------------------------------------------
+#--[menu entry select actions]--------------------------------------------------
 method select-actions ( N-Object $parameter ) {
 #  my Actions $actions .= new;
 
@@ -412,6 +445,7 @@ method set-actions ( ) {
   $!dialog.destroy-dialog;
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method add-action ( ) {
   my SessionManager::Gui::Actions $gui-actions .= instance;
@@ -448,6 +482,7 @@ method modify-action ( ) {
   }
 }}
 }
+}}
 
 #-------------------------------------------------------------------------------
 method set-grouplist ( ) {
@@ -517,14 +552,14 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   # Setup the dropdown to show the session ids
   with $!sessions-dd .= new {
-    .set-sensitive(!$id-only);
+#    .set-sensitive(!$id-only);
     .set-events;
   }
 
 
   # Setup the dropdown to show groups in a session
   with $!groups-dd .= new {
-    .set-sensitive(!$id-only);
+#    .set-sensitive(!$id-only);
     .set-events;
   }
 
