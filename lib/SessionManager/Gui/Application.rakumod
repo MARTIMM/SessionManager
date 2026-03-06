@@ -190,21 +190,27 @@ method menu ( --> GnomeTools::Gio::Menu ) {
 
   $parent-menu = $bar;
   with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Sessions>) {
-    .item( 'Add/Rename', $session-edit, 'add-rename');
-    .item( 'Add/Rename Group', $session-edit, 'add-rename-group');
-    .item( 'Delete Group', $session-edit, 'delete-group');
-    .item( 'Add/Remove Actions', $session-edit, 'add-remove-actions');
+    .item( 'Add', $session-edit, 'add');
+    .item( 'Rename', $session-edit, 'rename');
     .item( 'Delete', $session-edit, 'delete');
   }
 
-  with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Actions>) {
+  with my GnomeTools::Gio::Menu $m3 .= new(
+    :$parent-menu, :name('Session Groups')
+  ) {
+    .item( 'Add Group', $session-edit, 'add-group');
+#    .item( 'Delete Group', $session-edit, 'delete-group');
+    .item( 'Select Actions', $session-edit, 'select-actions');
+  }
+
+  with my GnomeTools::Gio::Menu $m4 .= new( :$parent-menu, :name<Actions>) {
     .item( 'Create', $action-edit, 'create');
     .item( 'Modify', $action-edit, 'modify');
     .item( 'Rename id', $action-edit, 'rename');
     .item( 'Delete', $action-edit, 'delete');
   }
 
-  with my GnomeTools::Gio::Menu $m4 .= new( :$parent-menu, :name<Variables>) {
+  with my GnomeTools::Gio::Menu $m5 .= new( :$parent-menu, :name<Variables>) {
     .item( 'Add', $variable-edit, 'add');
     .item( 'Modify', $variable-edit, 'modify');
     .item( 'Delete', $variable-edit, 'delete');
