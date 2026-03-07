@@ -265,6 +265,32 @@ method delete ( N-Object $parameter ) {
   }
 }
 
+#-------------------------------------------------------------------------------
+method do-delete-session ( ) {
+  my Bool $actions-found = False;
+
+  my Str $sid = $!sessions-dd.get-text;
+  for $!sessions.get-group-ids($sid) -> $gid {
+    $actions-found = ?$!sessions.get-group-actions( $sid, $gid);
+    last if $actions-found;
+  }
+
+  if $actions-found {
+    $!dialog.set-status(
+      "There are still actions defined in groups. Clean first"
+    );
+  }
+
+  else {
+    $!sessions.delete-session($sid);
+
+    my UInt $original-pos = $!sessions-dd.get-selection(:rows)[0];
+note "$?LINE $original-pos";
+    $!sessions-dd.splice( $original-pos, 1);
+    $!dialog.set-status("Session '$sid' deleted");
+  }
+}
+
 #--[menu entry add group]-------------------------------------------------------
 method add-group ( N-Object $parameter ) {
   with my Dialog $dialog .= new(
@@ -552,14 +578,11 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   # Setup the dropdown to show the session ids
   with $!sessions-dd .= new {
-#    .set-sensitive(!$id-only);
     .set-events;
   }
 
-
   # Setup the dropdown to show groups in a session
   with $!groups-dd .= new {
-#    .set-sensitive(!$id-only);
     .set-events;
   }
 
