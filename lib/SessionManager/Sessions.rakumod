@@ -36,6 +36,11 @@ method get-session ( Str:D $sid, Bool :$delete = False --> Hash ) {
 }
 
 #-------------------------------------------------------------------------------
+method delete-session ( Str:D $sid ) {
+  $sessions{$sid}:delete
+}
+
+#-------------------------------------------------------------------------------
 method set-session ( Str:D $sid, Hash:D $session ) {
   $sessions{$sid} = $session;
 }
