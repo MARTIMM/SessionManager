@@ -127,8 +127,8 @@ method do-add-session ( ) {
     $!sessions.set-session-icon( $sid, $!session-icon.get-text);
     $!sessions.set-session-overlay( $sid, $!session-overlay.get-text);
 
-    # Always add a group with an actions key
-    $!sessions.set-group-actions( $sid, 'group1', []);
+    # Always add a group with an actions key and an empty list of actions
+    $!sessions.set-group-actions( $sid, 'group1');
 
     # Add to the dropdown list and select
     $!sessions-dd.append($sid);
@@ -434,11 +434,12 @@ method select-actions ( N-Object $parameter ) {
 #    .add-button( self, 'add-action', 'Add Action');
 
     # Show a dialog to modify an action
-#    .add-button( self, 'modify-action', 'Modify Action',);
-
+#    .add-button( self, 'modify-action', 'Modify Action');
     # Show a dialog to delete an action
-    .add-button( self, 'clear-actions', 'Deselect All Actions');
 
+    .add-button( self, 'clear-actions', 'Deselect All Actions');
+#`{{
+}}
     # Finish dialog
     .add-button( self, 'set-actions', 'Done');
 
@@ -448,7 +449,7 @@ method select-actions ( N-Object $parameter ) {
 }
 
 #-------------------------------------------------------------------------------
-method clear-actions ( UInt $pos, @selections ) {
+method clear-actions (  ) {
 
 }
 
@@ -605,7 +606,7 @@ method trap-select-session ( ) {
 method setup-item ( ) {
   my Label $action-id = self.make-label;
   my Label $action-value = self.make-label;
-#  my Image $used = self.make-image;
+  my Image $used = self.make-image;
 
   with my Grid $grid .= new-grid {
 #    .attach( $used, 0, 0, 2, 2);
@@ -622,8 +623,8 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   self.set-text-at( 2, 0, $name, $grid);
   self.set-text-at( 2, 1, $action-object<t>//'', $grid);
 
-#  my Bool $name-inuse = self.check-action-inuse($name);
-#  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  my Bool $name-inuse = self.check-action-inuse($name);
+  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------
@@ -651,7 +652,6 @@ method make-label ( --> Label ) {
   $label
 }
 
-#`{{
 #-------------------------------------------------------------------------------
 method make-image ( --> Image ) {
   with my Image $image .= new-image {
@@ -661,7 +661,6 @@ method make-image ( --> Image ) {
 
   $image
 }
-}}
 
 #-------------------------------------------------------------------------------
 method set-text-at ( Int $row, Int $col, Str $text, Gnome::Gtk4::Grid $grid ) {
@@ -669,7 +668,6 @@ method set-text-at ( Int $row, Int $col, Str $text, Gnome::Gtk4::Grid $grid ) {
   $label.set-text($text);
 }
 
-#`{{
 #-------------------------------------------------------------------------------
 method set-image-at (
   Int $row, Int $col, Str $color, Str $name,
@@ -680,7 +678,6 @@ method set-image-at (
   my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
   $used.set-from-file(%?RESOURCES{$resource});
 }
-}}
 
 #`{{
 #-------------------------------------------------------------------------------
