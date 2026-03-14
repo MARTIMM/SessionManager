@@ -17,6 +17,7 @@ use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
+use Gnome::Gtk4::Image:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
@@ -43,6 +44,7 @@ constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant Label = Gnome::Gtk4::Label;
 constant Widget = Gnome::Gtk4::Widget;
 constant Grid = Gnome::Gtk4::Grid;
+constant Image = Gnome::Gtk4::Image;
 
 has Entry $!session-id;
 has Entry $!session-title;
@@ -427,19 +429,18 @@ method select-actions ( N-Object $parameter ) {
     # Add entries and dropdown widgets
     .add-content( 'Current session', $!sessions-dd, $!sessiontitle);
     .add-content( 'Current group', $!groups-dd, $!grouptitle);
-    .add-content( 'All Actions list', $!actions-view);
+    .add-content( 'All Actions list', 2, $!actions-view);
 
     # Add buttons
     # Show a dialog to add an action
-#    .add-button( self, 'add-action', 'Add Action');
+    .add-button( self, 'add-action', 'Add Action');
 
     # Show a dialog to modify an action
-#    .add-button( self, 'modify-action', 'Modify Action');
+    .add-button( self, 'remove-action', 'Modify Action');
     # Show a dialog to delete an action
 
     .add-button( self, 'clear-actions', 'Deselect All Actions');
-#`{{
-}}
+
     # Finish dialog
     .add-button( self, 'set-actions', 'Done');
 
@@ -532,7 +533,7 @@ method set-grouptitle ( ) {
 
 #  my Str $group-name = $!groups-dd.get-text;
 #  $!grouptitle.set-text($!sessions.get-group-title( $sessionid, $group-name));
-
+#`{{
   # Select the items found in this group
   if ?$!actions-view {
     my @group-actions;
@@ -541,7 +542,7 @@ method set-grouptitle ( ) {
     }
     $!actions-view.set-selection(@group-actions);
   }
-
+}}
 
 #`{{
   $all-actions-list.reset-list(
@@ -609,7 +610,7 @@ method setup-item ( ) {
   my Image $used = self.make-image;
 
   with my Grid $grid .= new-grid {
-#    .attach( $used, 0, 0, 2, 2);
+    .attach( $used, 0, 0, 2, 2);
     .attach( $action-id, 2, 0, 1, 1);
     .attach( $action-value, 2, 1, 1, 1);
   }
@@ -623,7 +624,17 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   self.set-text-at( 2, 0, $name, $grid);
   self.set-text-at( 2, 1, $action-object<t>//'', $grid);
 
-  my Bool $name-inuse = self.check-action-inuse($name);
+  my Str $sessionid = $!sessions-dd.get-text;
+  my Str $groupname = $!groups-dd.get-text // '';
+  my Bool $name-inuse = $!sessions.is-action-in-use-in-session(
+    $sessionid, $groupname, $name
+  );
+
+  # Select the items found in this group
+#  my @group-actions = $!sessions.get-group-actions( $sessionid, $groupname);
+#  @group-actions.push: $!actions-view.find($ga);
+#  $!actions-view.set-selection(@group-actions);
+  
   self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
 }
 
@@ -676,6 +687,7 @@ method set-image-at (
   my Str $on-off = $name-inuse ?? 'on' !! 'off';
   my Image() $used = $grid.get-child-at( $row, $col);
   my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
+note "$?LINE $used, $resource";
   $used.set-from-file(%?RESOURCES{$resource});
 }
 
