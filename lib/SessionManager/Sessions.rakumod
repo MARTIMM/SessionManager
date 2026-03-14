@@ -135,15 +135,32 @@ method get-group-actions ( Str:D $sid, Str:D $group-id --> Array ) {
 }
 
 #-------------------------------------------------------------------------------
-multi method set-group-actions (
+method set-group-actions (
   Str:D $sid, Str:D $group-id, Array $actions = []
 ) {
   $sessions{$sid}{$group-id}<actions> = $actions;
 }
 
 #-------------------------------------------------------------------------------
-multi method set-group-actions ( Str:D $sid, Str:D $group-id, Str $action ) {
-  $sessions{$sid}{$group-id}<actions>.push: $action;
+method add-actions ( Str:D $sid, Str:D $group-id, *@actions ) {
+  for @actions -> $action {
+    $sessions{$sid}{$group-id}<actions>.push: $action
+      unless self.is-action-in-use-in-session( $sid, $group-id, $action);
+  }
+}
+
+#-------------------------------------------------------------------------------
+method remove-actions ( Str:D $sid, Str:D $group-id, *@actions ) {
+  for @actions -> $action {
+    my Int $count = 0;
+    for $sessions{$sid}{$group-id}<actions> -> $session-action {
+      if $action eq $session-action {
+        $sessions{$sid}{$group-id}<actions>.splice( $count, 1);
+        last;
+      }
+      $count++;
+    }
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -179,6 +196,27 @@ method is-action-in-use ( Str:D $aid --> Bool ) {
 
     last if $in-use;
   }
+
+  $in-use
+}
+
+#-------------------------------------------------------------------------------
+method is-action-in-use-in-session ( Str $sid, Str $gid, Str:D $aid --> Bool ) {
+  my Bool $in-use = False;
+
+#  for $sessions.keys -> $sid {
+#    for $sessions{$sid}.keys.grep(/^group/) -> $group-id {
+      my Array $actions = $sessions{$sid}{$gid}<actions>;
+      loop ( my Int $i = 0; $i < $actions.elems; $i++ ) {
+        if $actions[$i] eq $aid {
+          $in-use = True;
+          last;
+        }
+      }
+#    }
+
+#    last if $in-use;
+#  }
 
   $in-use
 }
