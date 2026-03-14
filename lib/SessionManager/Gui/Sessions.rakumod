@@ -433,13 +433,13 @@ method select-actions ( N-Object $parameter ) {
 
     # Add buttons
     # Show a dialog to add an action
-    .add-button( self, 'add-action', 'Add Action');
+    .add-button( self, 'add-actions', 'Add Actions');
 
     # Show a dialog to modify an action
-    .add-button( self, 'remove-action', 'Modify Action');
+    .add-button( self, 'remove-actions', 'Remove Actions');
     # Show a dialog to delete an action
 
-    .add-button( self, 'clear-actions', 'Deselect All Actions');
+#    .add-button( self, 'clear-actions', 'Deselect All Actions');
 
     # Finish dialog
     .add-button( self, 'set-actions', 'Done');
@@ -473,12 +473,17 @@ method set-actions ( ) {
   $!dialog.destroy-dialog;
 }
 
-#`{{
 #-------------------------------------------------------------------------------
-method add-action ( ) {
-  my SessionManager::Gui::Actions $gui-actions .= instance;
-  #my Str $action-id = 
-  $gui-actions.create;
+method add-actions ( ) {
+  my Str $sessionid = $!sessions-dd.get-text;
+  my Str $groupname = $!groups-dd.get-text // '';
+  my @selections = $!actions-view.get-selection;
+  $!sessions.add-actions( $sessionid, $groupname, |@selections);
+
+  for $!actions-view.get-selection(:rows) -> $pos {
+    $!actions-view.splice( $pos, 1, @selections.shift);
+  }
+
 #`{{
   if ?$action-id {
     my Str $c-session = $sessions-dd.get-text;
@@ -489,6 +494,7 @@ method add-action ( ) {
 }}
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method modify-action ( ) {
   my SessionManager::Gui::Actions $gui-actions .= instance;
@@ -687,7 +693,6 @@ method set-image-at (
   my Str $on-off = $name-inuse ?? 'on' !! 'off';
   my Image() $used = $grid.get-child-at( $row, $col);
   my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
-note "$?LINE $used, $resource";
   $used.set-from-file(%?RESOURCES{$resource});
 }
 
