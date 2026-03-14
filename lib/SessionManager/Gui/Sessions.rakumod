@@ -483,15 +483,18 @@ method add-actions ( ) {
   for $!actions-view.get-selection(:rows) -> $pos {
     $!actions-view.splice( $pos, 1, @selections.shift);
   }
+}
 
-#`{{
-  if ?$action-id {
-    my Str $c-session = $sessions-dd.get-text;
-    my Str $c-group = $groups-dd.get-text;
-    $!sessions.set-group-actions( $c-session, $c-group, $action-id);
-    $listbox.reset-list($!sessions.get-group-actions( $c-session, $c-group));
+#-------------------------------------------------------------------------------
+method remove-actions ( ) {
+  my Str $sessionid = $!sessions-dd.get-text;
+  my Str $groupname = $!groups-dd.get-text // '';
+  my @selections = $!actions-view.get-selection;
+  $!sessions.remove-actions( $sessionid, $groupname, |@selections);
+
+  for $!actions-view.get-selection(:rows) -> $pos {
+    $!actions-view.splice( $pos, 1, @selections.shift);
   }
-}}
 }
 
 #`{{
