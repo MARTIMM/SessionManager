@@ -153,7 +153,7 @@ method add-actions ( Str:D $sid, Str:D $group-id, *@actions ) {
 method remove-actions ( Str:D $sid, Str:D $group-id, *@actions ) {
   for @actions -> $action {
     my Int $count = 0;
-    for $sessions{$sid}{$group-id}<actions> -> $session-action {
+    for @($sessions{$sid}{$group-id}<actions>) -> $session-action {
       if $action eq $session-action {
         $sessions{$sid}{$group-id}<actions>.splice( $count, 1);
         last;
