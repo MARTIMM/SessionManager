@@ -194,15 +194,15 @@ method menu ( --> GnomeTools::Gio::Menu ) {
     .item( 'Rename', $session-edit, 'rename');
     .item( 'Modify', $session-edit, 'change');
     .item( 'Delete', $session-edit, 'delete');
+    .item( 'Groups', $session-edit, 'groups');
   }
 
-  with my GnomeTools::Gio::Menu $m3 .= new(
-    :$parent-menu, :name('Session Groups')
-  ) {
-    .item( 'Add Group', $session-edit, 'add-group');
+#  with my GnomeTools::Gio::Menu $m3 .= new(
+#    :$parent-menu, :name('Session Groups')
+#  ) {
 #    .item( 'Delete Group', $session-edit, 'delete-group');
-    .item( 'Select Actions', $session-edit, 'select-actions');
-  }
+#    .item( 'Select Actions', $session-edit, 'select-actions');
+#  }
 
   with my GnomeTools::Gio::Menu $m4 .= new( :$parent-menu, :name<Actions>) {
     .item( 'Create', $action-edit, 'create');
