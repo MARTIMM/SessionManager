@@ -533,6 +533,7 @@ note "$?LINE {$sessionid//'-'}";
   $!groups-dd.append($!sessions.get-group-ids($sessionid).sort);
   $!groups-dd.set-selection(0);
 
+#TODO revisiting the whole list just to change the led light prone to improve
   my @selections = $!actions.get-action-ids.sort: {$^a.lc leg $^b.lc};
   for ^$!actions-view.get-n-items -> $pos {
     $!actions-view.splice( $pos, 1, @selections.shift);
