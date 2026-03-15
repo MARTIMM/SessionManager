@@ -449,12 +449,12 @@ method select-actions ( N-Object $parameter ) {
   }
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method clear-actions (  ) {
 
 }
 
-#`{{
 #-------------------------------------------------------------------------------
 method set-input-fields ( UInt $pos, @selections ) {
 
@@ -524,7 +524,7 @@ method modify-action ( ) {
 #-------------------------------------------------------------------------------
 method set-grouplist ( ) {
   my Str $sessionid = $!sessions-dd.get-text;
-note "$?LINE $sessionid";
+note "$?LINE {$sessionid//'-'}";
   return unless ?$sessionid;
   $!sessiontitle.set-text($!sessions.get-session-title($sessionid));
 
@@ -532,6 +532,11 @@ note "$?LINE $sessionid";
   $!groups-dd.remove(0..^$!groups-dd.get-n-items());
   $!groups-dd.append($!sessions.get-group-ids($sessionid).sort);
   $!groups-dd.set-selection(0);
+
+  my @selections = $!actions.get-action-ids.sort: {$^a.lc leg $^b.lc};
+  for ^$!actions-view.get-n-items -> $pos {
+    $!actions-view.splice( $pos, 1, @selections.shift);
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -643,7 +648,7 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
 #  my @group-actions = $!sessions.get-group-actions( $sessionid, $groupname);
 #  @group-actions.push: $!actions-view.find($ga);
 #  $!actions-view.set-selection(@group-actions);
-  
+
   self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
 }
 
