@@ -51,13 +51,14 @@ has Entry $!session-title;
 has Entry $!session-overlay;
 has Entry $!session-icon;
 
-has Label $!sessiontitle;
+#has Label $!sessiontitle;
 
 # Setup the dropdown to show the session ids and groups
 has DropDown $!sessions-dd;
 has DropDown $!groups-dd;
 
-has Label $!grouptitle;
+has Entry $!group-title;
+#has Label $!grouptitle;
 
 # Fill the session drop down with the session ids and select the first one
 #has @!session-ids;
@@ -293,39 +294,40 @@ note "$?LINE $original-pos";
   }
 }
 
-#--[menu entry add group]-------------------------------------------------------
-method add-group ( N-Object $parameter ) {
-  with my Dialog $dialog .= new(
+#--[menu entry groups]-------------------------------------------------------
+method groups ( N-Object $parameter ) {
+  with $!dialog .= new(
     :dialog-header('Modify Session Group'), :!modal, :add-statusbar
   ) {
     self.init-fields;
 
+    # Call after dropdown fills
+    my Label $session-title .= new-label;# = self.make-session-title;
+    my Label $group-title .= new-label;# = self.make-group-title;
+
     # Trap changes in the sessions list
-    $!sessions-dd.set-selection-changed( self, 'set-grouplist');
+    $!sessions-dd.set-selection-changed(
+      self, 'set-grouplist', :$session-title
+    );
 
     # Trap changes in the group list
-    $!groups-dd.set-selection-changed( self, 'set-grouptitle');
-#    $!groups-dd.select('group1');
-
-    # Fill the session drop down with the session ids and select the first one
+    $!groups-dd.set-selection-changed( self, 'set-grouptitle', :$group-title);
 
     # Fill the sessions list. Triggers the .set-grouplist() and
     # .set-grouptitle() call back routines.
     my @session-ids = $!sessions.get-session-ids.sort;
-#    if @session-ids.elems {
-#      $!sessions-dd.append(@session-ids);
-#      $!sessions-dd.select(@session-ids[0]);
-#    }
+    $!sessions-dd.append(@session-ids);
     $!sessions-dd.select(@session-ids[0]);
 
     # Add entries and dropdown widgets
-    .add-content( 'Current session', $!sessions-dd, $!sessiontitle);
-    .add-content( 'Current group', $!groups-dd, $!grouptitle);
+    .add-content( 'Current session', $!sessions-dd, $session-title);
+    .add-content( 'Current group', $!groups-dd, $group-title);
+    .add-content( 'Group Title', 2, $!group-title);
 
     # Add buttons
-    .add-button( self, 'do-add-group', 'Add Group');
-    .add-button( self, 'do-change-group', 'Change Group Title');
-    .add-button( $dialog, 'destroy-dialog', 'Done');
+    .add-button( self, 'do-add-group', 'Add');
+    .add-button( self, 'do-change-group', 'Set Title', :$group-title);
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
 
     .show-dialog;
   }
@@ -335,10 +337,11 @@ method add-group ( N-Object $parameter ) {
 method do-add-group ( ) {
   my Str $sessionid = $!sessions-dd.get-text;
 
-  my $new-group = $!sessions.add-group( $sessionid, $!grouptitle.get-text);
+  # $new-group may be undefined when max is exceeded
+  my $new-group = $!sessions.add-group( $sessionid, $!group-title.get-text);
   if ?$new-group {
     # Insert the group name in the dropdown and select the group
-    $!groups-dd.add-selection($new-group);
+    $!groups-dd.append($new-group);
     $!groups-dd.select($new-group);
 
     $!dialog.set-status("$new-group is succesfully added");
@@ -355,7 +358,7 @@ method do-change-group ( ) {
   my Str $sessionid = $!sessions-dd.get-text;
   my Str $group = $!groups-dd.get-text;
 
-  $!sessions.set-group-title( $sessionid, $group, $!grouptitle.get-text);
+  $!sessions.set-group-title( $sessionid, $group, $!group-title.get-text);
   $!dialog.set-status("$group is succesfully changed");
 }
 
@@ -380,6 +383,10 @@ method select-actions ( N-Object $parameter ) {
 #  my Label $sessiontitle .= new-label;
 
   self.init-fields;
+  my Label $session-title .= new-label;# .= new-label;
+#  $session-title.set-text($!session-title.get-text);
+  my Label $group-title .= new-label;# .= new-label;
+#  $group-title.set-text($!group-title.get-text);
 
 #    my ListBox $sessions-actions-list;
 #  my ListBox $all-actions-list;
@@ -396,10 +403,10 @@ method select-actions ( N-Object $parameter ) {
   }
 
   # Trap changes in the sessions list
-  $!sessions-dd.set-selection-changed( self, 'set-grouplist');
+  $!sessions-dd.set-selection-changed( self, 'set-grouplist', :$session-title);
 
   # Trap changes in the group list
-  $!groups-dd.set-selection-changed( self, 'set-grouptitle');
+  $!groups-dd.set-selection-changed( self, 'set-grouptitle', :$group-title);
 
   # Fill the sessions list.
   my @session-ids = $!sessions.get-session-ids.sort;
@@ -427,8 +434,8 @@ method select-actions ( N-Object $parameter ) {
 #    );
 
     # Add entries and dropdown widgets
-    .add-content( 'Current session', $!sessions-dd, $!sessiontitle);
-    .add-content( 'Current group', $!groups-dd, $!grouptitle);
+    .add-content( 'Current session', $!sessions-dd, $session-title);
+    .add-content( 'Current group', $!groups-dd, $group-title);
     .add-content( 'All Actions list', 2, $!actions-view);
 
     # Add buttons
@@ -522,32 +529,37 @@ method modify-action ( ) {
 }}
 
 #-------------------------------------------------------------------------------
-method set-grouplist ( ) {
+method set-grouplist ( Label :$session-title ) {
+  self.make-session-label(:label($session-title));
+
   my Str $sessionid = $!sessions-dd.get-text;
-note "$?LINE {$sessionid//'-'}";
-  return unless ?$sessionid;
-  $!sessiontitle.set-text($!sessions.get-session-title($sessionid));
+#note "$?LINE {$sessionid//'-'}";
+#  return unless ?$sessionid;
+#  $!session-title.set-text($!sessions.get-session-title($sessionid));
 
   # Remove first before showing. Otherwise it only grows.
   $!groups-dd.remove(0..^$!groups-dd.get-n-items());
   $!groups-dd.append($!sessions.get-group-ids($sessionid).sort);
   $!groups-dd.set-selection(0);
 
-#TODO revisiting the whole list just to change the led light prone to improve
-  my @selections = $!actions.get-action-ids.sort: {$^a.lc leg $^b.lc};
-  for ^$!actions-view.get-n-items -> $pos {
-    $!actions-view.splice( $pos, 1, @selections.shift);
+  if ?$!actions-view and $!actions-view.is-valid {
+    my @selections = $!actions.get-action-ids.sort: {$^a.lc leg $^b.lc};
+    for ^$!actions-view.get-n-items -> $pos {
+      $!actions-view.splice( $pos, 1, @selections.shift);
+    }
   }
 }
 
 #-------------------------------------------------------------------------------
-method set-grouptitle ( ) {
-  my Str $sessionid = $!sessions-dd.get-text;
-  my Str $groupname = $!groups-dd.get-text // '';
-  $!grouptitle.set-text($!sessions.get-group-title( $sessionid, $groupname));
+method set-grouptitle ( Label :$group-title ) {
+  self.make-group-label(:label($group-title));
+
+#  my Str $sessionid = $!sessions-dd.get-text;
+#  my Str $groupname = $!groups-dd.get-text // '';
+#  $!group-title.set-text($!sessions.get-group-title( $sessionid, $groupname));
 
 #  my Str $group-name = $!groups-dd.get-text;
-#  $!grouptitle.set-text($!sessions.get-group-title( $sessionid, $group-name));
+#  $!group-title.set-text($!sessions.get-group-title( $sessionid, $group-name));
 #`{{
   # Select the items found in this group
   if ?$!actions-view {
@@ -570,6 +582,26 @@ method set-grouptitle ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method make-session-label ( Label :$label --> Label ) {
+  my Str $sid = $!sessions-dd.get-text;
+  my Label $session-title = ?$label ?? $label !! Label.new-label;
+  $session-title.set-text($!sessions.get-session-title($sid));
+
+  $session-title
+}
+
+#-------------------------------------------------------------------------------
+method make-group-label ( Label :$label --> Label ) {
+  my Str $sid = $!sessions-dd.get-text;
+  my Label $group-title = ?$label ?? $label !! Label.new-label;
+  $group-title.set-text(
+    $!sessions.get-group-title( $sid, $!groups-dd.get-text)
+  );
+
+  $group-title
+}
+
+#-------------------------------------------------------------------------------
 method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
   
   with $!session-id .= new-entry {
@@ -589,9 +621,9 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-sensitive(!$id-only);
   }
 
-  with $!sessiontitle .= new-label {
-    .set-sensitive(!$id-only);
-  }
+#  with $!sessiontitle .= new-label {
+#    .set-sensitive(!$id-only);
+#  }
 
   # Setup the dropdown to show the session ids
   with $!sessions-dd .= new {
@@ -603,7 +635,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-events;
   }
 
-  with $!grouptitle .= new-label {
+  with $!group-title .= new-entry {
     .set-sensitive(!$id-only);
   }
 }
