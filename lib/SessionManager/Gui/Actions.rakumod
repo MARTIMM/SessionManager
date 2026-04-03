@@ -4,6 +4,7 @@ use NativeCall;
 use SessionManager::ActionData;
 use SessionManager::Actions;
 use SessionManager::Sessions;
+use SessionManager::Variables;
 use SessionManager::Config;
 
 use Digest::SHA256::Native;
@@ -57,6 +58,7 @@ has Hash $!data-ids;
 
 has SessionManager::Actions $!actions;
 has SessionManager::Sessions $!sessions;
+has SessionManager::Variables $!variables;
 
 has Dialog $!dialog;
 has ListView $!actions-view;
@@ -76,6 +78,7 @@ submethod BUILD ( ) {
   $!data-ids = %();
   $!sessions .= new;
   $!actions .= new;
+  $!variables .= new;
 }
 
 #-------------------------------------------------------------------------------

@@ -53,6 +53,9 @@ has Entry $!session-title;
 has Entry $!session-overlay;
 has Entry $!session-icon;
 
+has Label $!session-title-subst;
+has Label $!session-overlay-subst;
+has Label $!session-icon-subst;
 #has Label $!sessiontitle;
 
 # Setup the dropdown to show the session ids and groups
@@ -60,7 +63,7 @@ has DropDown $!sessions-dd;
 has DropDown $!groups-dd;
 
 has Entry $!group-title;
-#has Label $!grouptitle;
+has Label $!group-title-subst;
 
 # Fill the session drop down with the session ids and select the first one
 #has @!session-ids;
@@ -105,9 +108,9 @@ method add ( N-Object $parameter ) {
     # Add entries and dropdown widgets in the dialog
     .add-content( 'Session list', $!sessions-dd);
     .add-content( 'Session id', $!session-id);
-    .add-content( 'Title', $!session-title);
-    .add-content( 'Icon', $!session-overlay);
-    .add-content( 'Picture', $!session-icon);
+    .add-content( 'Title', $!session-title, $!session-title-subst);
+    .add-content( 'Icon', $!session-overlay, $!session-overlay-subst);
+    .add-content( 'Picture', $!session-icon, $!session-icon-subst);
 
     # Add buttons to the dialog
     .add-button( self, 'do-add-session', 'Add');
@@ -163,9 +166,9 @@ method change ( N-Object $parameter ) {
     # Add entries and dropdown widgets in the dialog
     .add-content( 'Session list', $!sessions-dd);
     .add-content( 'Session id', $!session-id);
-    .add-content( 'Title', $!session-title);
-    .add-content( 'Icon', $!session-overlay);
-    .add-content( 'Picture', $!session-icon);
+    .add-content( 'Title', $!session-title, $!session-title-subst);
+    .add-content( 'Icon', $!session-overlay, $!session-overlay-subst);
+    .add-content( 'Picture', $!session-icon, $!session-icon-subst);
 
     # Add buttons to the dialog
 #    .add-button( self, 'do-add-session', 'Add');
@@ -213,9 +216,9 @@ method rename ( N-Object $parameter ) {
     # Add entries and dropdown widgets in the dialog
     .add-content( 'Session list', $!sessions-dd);
     .add-content( 'Session id', $!session-id);
-    .add-content( 'Title', $!session-title);
-    .add-content( 'Icon', $!session-overlay);
-    .add-content( 'Picture', $!session-icon);
+    .add-content( 'Title', $!session-title, $!session-title-subst);
+    .add-content( 'Icon', $!session-overlay, $!session-overlay-subst);
+    .add-content( 'Picture', $!session-icon, $!session-icon-subst);
 
     # Add buttons to the dialog
 #    .add-button( self, 'do-add-session', 'Add');
@@ -258,9 +261,9 @@ method delete ( N-Object $parameter ) {
     # Add entries and dropdown widgets in the dialog
     .add-content( 'Session list', $!sessions-dd);
     .add-content( 'Session id', $!session-id);
-    .add-content( 'Title', $!session-title);
-    .add-content( 'Icon', $!session-overlay);
-    .add-content( 'Picture', $!session-icon);
+    .add-content( 'Title', $!session-title, $!session-title-subst);
+    .add-content( 'Icon', $!session-overlay, $!session-overlay-subst);
+    .add-content( 'Picture', $!session-icon, $!session-icon-subst);
 
     # Add buttons to the dialog
 #    .add-button( self, 'do-add-session', 'Add');
@@ -306,16 +309,14 @@ method groups ( N-Object $parameter ) {
     self.init-fields;
 
     # Call after dropdown fills
-    my Label $session-title .= new-label;# = self.make-session-title;
-    my Label $group-title .= new-label;# = self.make-group-title;
+#    my Label $session-title .= new-label;# = self.make-session-title;
+#    my Label $group-title .= new-label;# = self.make-group-title;
 
     # Trap changes in the sessions list
-    $!sessions-dd.set-selection-changed(
-      self, 'set-grouplist', :$session-title
-    );
+    $!sessions-dd.set-selection-changed( self, 'set-grouplist');
 
     # Trap changes in the group list
-    $!groups-dd.set-selection-changed( self, 'set-grouptitle', :$group-title);
+    $!groups-dd.set-selection-changed( self, 'set-grouptitle');
 
     # Fill the sessions list. Triggers the .set-grouplist() and
     # .set-grouptitle() call back routines.
@@ -324,13 +325,14 @@ method groups ( N-Object $parameter ) {
     $!sessions-dd.select(@session-ids[0]);
 
     # Add entries and dropdown widgets
-    .add-content( 'Current session', $!sessions-dd, $session-title);
-    .add-content( 'Current group', $!groups-dd, $group-title);
-    .add-content( 'Group Title', 2, $!group-title);
+    .add-content( 'Current session', $!sessions-dd, $!session-title);
+    .add-content( 'Current group', $!groups-dd, $!group-title);
+    #.add-content( 'Group Title', $!group-title);
 
     # Add buttons
     .add-button( self, 'do-add-group', 'Add');
-    .add-button( self, 'do-change-group', 'Set Title', :$group-title);
+    .add-button( self, 'do-change-group', 'Set Title');
+    .add-button( self, 'select-actions', 'Select Actions');
     .add-button( $!dialog, 'destroy-dialog', 'Done');
 
     .show-dialog;
@@ -361,8 +363,10 @@ method do-add-group ( ) {
 method do-change-group ( ) {
   my Str $sessionid = $!sessions-dd.get-text;
   my Str $group = $!groups-dd.get-text;
+  my Str $t = $!group-title.get-text;
 
-  $!sessions.set-group-title( $sessionid, $group, $!group-title.get-text);
+  $!sessions.set-group-title( $sessionid, $group, $t);
+  $!group-title-subst.set-text($!variables.substitute-vars($t));
   $!dialog.set-status("$group is succesfully changed");
 }
 
@@ -374,7 +378,7 @@ method delete-group ( N-Object $parameter, ) {
 }}
 
 #--[menu entry select actions]--------------------------------------------------
-method select-actions ( N-Object $parameter ) {
+method select-actions ( ) {
 #  my Actions $actions .= new;
 
 #  my DropDown $groups-dd .= new;
@@ -386,7 +390,8 @@ method select-actions ( N-Object $parameter ) {
 #  my Label $grouptitle .= new-label;
 #  my Label $sessiontitle .= new-label;
 
-  self.init-fields;
+#  self.init-fields;
+#`{{
   my Label $session-title .= new-label;# .= new-label;
 #  $session-title.set-text($!session-title.get-text);
   my Label $group-title .= new-label;# .= new-label;
@@ -394,6 +399,7 @@ method select-actions ( N-Object $parameter ) {
 
 #    my ListBox $sessions-actions-list;
 #  my ListBox $all-actions-list;
+}}
   with $!actions-view .= new(:multi-select) {
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
@@ -406,11 +412,12 @@ method select-actions ( N-Object $parameter ) {
 #    .append($!actions.get-action-idss[^2]);
   }
 
+#`{{
   # Trap changes in the sessions list
-  $!sessions-dd.set-selection-changed( self, 'set-grouplist', :$session-title);
+  $!sessions-dd.set-selection-changed( self, 'set-grouplist');
 
   # Trap changes in the group list
-  $!groups-dd.set-selection-changed( self, 'set-grouptitle', :$group-title);
+  $!groups-dd.set-selection-changed( self, 'set-grouptitle');
 
   # Fill the sessions list.
   my @session-ids = $!sessions.get-session-ids.sort;
@@ -422,9 +429,10 @@ method select-actions ( N-Object $parameter ) {
 #  my ScrolledWindow $sw2 = $all-actions-list.set-list(
 #    [|$actions.get-action-ids]
 #  );
+}}
 
   with $!dialog .= new(
-    :dialog-header('Modify Session'), :!modal, :add-statusbar
+    :dialog-header('Modify Session Actions'), :!modal, :add-statusbar
   ) {
 
     # Fill the groups list.
@@ -437,10 +445,11 @@ method select-actions ( N-Object $parameter ) {
 #      :$all-actions-list
 #    );
 
+#note "$?LINE $!session-title-subst
     # Add entries and dropdown widgets
-    .add-content( 'Current session', $!sessions-dd, $session-title);
-    .add-content( 'Current group', $!groups-dd, $group-title);
-    .add-content( 'All Actions list', 2, $!actions-view);
+    .add-content( 'Current session', $!session-title-subst);
+    .add-content( 'Current group', $!group-title-subst);
+    .add-content( 'All Actions list', $!actions-view);
 
     # Add buttons
     # Show a dialog to add an action
@@ -533,8 +542,10 @@ method modify-action ( ) {
 }}
 
 #-------------------------------------------------------------------------------
-method set-grouplist ( Label :$session-title ) {
-  self.make-session-label(:label($session-title));
+method set-grouplist ( ) {
+  $!session-title.set-text(
+    $!sessions.get-session-title($!sessions-dd.get-text)
+  );
 
   my Str $sessionid = $!sessions-dd.get-text;
 #note "$?LINE {$sessionid//'-'}";
@@ -555,8 +566,13 @@ method set-grouplist ( Label :$session-title ) {
 }
 
 #-------------------------------------------------------------------------------
-method set-grouptitle ( Label :$group-title ) {
-  self.make-group-label(:label($group-title));
+method set-grouptitle ( ) {
+#  self.make-group-label(:label($group-title));
+  $!group-title.set-text(
+    $!sessions.get-group-title(
+      $!sessions-dd.get-text, $!groups-dd.get-text
+    )
+  );
 
 #  my Str $sessionid = $!sessions-dd.get-text;
 #  my Str $groupname = $!groups-dd.get-text // '';
@@ -586,26 +602,6 @@ method set-grouptitle ( Label :$group-title ) {
 }
 
 #-------------------------------------------------------------------------------
-method make-session-label ( Label :$label --> Label ) {
-  my Str $sid = $!sessions-dd.get-text;
-  my Label $session-title = ?$label ?? $label !! Label.new-label;
-  $session-title.set-text($!sessions.get-session-title($sid));
-
-  $session-title
-}
-
-#-------------------------------------------------------------------------------
-method make-group-label ( Label :$label --> Label ) {
-  my Str $sid = $!sessions-dd.get-text;
-  my Label $group-title = ?$label ?? $label !! Label.new-label;
-  $group-title.set-text(
-    $!sessions.get-group-title( $sid, $!groups-dd.get-text)
-  );
-
-  $group-title
-}
-
-#-------------------------------------------------------------------------------
 method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
   
   with $!session-id .= new-entry {
@@ -615,18 +611,27 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!session-title .= new-entry {
     .set-sensitive(!$id-only);
-    .set-has-tooltip(True);
+#    .set-has-tooltip(True);
   }
 
   with $!session-icon .= new-entry {
     .set-sensitive(!$id-only);
-    .set-has-tooltip(True);
+#    .set-has-tooltip(True);
   }
 
   with $!session-overlay .= new-entry {
     .set-sensitive(!$id-only);
-    .set-has-tooltip(True);
+#    .set-has-tooltip(True);
   }
+
+  $!session-title-subst .= new-label;
+  $!session-title-subst.set-halign(GTK_ALIGN_START);
+
+  $!session-icon-subst .= new-label;
+  $!session-icon-subst.set-halign(GTK_ALIGN_START);
+
+  $!session-overlay-subst .= new-label;
+  $!session-overlay-subst.set-halign(GTK_ALIGN_START);
 
 #  with $!sessiontitle .= new-label {
 #    .set-sensitive(!$id-only);
@@ -644,8 +649,11 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!group-title .= new-entry {
     .set-sensitive(!$id-only);
-    .set-has-tooltip(True);
+#    .set-has-tooltip(True);
   }
+
+  $!group-title-subst .= new-label;
+  $!group-title-subst.set-halign(GTK_ALIGN_START);
 }
 
 #-------------------------------------------------------------------------------
@@ -656,15 +664,15 @@ method trap-select-session ( ) {
 
   my Str $t = $!sessions.get-session-title($sid);
   $!session-title.set-text($t);
-  $!session-title.set-tooltip-text($!variables.substitute-vars($t));
+  $!session-title-subst.set-text($!variables.substitute-vars($t));
 
   $t = $!sessions.get-session-icon($sid);
   $!session-icon.set-text($t);
-  $!session-icon.set-tooltip-text($!variables.substitute-vars($t));
+  $!session-icon-subst.set-text($!variables.substitute-vars($t));
 
   $t = $!sessions.get-session-overlay($sid);
   $!session-overlay.set-text($t);
-  $!session-overlay.set-tooltip-text($!variables.substitute-vars($t));
+  $!session-overlay-subst.set-text($!variables.substitute-vars($t));
 }
 
 #-------------------------------------------------------------------------------
