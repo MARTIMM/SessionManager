@@ -5,6 +5,7 @@ v6.d;
 use SessionManager::Sessions;
 use SessionManager::Gui::Actions;
 use SessionManager::Actions;
+use SessionManager::Variables;
 use SessionManager::Config;
 
 use GnomeTools::Gtk::Dialog;
@@ -46,6 +47,7 @@ constant Widget = Gnome::Gtk4::Widget;
 constant Grid = Gnome::Gtk4::Grid;
 constant Image = Gnome::Gtk4::Image;
 
+
 has Entry $!session-id;
 has Entry $!session-title;
 has Entry $!session-overlay;
@@ -64,6 +66,7 @@ has Entry $!group-title;
 #has @!session-ids;
 
 has SessionManager::Actions $!actions;
+has SessionManager::Variables $!variables;
 
 has Dialog $!dialog;
 has ListView $!actions-view;
@@ -72,6 +75,7 @@ has ListView $!actions-view;
 submethod BUILD ( ) {
   $!sessions .= new;
   $!actions .= new;
+  $!variables .= new;
 }
 
 #-------------------------------------------------------------------------------
@@ -611,14 +615,17 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!session-title .= new-entry {
     .set-sensitive(!$id-only);
+    .set-has-tooltip(True);
   }
 
   with $!session-icon .= new-entry {
     .set-sensitive(!$id-only);
+    .set-has-tooltip(True);
   }
 
   with $!session-overlay .= new-entry {
     .set-sensitive(!$id-only);
+    .set-has-tooltip(True);
   }
 
 #  with $!sessiontitle .= new-label {
@@ -637,6 +644,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!group-title .= new-entry {
     .set-sensitive(!$id-only);
+    .set-has-tooltip(True);
   }
 }
 
@@ -645,9 +653,18 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 method trap-select-session ( ) {
   my Str $sid = $!sessions-dd.get-text;
   $!session-id.set-text($sid);
-  $!session-title.set-text($!sessions.get-session-title($sid));
-  $!session-icon.set-text($!sessions.get-session-icon($sid));
-  $!session-overlay.set-text($!sessions.get-session-overlay($sid));
+
+  my Str $t = $!sessions.get-session-title($sid);
+  $!session-title.set-text($t);
+  $!session-title.set-tooltip-text($!variables.substitute-vars($t));
+
+  $t = $!sessions.get-session-icon($sid);
+  $!session-icon.set-text($t);
+  $!session-icon.set-tooltip-text($!variables.substitute-vars($t));
+
+  $t = $!sessions.get-session-overlay($sid);
+  $!session-overlay.set-text($t);
+  $!session-overlay.set-tooltip-text($!variables.substitute-vars($t));
 }
 
 #-------------------------------------------------------------------------------
