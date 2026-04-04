@@ -65,13 +65,19 @@ has ListView $!actions-view;
 
 has Entry $!action-id;
 has Entry $!aspec-title;
-has TextView $!aspec-cmd;
-has Entry $!aspec-shell;
 has Entry $!aspec-path;
-has Entry $!aspec-wait;
-has Switch $!aspec-log;
 has Entry $!aspec-icon;
 has Entry $!aspec-pic;
+
+has Label $!aspec-title-subst;
+has Label $!aspec-path-subst;
+has Label $!aspec-icon-subst;
+has Label $!aspec-pic-subst;
+
+has TextView $!aspec-cmd;
+has Entry $!aspec-shell;
+has Entry $!aspec-wait;
+has Switch $!aspec-log;
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
@@ -196,17 +202,43 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-sensitive(!$id-only);
   }
 
+  with $!aspec-title-subst .= new-label {
+    .set-halign(GTK_ALIGN_START);
+  }
+
+  with $!aspec-path-subst .= new-label {
+    .set-halign(GTK_ALIGN_START);
+  }
+
+  with $!aspec-icon-subst .= new-label {
+    .set-halign(GTK_ALIGN_START);
+  }
+
+  with $!aspec-pic-subst .= new-label {
+    .set-halign(GTK_ALIGN_START);
+  }
+
+  with $!aspec-icon .= new-entry {
+    .set-placeholder-text('optional');
+    .set-sensitive(!$id-only);
+  }
+
+  with $!aspec-pic .= new-entry {
+    .set-placeholder-text('optional');
+    .set-sensitive(!$id-only);
+  }
+
+  with $!aspec-path .= new-entry {
+    .set-placeholder-text('optional');
+    .set-sensitive(!$id-only);
+  }
+
   with $!aspec-cmd .= new-textview {
     .set-size-request( -1, 100);
     .set-sensitive(!$id-only);
   }
 
   with $!aspec-shell .= new-entry {
-    .set-sensitive(!$id-only);
-  }
-
-  with $!aspec-path .= new-entry {
-    .set-placeholder-text('optional');
     .set-sensitive(!$id-only);
   }
 
@@ -220,16 +252,6 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-size-request( 50, -1);
   }
 
-  with $!aspec-icon .= new-entry {
-    .set-placeholder-text('optional');
-    .set-sensitive(!$id-only);
-  }
-
-  with $!aspec-pic .= new-entry {
-    .set-placeholder-text('optional');
-    .set-sensitive(!$id-only);
-  }
-
 #TODO add fields for variables and environment
 #  $!aspec-env .= new-textview;
 #  $!aspec-env.set-size-request( -1, 100);
@@ -241,13 +263,14 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 method add-fields-to-content ( ) {
   with $!dialog {
     .add-content( 'Current actions', 5, $!actions-view);
-    .add-content( 'Action id', $!action-id, 4, $!aspec-title);
-    .add-content( 'Command', 5, $!aspec-cmd);
-    .add-content( 'Shell', $!aspec-shell, 4);
-    .add-content( 'Path', 5, $!aspec-path);
+    .add-content( 'Action id', $!action-id);
+    .add-content( 'Action Title', $!aspec-title, $!aspec-title-subst);
+    .add-content( 'Command', $!aspec-cmd);
+    .add-content( 'Shell', $!aspec-shell);
+    .add-content( 'Path', $!aspec-path, $!aspec-path-subst);
     .add-content( 'Wait', $!aspec-wait, $!aspec-log);
-    .add-content( 'Icon', 5, $!aspec-icon);
-    .add-content( 'Picture', 5, $!aspec-pic);
+    .add-content( 'Icon', $!aspec-icon, $!aspec-icon-subst);
+    .add-content( 'Picture', $!aspec-pic, $!aspec-pic-subst);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
@@ -473,7 +496,10 @@ method set-input-fields ( UInt $pos, @selections,
 
   $!action-id.set-text($id);
 
-  with $!aspec-title { .set-text($action-object<t> // ''); }
+  my Str $t = $action-object<t> // '';
+  $!aspec-title.set-text($t);
+  $!aspec-title-subst.set-text($!variables.substitute-vars($t));
+
   with $!aspec-cmd {
     my TextBuffer() $tb = .get-buffer;
     if ? my $s = $action-object<c> {
@@ -485,11 +511,21 @@ method set-input-fields ( UInt $pos, @selections,
     }
   }
 
-  with $!aspec-path { .set-text($action-object<p> // ''); }
+  $t = $action-object<p> // '';
+  $!aspec-path.set-text($t);
+  $!aspec-path-subst.set-text($!variables.substitute-vars($t));
+
   with $!aspec-wait { .set-text($action-object<w> // ''); }
   with $!aspec-log { .set-state($action-object<l>.Bool); }
-  with $!aspec-icon { .set-text($action-object<o> // ''); }
-  with $!aspec-pic { .set-text($action-object<i> // ''); }
+
+  $t = $action-object<o> // '';
+  $!aspec-icon.set-text($t);
+  $!aspec-icon-subst.set-text($!variables.substitute-vars($t));
+
+  $t = $action-object<i> // '';
+  $!aspec-pic.set-text($t);
+  $!aspec-pic-subst.set-text($!variables.substitute-vars($t));
+
   with $!aspec-shell { .set-placeholder-text($action-object<sh>); }
 }
 
