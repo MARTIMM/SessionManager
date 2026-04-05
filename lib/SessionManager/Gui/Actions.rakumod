@@ -30,6 +30,7 @@ use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
 use Gnome::Gtk4::Image:api<2>;
 use Gnome::Gtk4::Button:api<2>;
+use Gnome::Gtk4::Box:api<2>;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Actions;
@@ -48,7 +49,7 @@ constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant TextView = Gnome::Gtk4::TextView;
 constant TextBuffer = Gnome::Gtk4::TextBuffer;
 constant Widget = Gnome::Gtk4::Widget;
-#constant TextIter = Gnome::Gtk4::TextIter;
+constant Box = Gnome::Gtk4::Box;
 
 #-------------------------------------------------------------------------------
 my SessionManager::Gui::Actions $instance;
@@ -196,7 +197,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
   with $!action-id .= new-entry {
     .set-sensitive($id-is-sensitive);
     .set-placeholder-text('unique action id');
-    .set-size-request( 300, -1);
+    .set-size-request( 600, -1);
   }
 
   with $!aspec-title .= new-entry {
@@ -205,7 +206,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!aspec-title-subst .= new-label {
     .set-halign(GTK_ALIGN_START);
-    .set-size-request( 300, -1);
+#    .set-size-request( 600, -1);
   }
 
   with $!aspec-path-subst .= new-label {
@@ -251,7 +252,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!aspec-log .= new-switch {
     .set-sensitive(!$id-only);
-    .set-size-request( 50, -1);
+    .set-size-request( 80, -1);
   }
 
 #TODO add fields for variables and environment
@@ -264,15 +265,20 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #-------------------------------------------------------------------------------
 method add-fields-to-content ( ) {
   with $!dialog {
-    .add-content( 'Current actions', 5, $!actions-view);
+    .add-content( 'Current actions', 2, $!actions-view);
     .add-content( 'Action id', $!action-id);
     .add-content( 'Action Title', $!aspec-title, $!aspec-title-subst);
     .add-content( 'Command', $!aspec-cmd);
     .add-content( 'Shell', $!aspec-shell);
     .add-content( 'Path', $!aspec-path, $!aspec-path-subst);
-    .add-content( 'Wait', $!aspec-wait, $!aspec-log);
     .add-content( 'Icon', $!aspec-icon, $!aspec-icon-subst);
     .add-content( 'Picture', $!aspec-pic, $!aspec-pic-subst);
+
+    my Box $sw-box .= new-box;
+    $sw-box.append($!aspec-log);
+    my Label $strut .= new-label;
+    $sw-box.append($strut);
+    .add-content( 'Wait', $!aspec-wait, $sw-box);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
