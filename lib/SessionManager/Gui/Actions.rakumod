@@ -196,6 +196,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
   with $!action-id .= new-entry {
     .set-sensitive($id-is-sensitive);
     .set-placeholder-text('unique action id');
+    .set-size-request( 300, -1);
   }
 
   with $!aspec-title .= new-entry {
@@ -204,6 +205,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!aspec-title-subst .= new-label {
     .set-halign(GTK_ALIGN_START);
+    .set-size-request( 300, -1);
   }
 
   with $!aspec-path-subst .= new-label {
