@@ -42,7 +42,11 @@ has Int $.exit-code = 0;
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   with $!application .= new(
-    :app-id(APP_ID), :app-flags(G_APPLICATION_HANDLES_COMMAND_LINE)
+    :app-id(APP_ID),
+    :app-flags(
+      G_APPLICATION_HANDLES_COMMAND_LINE +|
+      G_APPLICATION_NON_UNIQUE
+    )
   ) {
     .set-activate( self, 'app-activate');
 #    .set-startup( self, 'startup');
