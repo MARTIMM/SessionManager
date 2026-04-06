@@ -202,6 +202,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 
   with $!aspec-title .= new-entry {
     .set-sensitive(!$id-only);
+    .set-placeholder-text('description of this action');
   }
 
   with $!aspec-title-subst .= new-label {
@@ -209,31 +210,31 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #    .set-size-request( 600, -1);
   }
 
-  with $!aspec-path-subst .= new-label {
-    .set-halign(GTK_ALIGN_START);
+  with $!aspec-icon .= new-entry {
+    .set-placeholder-text('optional small picture of application');
+    .set-sensitive(!$id-only);
   }
 
   with $!aspec-icon-subst .= new-label {
     .set-halign(GTK_ALIGN_START);
   }
 
+  with $!aspec-pic .= new-entry {
+    .set-placeholder-text('optional picture of application');
+    .set-sensitive(!$id-only);
+  }
+
   with $!aspec-pic-subst .= new-label {
     .set-halign(GTK_ALIGN_START);
   }
 
-  with $!aspec-icon .= new-entry {
-    .set-placeholder-text('optional');
-    .set-sensitive(!$id-only);
-  }
-
-  with $!aspec-pic .= new-entry {
-    .set-placeholder-text('optional');
-    .set-sensitive(!$id-only);
-  }
-
   with $!aspec-path .= new-entry {
-    .set-placeholder-text('optional');
+    .set-placeholder-text('optional path to start in');
     .set-sensitive(!$id-only);
+  }
+
+  with $!aspec-path-subst .= new-label {
+    .set-halign(GTK_ALIGN_START);
   }
 
   with $!aspec-cmd .= new-textview {
@@ -268,17 +269,19 @@ method add-fields-to-content ( ) {
     .add-content( 'Current actions', 2, $!actions-view);
     .add-content( 'Action id', $!action-id);
     .add-content( 'Action Title', $!aspec-title, $!aspec-title-subst);
-    .add-content( 'Command', $!aspec-cmd);
-    .add-content( 'Shell', $!aspec-shell);
-    .add-content( 'Path', $!aspec-path, $!aspec-path-subst);
+    .add-content( 'Command to run', $!aspec-cmd);
+    .add-content( 'Shell to work in', $!aspec-shell);
+    .add-content( 'Path to start in', $!aspec-path, $!aspec-path-subst);
     .add-content( 'Icon', $!aspec-icon, $!aspec-icon-subst);
     .add-content( 'Picture', $!aspec-pic, $!aspec-pic-subst);
+    .add-content( 'Wait before log window closes', $!aspec-wait);
 
-    my Box $sw-box .= new-box;
+    my Box $sw-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 0);
     $sw-box.append($!aspec-log);
     my Label $strut .= new-label;
     $sw-box.append($strut);
-    .add-content( 'Wait', $!aspec-wait, $sw-box);
+    .add-content( 'Turn logging on', $sw-box);
+    .add-content( 'Turn logging on', $!aspec-wait);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
