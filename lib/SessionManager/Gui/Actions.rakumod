@@ -395,7 +395,8 @@ method do-modify-act ( ) {
   $!dialog.set-status("The action '$id' is succesfully modified");
   
   my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
-  $!actions-view.splice( $original-pos, 0, $id);
+  $!actions-view.splice( $original-pos, 1, $id);
+note "\n$original-pos, $id\n$raw-action.gist()";
 
 #  $!id-to-return-from-dialog = $id;
 }
