@@ -19,6 +19,7 @@ use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Image:api<2>;
+use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
@@ -46,6 +47,7 @@ constant Label = Gnome::Gtk4::Label;
 constant Widget = Gnome::Gtk4::Widget;
 constant Grid = Gnome::Gtk4::Grid;
 constant Image = Gnome::Gtk4::Image;
+constant Button = Gnome::Gtk4::Button;
 
 
 has Entry $!session-id;
@@ -447,9 +449,20 @@ method select-actions ( ) {
 
 #note "$?LINE $!session-title-subst
     # Add entries and dropdown widgets
-    .add-content( 'Current session', $!session-title-subst);
-    .add-content( 'Current group', $!group-title-subst);
-    .add-content( 'All Actions list', $!actions-view);
+    .add-content( 'Current session', 3, $!session-title-subst);
+    .add-content( 'Current group', 3, $!group-title-subst);
+    .add-content( 'All Actions list', 3, $!actions-view);
+
+    my Entry $search .= new-entry;
+    with my Button $search-button .= new-button {
+      .set-label('Select from list');
+      .register-signal( self, 'select-from-list', 'clicked', :$search);
+    }
+    with my Button $reset-button .= new-button {
+      .set-label('Reset search');
+      .register-signal( self, 'reset-list', 'clicked', :$search);
+    }
+    .add-content( 'Search in list', $search, $search-button, $reset-button);
 
     # Add buttons
     # Show a dialog to add an action
@@ -469,17 +482,22 @@ method select-actions ( ) {
   }
 }
 
-#`{{
 #-------------------------------------------------------------------------------
-method clear-actions (  ) {
-
+method select-from-list ( Entry :$search ) {
+  my Str $search-text = $search.get-text;
+  my @actions = $!actions.get-action-ids.sort: {$^a.lc leg $^b.lc};
+  $!actions-view.remove(0..^@actions.elems);
+  for @actions -> $item {
+    $!actions-view.append($item) if $item ~~ m/ $search-text /;
+  }
 }
 
 #-------------------------------------------------------------------------------
-method set-input-fields ( UInt $pos, @selections ) {
-
+method reset-list ( Entry :$search ) {
+  $!actions-view.remove(^$!actions-view.get-n-items);
+  $!actions-view.append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+  $search.set-text('');
 }
-}}
 
 #-------------------------------------------------------------------------------
 # When leaving the dialog (on Done), set the sessions actions list from the
