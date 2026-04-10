@@ -117,17 +117,7 @@ method session-actions ( ) {
 
     my GtkOrientation $orientation =
        $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
-    my Box $session-buttons .= new-box( $orientation, 1);
-    $session-buttons.set-spacing(20);
-#      .set-margin-top(0);
-#      .set-margin-bottom(30);
-#      .set-margin-start(30);
-#      .set-margin-end(30);
-#      .set-hexpand-set(True);
-#      .set-hexpand(True);
-#      .set-vexpand-set(True);
-#      .set-vexpand(True);
-#      .set-valign(GTK_ALIGN_FILL);
+    my Box $session-buttons .= new-box( $orientation, 20);
 
     for @($!manage-session{"group$level"}<actions>) -> $id {
       my SessionManager::Command $command =
@@ -238,8 +228,19 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
     );
 
     my Picture $picture .= new-for-pixbuf($gdkpixbuf);
-    my Label $label .= new-label;
-    $label.set-text($label-text);
+    with my Label $label .= new-label {
+      .set-text($label-text);
+#      .set-margin-top(0);
+#      .set-margin-bottom(30);
+      .set-margin-start(0);
+#      .set-margin-end(30);
+#      .set-hexpand-set(True);
+#      .set-hexpand(True);
+      .set-halign(GTK_ALIGN_START);
+#      .set-vexpand-set(True);
+#      .set-vexpand(True);
+#      .set-valign(GTK_ALIGN_FILL);
+    }
 
     with my Label $strut .= new-label {
       .set-text('');
@@ -254,8 +255,21 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
   }
 
   else {
-    $widget = Label.new-label;
-    $widget.set-text($label-text//'-');
+    with $widget = Label.new-label {
+      .set-text($label-text//'-');
+#      .set-margin-top(0);
+#      .set-margin-bottom(30);
+      .set-margin-start(0);
+#      .set-margin-end(30);
+#      .set-hexpand-set(True);
+#      .set-hexpand(True);
+      .set-halign(GTK_ALIGN_START);
+#      .set-vexpand-set(True);
+#      .set-vexpand(True);
+#      .set-valign(GTK_ALIGN_FILL);
+   
+    }
+    
   }
 
   $button.set-child($widget);
