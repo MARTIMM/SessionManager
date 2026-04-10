@@ -378,23 +378,29 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
   #if $image-path.IO ~~ :r {
 note "$?LINE set-box-widget {$label-text//'-'}, {$image-path // '-'}";
   if ? $image-path and $image-path.IO.r {
-    my Picture $picture .= new-picture;
-    $picture.set-filename($image-path);
-    $picture.set-size-request( 64, 64);
+    my $err = CArray[N-Error].new(N-Error);
+    my Gnome::GdkPixbuf::Pixbuf $gdkpixbuf .= new-from-file-at-size(
+      $image-path, 64, 64, $err
+    );
 
-    my Box $image-container = Box.new-box( GTK_ORIENTATION_HORIZONTAL, 0);
-    $image-container.append($picture);
+    my Picture $picture .= new-for-pixbuf($gdkpixbuf);
+#    $picture.set-filename($image-path);
+#    $picture.set-size-request( 64, 64);
+
+#    my Box $image-container = Box.new-box( GTK_ORIENTATION_HORIZONTAL, 0);
+#    $image-container.append($picture);
 
     my Label $label .= new-label;
     $label.set-text($label-text);
 
     with my Label $strut .= new-label {
-#      .set-text(' ');
+      .set-text('');
       .set-hexpand(True);
     }
 
     with $widget = Box.new-box( GTK_ORIENTATION_HORIZONTAL, 5) {
-      .append($image-container);
+#      .append($image-container);
+      .append($picture);
       .append($label);
       .append($strut);
     }
