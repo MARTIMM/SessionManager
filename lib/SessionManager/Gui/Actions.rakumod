@@ -74,6 +74,7 @@ has Label $!aspec-title-subst;
 has Label $!aspec-path-subst;
 has Label $!aspec-icon-subst;
 has Label $!aspec-pic-subst;
+has Label $!aspec-cmd-subst;
 
 has TextView $!aspec-cmd;
 has Entry $!aspec-shell;
@@ -160,7 +161,7 @@ method create ( N-Object $parameter ) {
 # undefined N-Object so other methods can call it without an argument.
 method create ( N-Object $parameter = N-Object ) {
   self.init-fields;
-
+#`{{
   with $!actions-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
@@ -175,6 +176,7 @@ method create ( N-Object $parameter = N-Object ) {
     # Select the first one
     .set-selection(0);
   }
+}}
 
   with $!dialog .= new(
     :dialog-header('Create Action'), :add-statusbar, :modal
@@ -242,6 +244,11 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-sensitive(!$id-only);
   }
 
+  with $!aspec-cmd-subst .= new-label {
+    .set-halign(GTK_ALIGN_START);
+#    .set-wrap(True);
+  }
+
   with $!aspec-shell .= new-entry {
     .set-sensitive(!$id-only);
   }
@@ -261,15 +268,50 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #  $!aspec-env.set-size-request( -1, 100);
 #  $!aspec-temp-vars .= new-textview;
 #  $!aspec-temp-vars.set-size-request( -1, 100);
+
+  with $!actions-view .= new(:!multi-select) {
+    .set-size-request( -1, 500);
+
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+    .set-selection-changed( self, 'set-input-fields');
+
+    .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+#    .append($!actions.get-action-idss[^2]);
+
+    # Select the first one
+    .set-selection(0);
+  }
 }
 
 #-------------------------------------------------------------------------------
 method add-fields-to-content ( ) {
   with $!dialog {
-    .add-content( 'Current actions', 2, $!actions-view);
+    .add-content( 'Current actions', 3, $!actions-view);
+
+    my Entry $search .= new-entry;
+    $search.set-size-request( 250, -1);
+    with my Button $search-button .= new-button {
+      .set-label('Select from list');
+      .register-signal( self, 'select-from-list', 'clicked', :$search);
+    }
+    with my Button $reset-button .= new-button {
+      .set-label('Reset search');
+      .register-signal( self, 'reset-list', 'clicked', :$search);
+    }
+    my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
+    $bt-box.append($search-button);
+    $bt-box.append($reset-button);
+    my Label $strut1 .= new-label;
+    $bt-box.append($strut1);
+    .add-content( 'Search in list', $search, 2, $bt-box);
+
     .add-content( 'Action id', $!action-id);
-    .add-content( 'Action Title', $!aspec-title, $!aspec-title-subst);
-    .add-content( 'Command to run', $!aspec-cmd);
+    .add-content( 'Action Title', $!aspec-title, 2, $!aspec-title-subst);
+    .add-content( 'Command to run', $!aspec-cmd, 2, $!aspec-cmd-subst);
     .add-content( 'Shell to work in', $!aspec-shell);
     .add-content( 'Path to start in', $!aspec-path, $!aspec-path-subst);
     .add-content( 'Icon', $!aspec-icon, $!aspec-icon-subst);
@@ -278,8 +320,8 @@ method add-fields-to-content ( ) {
 
     my Box $sw-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 0);
     $sw-box.append($!aspec-log);
-    my Label $strut .= new-label;
-    $sw-box.append($strut);
+    my Label $strut2 .= new-label;
+    $sw-box.append($strut2);
     .add-content( 'Turn logging on', $sw-box);
     .add-content( 'Turn logging on', $!aspec-wait);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
@@ -334,6 +376,7 @@ method do-create-act ( ) {
 method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
   self.init-fields(:!id-is-sensitive);
 
+#`{{
   with $!actions-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
@@ -349,6 +392,7 @@ method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
     # select the first one
     .set-selection(0);
   }
+}}
 
   with $!dialog .= new(
     :dialog-header('Modify Action'), :add-statusbar, :modal
@@ -405,6 +449,7 @@ note "\n$original-pos, $id\n$raw-action.gist()";
 method rename ( N-Object $parameter ) {
   self.init-fields(:id-only);
 
+#`{{
   with $!actions-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
@@ -419,6 +464,7 @@ method rename ( N-Object $parameter ) {
     # Select the first one
     .set-selection(0);
   }
+}}
 
   with $!dialog .= new(
     :dialog-header('Rename Action'), :add-statusbar, :!modal
@@ -477,6 +523,7 @@ method do-rename-act (
   }
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method set-data (
   Label() :$row-widget, Widget :$action-id,
@@ -493,6 +540,7 @@ method set-data (
     :$aspec-wait, :$aspec-log, :$aspec-icon, :$aspec-pic, :$aspec-shell
   );
 }
+}}
 
 #-------------------------------------------------------------------------------
 method set-input-fields ( UInt $pos, @selections,
@@ -516,12 +564,15 @@ method set-input-fields ( UInt $pos, @selections,
     my TextBuffer() $tb = .get-buffer;
     if ? my $s = $action-object<c> {
       $tb.set-text( $s, $s.chars);
+      $!aspec-cmd-subst.set-text($!variables.substitute-vars($s));
     }
 
     else {
       $tb.set-text( '', 0);
+      $!aspec-cmd-subst.set-text($!variables.substitute-vars(''));
     }
   }
+
 
   $t = $action-object<p> // '';
   $!aspec-path.set-text($t);
@@ -545,6 +596,7 @@ method set-input-fields ( UInt $pos, @selections,
 method delete ( N-Object $parameter ) {
   self.init-fields( :!id-is-sensitive, :id-only);
 
+#`{{
   with $!actions-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
@@ -559,6 +611,7 @@ method delete ( N-Object $parameter ) {
     # Select the first one
     .set-selection(0);
   }
+}}
 
   with $!dialog .= new(
     :dialog-header('Delete Action'), :add-statusbar, :modal
@@ -588,6 +641,7 @@ method do-delete-act ( ) {
   }
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method scrollable-list ( Bool :$multi = False, *%options ) {
 
@@ -599,6 +653,7 @@ method scrollable-list ( Bool :$multi = False, *%options ) {
 
   ( $list-lb, $sw)
 }
+}}
 
 #-------------------------------------------------------------------------------
 method get-text ( TextView:D $textview --> Str ) {
@@ -611,7 +666,7 @@ method get-text ( TextView:D $textview --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
-method setup-item ( ) {
+method setup-item ( --> Widget ) {
   my Label $action-id = self.make-label;
   my Label $action-value = self.make-label;
   my Image $used = self.make-image;
@@ -626,7 +681,8 @@ method setup-item ( ) {
 }
 
 #-------------------------------------------------------------------------------
-method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
+method bind-item ( Grid() $grid, Str $name ) {
+#note $?LINE;
   my Hash $action-object = $!actions.get-raw-action($name);
   self.set-text-at( 2, 0, $name, $grid);
   self.set-text-at( 2, 1, $action-object<t>//'', $grid);
@@ -645,7 +701,7 @@ method check-action-inuse ( Str:D $name --> Bool ) {
 #method unbind-item
 
 #-------------------------------------------------------------------------------
-method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
+method teardown-item ( Grid() $grid ) {
   $grid.clear-object;
 }
 
@@ -696,3 +752,20 @@ method selection-changed ( UInt $pos, @selections ) {
   $!variable-spec.set-text($value);
 }
 }}
+
+#-------------------------------------------------------------------------------
+method select-from-list ( Entry :$search ) {
+  my Str $search-text = $search.get-text;
+  my @actions = $!actions.get-action-ids.sort: {$^a.lc leg $^b.lc};
+  $!actions-view.remove(0..^@actions.elems);
+  for @actions -> $item {
+    $!actions-view.append($item) if $item ~~ m/ $search-text /;
+  }
+}
+
+#-------------------------------------------------------------------------------
+method reset-list ( Entry :$search ) {
+  $!actions-view.remove(^$!actions-view.get-n-items);
+  $!actions-view.append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+  $search.set-text('');
+}
