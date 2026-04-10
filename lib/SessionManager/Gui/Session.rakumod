@@ -239,10 +239,20 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
     $label
   }
 
-  if ? $image-path and $image-path.IO.r {
+  my Str $ipath;
+  if ?$image-path and $image-path.IO.r {
+    $ipath = $image-path;
+  }
+  
+  else {
+    $ipath = $*config-directory ~ '/Pictures/no-icon.png';
+    $ipath = '' unless $ipath.IO.r;
+  }
+
+  if ? $ipath {
     my $err = CArray[N-Error].new(N-Error);
     my Gnome::GdkPixbuf::Pixbuf $gdkpixbuf .= new-from-file-at-size(
-      $image-path, 64, 64, $err
+      $ipath, 64, 64, $err
     );
 
     my Picture $picture .= new-for-pixbuf($gdkpixbuf);
