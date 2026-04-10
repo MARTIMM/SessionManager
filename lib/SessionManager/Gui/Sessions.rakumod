@@ -20,6 +20,7 @@ use Gnome::Gtk4::Widget:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Image:api<2>;
 use Gnome::Gtk4::Button:api<2>;
+use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
@@ -48,6 +49,7 @@ constant Widget = Gnome::Gtk4::Widget;
 constant Grid = Gnome::Gtk4::Grid;
 constant Image = Gnome::Gtk4::Image;
 constant Button = Gnome::Gtk4::Button;
+constant Box = Gnome::Gtk4::Box;
 
 
 has Entry $!session-id;
@@ -462,7 +464,12 @@ method select-actions ( ) {
       .set-label('Reset search');
       .register-signal( self, 'reset-list', 'clicked', :$search);
     }
-    .add-content( 'Search in list', $search, $search-button, $reset-button);
+    my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
+    $bt-box.append($search-button);
+    $bt-box.append($reset-button);
+    my Label $strut1 .= new-label;
+    $bt-box.append($strut1);
+    .add-content( 'Search in list', $search, $bt-box);
 
     # Add buttons
     # Show a dialog to add an action
