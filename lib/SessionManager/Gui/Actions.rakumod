@@ -373,7 +373,7 @@ method do-create-act ( ) {
 }
 
 #--[menu entry modify]----------------------------------------------------------
-method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
+method modify ( N-Object $parameter = N-Object, Str :$target-id = '' ) {
   self.init-fields(:!id-is-sensitive);
 
 #`{{
@@ -405,8 +405,6 @@ method modify ( N-Object $parameter = N-Object, Str :$target-id = '' --> Str ) {
     .set-size-request( 800, 800);
     .show-dialog;
   }
-
-#  $!id-to-return-from-dialog
 }
 
 #-------------------------------------------------------------------------------
@@ -437,7 +435,9 @@ method do-modify-act ( ) {
   $actions.modify-action( $id, $raw-action);
 
   $!dialog.set-status("The action '$id' is succesfully modified");
-  
+
+#BUG Type check failed in assignment to $original-pos; expected UInt but got Any
+# happens when doing change twice
   my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
   $!actions-view.splice( $original-pos, 1, $id);
 note "\n$original-pos, $id\n$raw-action.gist()";
