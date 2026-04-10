@@ -184,7 +184,7 @@ method create ( N-Object $parameter = N-Object ) {
     self.add-fields-to-content;
 
     .add-button( self, 'do-create-act', 'Create');
-    .add-button( $!dialog, 'destroy-dialog', 'Cancel');
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
 
     .set-size-request( 800, 800);
     .show-dialog;
@@ -400,7 +400,7 @@ method modify ( N-Object $parameter = N-Object, Str :$target-id = '' ) {
     self.add-fields-to-content;
 
     .add-button( self, 'do-modify-act', 'Modify');
-    .add-button( $!dialog, 'destroy-dialog', 'Cancel');
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
 
     .set-size-request( 800, 800);
     .show-dialog;
@@ -619,7 +619,7 @@ method delete ( N-Object $parameter ) {
     self.add-fields-to-content;
 
     .add-button( self, 'do-delete-act', 'Delete');
-    .add-button( $!dialog, 'destroy-dialog', 'Cancel');
+    .add-button( $!dialog, 'destroy-dialog', 'Done');
 
     .set-size-request( 800, 800);
     .show-dialog;
