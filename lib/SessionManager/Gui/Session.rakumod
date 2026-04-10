@@ -93,9 +93,7 @@ method session-button ( --> Widget ) {
 #  $!theme.add-css-class( self, 'session-toolbar');
 
   if $*legacy {
-    $widget = self.legacy-button(
-      'session-actions', :$!session-id, :$!manage-session
-    );
+    $widget = self.legacy-button('session-actions');
   }
 
   else {
@@ -104,10 +102,7 @@ method session-button ( --> Widget ) {
       .set-label($!manage-session<title>);
   #    .set-child($picture);
   #    .set-tooltip-text("Session\n$!manage-session<title>");
-      .register-signal(
-        self, 'session-actions', 'clicked',
-        :$!session-id, :$!manage-session
-      );
+      .register-signal( self, 'session-actions', 'clicked');
     }
 
     $widget = $button;
@@ -118,14 +113,12 @@ method session-button ( --> Widget ) {
 
 #-------------------------------------------------------------------------------
 # Session button pressed to show the action buttons in groups
-method session-actions (
-  Str :$session-name, Hash:D :$manage-session
-) {
-#note "\n$?LINE $session-name";
+method session-actions ( ) {
+note "\n$?LINE $!session-id";
   # Cleanup previous action boxes, start at the deepest level
   my SessionManager::Config $config .= instance;
   for 10...1 -> $x {
-#note "$?LINE $x, {$!session-manager-box.get-child-at( $x, 0) // '-'}";
+note "$?LINE $x, {$!session-manager-box.get-child-at( $x, 0) // '-'}";
     if $*legacy {
       if $!session-manager-box.get-child-at( 0, $x) {
         $!session-manager-box.remove-row($x);
@@ -179,7 +172,7 @@ method session-actions (
   # Maximum of 10 levels. Originally started from 0, now 1.
   for 1..10 -> $level {
 #    last unless $config.has-actions-level( $session-name, $level);
-    last unless $manage-session{"group$level"}:exists;
+    last unless $!manage-session{"group$level"}:exists;
 
 #    my Box $session-buttons .= new-box( GTK_ORIENTATION_VERTICAL, 1);
 
@@ -208,11 +201,9 @@ method session-actions (
     }
 }}
 
-    for @($manage-session{"group$level"}<actions>) -> $id {
-
+    for @($!manage-session{"group$level"}<actions>) -> $id {
       my SessionManager::Command $command =
         SessionManager::RunActionCommand.new(:$id);
-#note "$?LINE $command.tooltip()";
       my Widget $widget;
       if $*legacy {
         $widget = self.legacy-button(
@@ -223,7 +214,7 @@ method session-actions (
       else {
         $widget = Button.new-button; #with-label($command.tooltip);
         self.set-box-widget(
-          $widget, $command.tooltip, $command.overlay-picture
+          $widget, $command.tooltip // '-', $command.overlay-picture
         );
         $widget.register-signal( self, 'setup-run', 'clicked', :$id, :$command);
         $!theme.add-css-class( $widget, 'session-action-button');
@@ -385,8 +376,8 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
   # No type; could be a Box or a Label
   my $widget;
   #if $image-path.IO ~~ :r {
-#note "$?LINE set-box-widget {$image-path // '-'}";
-  if ? $image-path {
+note "$?LINE set-box-widget {$label-text//'-'}, {$image-path // '-'}";
+  if ? $image-path and $image-path.IO.r {
     my Picture $picture .= new-picture;
     $picture.set-filename($image-path);
     $picture.set-size-request( 64, 64);
@@ -398,7 +389,7 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
     $label.set-text($label-text);
 
     with my Label $strut .= new-label {
-      .set-text(' ');
+#      .set-text(' ');
       .set-hexpand(True);
     }
 
@@ -410,8 +401,9 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
   }
 
   else {
+#note "$?LINE $label-text";
     $widget = Label.new-label;
-    $widget.set-text($label-text);
+    $widget.set-text($label-text//'-');
   }
 
   $button.set-child($widget);
