@@ -221,6 +221,24 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
   # No type; could be a Box or a Label
   my $widget;
 
+  sub justify-left-label ( --> Label ) {
+    with my Label $label .= new-label {
+      .set-text($label-text);
+#      .set-margin-top(0);
+#      .set-margin-bottom(30);
+      .set-margin-start(10);
+#      .set-margin-end(30);
+#      .set-hexpand-set(True);
+#      .set-hexpand(True);
+      .set-halign(GTK_ALIGN_START);
+#      .set-vexpand-set(True);
+#      .set-vexpand(True);
+#      .set-valign(GTK_ALIGN_FILL);
+    }
+
+    $label
+  }
+
   if ? $image-path and $image-path.IO.r {
     my $err = CArray[N-Error].new(N-Error);
     my Gnome::GdkPixbuf::Pixbuf $gdkpixbuf .= new-from-file-at-size(
@@ -228,48 +246,23 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
     );
 
     my Picture $picture .= new-for-pixbuf($gdkpixbuf);
-    with my Label $label .= new-label {
-      .set-text($label-text);
-#      .set-margin-top(0);
-#      .set-margin-bottom(30);
-      .set-margin-start(0);
-#      .set-margin-end(30);
-#      .set-hexpand-set(True);
-#      .set-hexpand(True);
-      .set-halign(GTK_ALIGN_START);
-#      .set-vexpand-set(True);
-#      .set-vexpand(True);
-#      .set-valign(GTK_ALIGN_FILL);
-    }
 
+#`{{
     with my Label $strut .= new-label {
       .set-text('');
       .set-hexpand(True);
     }
+}}
 
     with $widget = Box.new-box( GTK_ORIENTATION_HORIZONTAL, 5) {
       .append($picture);
-      .append($label);
-      .append($strut);
+      .append(justify-left-label);
+#      .append($strut);
     }
   }
 
   else {
-    with $widget = Label.new-label {
-      .set-text($label-text//'-');
-#      .set-margin-top(0);
-#      .set-margin-bottom(30);
-      .set-margin-start(0);
-#      .set-margin-end(30);
-#      .set-hexpand-set(True);
-#      .set-hexpand(True);
-      .set-halign(GTK_ALIGN_START);
-#      .set-vexpand-set(True);
-#      .set-vexpand(True);
-#      .set-valign(GTK_ALIGN_FILL);
-   
-    }
-    
+    $widget = justify-left-label;
   }
 
   $button.set-child($widget);
