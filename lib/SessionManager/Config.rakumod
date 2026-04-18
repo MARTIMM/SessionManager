@@ -78,10 +78,7 @@ method load-config ( ) {
         window-vsize: [ 200, 1000]
         log-window-size: [ 900, 1300]
 
-      part-references: {}
-      action-references: {}
-      variable-references: {}
-      sessions: {}
+      sessions: []
       EOD
   }
 
