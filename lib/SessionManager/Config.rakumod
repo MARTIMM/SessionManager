@@ -67,9 +67,9 @@ method instance ( Bool :$reinit = False --> SessionManager::Config ) {
 #-------------------------------------------------------------------------------
 #method load-config ( Bool :$load-manual-build-config = False ) {
 method load-config ( ) {
-#note "$?LINE $*config-directory/session-manager.yaml";
-  if "$*config-directory/session-manager.yaml".IO !~~ :r {
-    "$*config-directory/session-manager.yaml".IO.spurt(Q:q:to/EOD/);
+#note "$?LINE $*config-directory/$*manager";
+  if "$*config-directory/$*manager".IO !~~ :r {
+    "$*config-directory/$*manager".IO.spurt(Q:q:to/EOD/);
       theme:
         title: Environment starter
 
@@ -78,12 +78,12 @@ method load-config ( ) {
         window-vsize: [ 200, 1000]
         log-window-size: [ 900, 1300]
 
-      sessions: []
+      sessions: {}
       EOD
   }
 
   $!dispatch-config = load-yaml(
-    "$*config-directory/session-manager.yaml".IO.slurp
+    "$*config-directory/$*manager".IO.slurp
   );
 
   my SessionManager::Variables $variables .= new;

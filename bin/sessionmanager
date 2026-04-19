@@ -13,6 +13,8 @@ use SessionManager::Gui::Application;
 my Version $*manager-version = v0.7.1;
 my Bool $*verbose = False;
 my Bool $*legacy = False;
+my Str $*manager = 'session-manager.yaml';
+my UInt $*session-selection;
 
 my $*dispatch-testing = False;
 
@@ -39,6 +41,8 @@ sub usage ( ) {
     Options:
       --help -h           Show this information.
       --legacy            Show older version layout.
+      --session N -sN     Show session setup using a number. Default is to show
+                          All defined sessions.
       --version           Show the current version of the program.
       --verbose -v        Show more information while running.
     Arguments
