@@ -224,16 +224,8 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
   sub justify-left-label ( --> Label ) {
     with my Label $label .= new-label {
       .set-text($label-text);
-#      .set-margin-top(0);
-#      .set-margin-bottom(30);
-      .set-margin-start(10);
-#      .set-margin-end(30);
-#      .set-hexpand-set(True);
-#      .set-hexpand(True);
+#      .set-margin-start(10);
       .set-halign(GTK_ALIGN_START);
-#      .set-vexpand-set(True);
-#      .set-vexpand(True);
-#      .set-valign(GTK_ALIGN_FILL);
     }
 
     $label
@@ -245,7 +237,7 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
   }
   
   else {
-    $ipath = $*config-directory ~ '/Pictures/no-icon.png';
+    $ipath = $*config-directory ~ '/Pictures/NO_ICON.png';
     $ipath = '' unless $ipath.IO.r;
   }
 
