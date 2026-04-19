@@ -9,7 +9,7 @@ The purpose of this program is that it can quickly setup an environment for some
 * start a reader with some language documentation
   etcetera.
 
-## Checklist?
+## Checklist
 * [x] The program shows a list of sessions.
 * [x] When a session button is pressed, it shows additional buttons to start tasks needed for that session.
 * [x] The additional buttons are grouped in action lists.
@@ -23,7 +23,8 @@ The purpose of this program is that it can quickly setup an environment for some
 # Configuration editing
 * Global settings
   * [x] Create root and simple setup when directory is empty. Directory must exist!
-  * [x] **root**/sessions-manager.yaml
+  * [x] A default session configuration: **root**/sessions-manager.yaml
+  * [ ] An option may refer to a different configuration.
   * [x] **root**/Config/manager.css
   * [x] **root**/Config/manager-changes.css
   * Images and Icons
@@ -147,6 +148,32 @@ session id:
   "icon": session picture
   "over": session overlay picture
   "title": session title
+@endyaml
+```
+
+##### Session manager file: session-manager.yaml
+```plantuml
+@startyaml
+
+theme:
+  "title": Environment starter
+
+  icon-size": [ 200, 200]
+  "window-hsize": [ 1000, 200]
+  "window-vsize": [ 200, 1000]
+  "log-window-size": [ 900, 1300]
+
+sessions:
+  0:
+    - session id
+    - session id
+    - ...
+  1:
+    - session id
+    - session id
+    - ...
+  ...: [ ... ]
+
 @endyaml
 ```
 
