@@ -34,7 +34,7 @@ constant Grid = Gnome::Gtk4::Grid;
 constant APP_ID is export = 'io.github.martimm.session-manager';
 
 constant LocalOptions = [<version help|h>];
-constant RemoteOptions = [ |<verbose|v legacy session|s=i>
+constant RemoteOptions = [ |<verbose|v legacy session|s=s>
 ];
 
 has GnomeTools::Gtk::Application $!application;
@@ -108,7 +108,6 @@ method remote-options ( Array $args, Bool :$is-remote --> Int ) {
 
   if ?$o<session> {
     $*session-selection = $o<session>;
-note "$?LINE {$*session-selection // '-'}";
   }
 
   if ?@$args {

@@ -82,9 +82,18 @@ method load-config ( ) {
       EOD
   }
 
-  $!dispatch-config = load-yaml(
-    "$*config-directory/$*manager".IO.slurp
-  );
+  $!dispatch-config = load-yaml("$*config-directory/$*manager".IO.slurp);
+  if ?$*session-selection
+     and $!dispatch-config<sessions>{$*session-selection}:exists
+     and $!dispatch-config<sessions>{$*session-selection}.elems
+  {
+    note "Using sessions selection $*session-selection";
+  }
+
+  else {
+    note "Sessions selection $*session-selection is not defined reverting to default";
+    $*session-selection = Nil;
+  }
 
   my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
@@ -284,6 +293,13 @@ method set-picture ( Str:D $path is copy --> Str ) {
 
 #note "$?LINE $path, $new-path";
   $new-path
+}
+
+#-------------------------------------------------------------------------------
+method get-session-selection ( --> List ) {
+  ?$*session-selection
+    ?? |$!dispatch-config<sessions>{$*session-selection}
+    !! ()
 }
 
 =finish

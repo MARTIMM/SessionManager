@@ -14,7 +14,7 @@ my Version $*manager-version = v0.7.1;
 my Bool $*verbose = False;
 my Bool $*legacy = False;
 my Str $*manager = 'session-manager.yaml';
-my UInt $*session-selection;
+my Str $*session-selection;
 
 my $*dispatch-testing = False;
 

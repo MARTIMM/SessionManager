@@ -94,7 +94,15 @@ submethod BUILD ( Grid :$session-manager-box, #`{{Mu :$app-window }} ) {
   }
 
   my SessionManager::Sessions $sessions .= new;
-  my Array $session-ids = [|$sessions.get-session-ids.sort];
+  my Array $session-ids;# = [|$sessions.get-session-ids.sort];
+  if ?$*session-selection {
+    $session-ids = [|$config.get-session-selection];
+  }
+
+  else {
+    $session-ids = [|$sessions.get-session-ids.sort];
+  }
+
   for @$session-ids -> $session-id {
     my SessionManager::Gui::Session $session .= new(
       :$session-id, :manage-session($sessions.get-session($session-id)),
