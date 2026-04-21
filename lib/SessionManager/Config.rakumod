@@ -208,18 +208,41 @@ method set-css ( N-Object $context, Str:D $css-class ) {
 
 #-------------------------------------------------------------------------------
 method get-window-hsize ( --> List ) {
-  | $!dispatch-config<theme><window-hsize>;
+  if ?$*session-selection {
+note "$?LINE $!dispatch-config.raku()";
+    | $!dispatch-config<sessions>{$*session-selection}<theme><window-hsize>;
+  }
+
+  else {
+    | $!dispatch-config<theme><window-hsize>;
+  }
 }
 
 #-------------------------------------------------------------------------------
 method get-window-vsize ( --> List ) {
-  | $!dispatch-config<theme><window-vsize>;
+  if ?$*session-selection {
+    | $!dispatch-config<sessions>{$*session-selection}<theme><window-vsize>;
+note "$?LINE $!dispatch-config.raku()";
+  }
+
+  else {
+    | $!dispatch-config<theme><window-vsize>;
+  }
 }
 
 #-------------------------------------------------------------------------------
 method set-window-hsize ( Int:D $w, Int:D $h ) {
-  $!dispatch-config<theme><window-hsize>[0] = $w;
-  $!dispatch-config<theme><window-hsize>[1] = $h;
+  if ?$*session-selection {
+    my $t = $!dispatch-config<sessions>{$*session-selection};
+    $t<theme><window-hsize>[0] = $w;
+    $t<theme><window-hsize>[1] = $h;
+note "$?LINE $!dispatch-config.raku()";
+  }
+
+  else {
+    $!dispatch-config<theme><window-hsize>[0] = $w;
+    $!dispatch-config<theme><window-hsize>[1] = $h;
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -252,7 +275,9 @@ method set-icon-size ( Int:D $w, Int:D $h ) {
 
 #-------------------------------------------------------------------------------
 method get-window-title ( --> Str ) {
-  $!dispatch-config<theme><title> // 'Session Manager';
+  ?$*session-selection
+    ?? $!dispatch-config<sessions>{$*session-selection}<theme><title>
+    !! $!dispatch-config<theme><title> // 'Session Manager';
 }
 
 #-------------------------------------------------------------------------------
