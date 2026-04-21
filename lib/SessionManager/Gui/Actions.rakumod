@@ -638,6 +638,7 @@ method do-delete-act ( ) {
 
     my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
     $!actions-view.splice( $original-pos, 1);
+    $!actions.delete-action($id);
   }
 }
 
