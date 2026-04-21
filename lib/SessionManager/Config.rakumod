@@ -85,7 +85,7 @@ method load-config ( ) {
   $!dispatch-config = load-yaml("$*config-directory/$*manager".IO.slurp);
   if ?$*session-selection
      and $!dispatch-config<sessions>{$*session-selection}:exists
-     and $!dispatch-config<sessions>{$*session-selection}.elems
+     and $!dispatch-config<sessions>{$*session-selection}<sids>.elems
   {
     note "Using sessions selection $*session-selection";
   }
@@ -298,7 +298,7 @@ method set-picture ( Str:D $path is copy --> Str ) {
 #-------------------------------------------------------------------------------
 method get-session-selection ( --> List ) {
   ?$*session-selection
-    ?? |$!dispatch-config<sessions>{$*session-selection}
+    ?? |$!dispatch-config<sessions>{$*session-selection}<sids>
     !! ()
 }
 
