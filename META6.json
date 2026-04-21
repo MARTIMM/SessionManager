@@ -6,7 +6,7 @@
   "author": "Marcel Timmerman",
   "auth": "fez:MARTIMM",
 
-  "version": "0.7.2",
+  "version": "0.8.0",
   "tags": [ "desktop", "kde", "gnome", "gtk", "tool" ],
   
   "license": "Artistic-2.0",
