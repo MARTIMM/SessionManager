@@ -89,8 +89,8 @@ variable name: value
   * [x] Rename an action id.
     * [x] With rename change its use in sessions.
   * [x] Modify action data.
-  * [ ] Remove an action.
-    * [ ] Before remove check its use in sessions.
+  * [x] Remove an action.
+    * [x] Before remove check its use in sessions. Done beforehand by showing a green led.
   * Action dependencies.
     * [ ] Add dependency.
     * [ ] Remove dependency.
