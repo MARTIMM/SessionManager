@@ -55,11 +55,11 @@ method instance ( --> SessionManager::Gui::Config ) {
   $instance
 }
 
-#-------------------------------------------------------------------------------
-# Calls from menubar entries
-#-------------------------------------------------------------------------------
+
+#--[menu entry modify configuration]--------------------------------------------
 method modify-configuration ( N-Object $parameter ) {
 note "$?LINE config";
+
 }
 
 

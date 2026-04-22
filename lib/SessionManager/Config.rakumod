@@ -208,26 +208,31 @@ method set-css ( N-Object $context, Str:D $css-class ) {
 
 #-------------------------------------------------------------------------------
 method get-window-hsize ( --> List ) {
+  my Int ( $w, $h ) = |$!dispatch-config<theme><window-hsize> // 350, 400;
   if ?$*session-selection {
-note "$?LINE $!dispatch-config.raku()";
-    | $!dispatch-config<sessions>{$*session-selection}<theme><window-hsize>;
+    my Hash $ss = $!dispatch-config<sessions>{$*session-selection} // %();
+    $w = $ss<theme><window-hsize>[0] // $w;
+    $h = $ss<theme><window-h
+    size>[0] // $h;
   }
 
-  else {
-    | $!dispatch-config<theme><window-hsize>;
-  }
+note "$?LINE $w, $h";
+
+  ( $w, $h)
 }
 
 #-------------------------------------------------------------------------------
 method get-window-vsize ( --> List ) {
+  my Int ( $w, $h ) = |$!dispatch-config<theme><window-vsize> // 350, 400;
   if ?$*session-selection {
-    | $!dispatch-config<sessions>{$*session-selection}<theme><window-vsize>;
-note "$?LINE $!dispatch-config.raku()";
+    my Hash $ss = $!dispatch-config<sessions>{$*session-selection} // %();
+    $w = $ss<theme><window-vsize>[0] // $w;
+    $h = $ss<theme><window-vsize>[0] // $h;
   }
 
-  else {
-    | $!dispatch-config<theme><window-vsize>;
-  }
+note "$?LINE $w, $h";
+
+  ( $w, $h)
 }
 
 #-------------------------------------------------------------------------------
@@ -275,9 +280,8 @@ method set-icon-size ( Int:D $w, Int:D $h ) {
 
 #-------------------------------------------------------------------------------
 method get-window-title ( --> Str ) {
-  ?$*session-selection
-    ?? $!dispatch-config<sessions>{$*session-selection}<theme><title>
-    !! $!dispatch-config<theme><title> // 'Session Manager';
+  my $title = $!dispatch-config<theme><title> // 'Session Manager';
+  $!dispatch-config<sessions>{$*session-selection}<theme><title> // $title;
 }
 
 #-------------------------------------------------------------------------------
