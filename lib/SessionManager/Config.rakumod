@@ -212,11 +212,8 @@ method get-window-hsize ( --> List ) {
   if ?$*session-selection {
     my Hash $ss = $!dispatch-config<sessions>{$*session-selection} // %();
     $w = $ss<theme><window-hsize>[0] // $w;
-    $h = $ss<theme><window-h
-    size>[0] // $h;
+    $h = $ss<theme><window-hsize>[1] // $h;
   }
-
-note "$?LINE $w, $h";
 
   ( $w, $h)
 }
@@ -227,7 +224,7 @@ method get-window-vsize ( --> List ) {
   if ?$*session-selection {
     my Hash $ss = $!dispatch-config<sessions>{$*session-selection} // %();
     $w = $ss<theme><window-vsize>[0] // $w;
-    $h = $ss<theme><window-vsize>[0] // $h;
+    $h = $ss<theme><window-vsize>[1] // $h;
   }
 
 note "$?LINE $w, $h";
