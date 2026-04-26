@@ -70,13 +70,12 @@ method load-config ( ) {
 #note "$?LINE $*config-directory/$*manager";
   if "$*config-directory/$*manager".IO !~~ :r {
     "$*config-directory/$*manager".IO.spurt(Q:q:to/EOD/);
-      theme:
-        title: Environment starter
+      title: Environment starter
 
-        icon-size: [ 200, 200]
-        window-hsize: [ 1000, 200]
-        window-vsize: [ 200, 1000]
-        log-window-size: [ 900, 1300]
+      icon-size: [ 200, 200]
+      window-hsize: [ 1000, 200]
+      window-vsize: [ 200, 1000]
+      log-window-size: [ 900, 1300]
 
       sessions: {}
       EOD
@@ -208,11 +207,11 @@ method set-css ( N-Object $context, Str:D $css-class ) {
 
 #-------------------------------------------------------------------------------
 method get-window-hsize ( --> List ) {
-  my Int ( $w, $h ) = |$!dispatch-config<theme><window-hsize> // 350, 400;
+  my Int ( $w, $h ) = |$!dispatch-config<window-hsize> // 350, 400;
   if ?$*session-selection {
     my Hash $ss = $!dispatch-config<sessions>{$*session-selection} // %();
-    $w = $ss<theme><window-hsize>[0] // $w;
-    $h = $ss<theme><window-hsize>[1] // $h;
+    $w = $ss<window-hsize>[0] // $w;
+    $h = $ss<window-hsize>[1] // $h;
   }
 
   ( $w, $h)
@@ -220,11 +219,11 @@ method get-window-hsize ( --> List ) {
 
 #-------------------------------------------------------------------------------
 method get-window-vsize ( --> List ) {
-  my Int ( $w, $h ) = |$!dispatch-config<theme><window-vsize> // 350, 400;
+  my Int ( $w, $h ) = |$!dispatch-config<window-vsize> // 350, 400;
   if ?$*session-selection {
     my Hash $ss = $!dispatch-config<sessions>{$*session-selection} // %();
-    $w = $ss<theme><window-vsize>[0] // $w;
-    $h = $ss<theme><window-vsize>[1] // $h;
+    $w = $ss<window-vsize>[0] // $w;
+    $h = $ss<window-vsize>[1] // $h;
   }
 
 note "$?LINE $w, $h";
@@ -235,55 +234,86 @@ note "$?LINE $w, $h";
 #-------------------------------------------------------------------------------
 method set-window-hsize ( Int:D $w, Int:D $h ) {
   if ?$*session-selection {
-    my $t = $!dispatch-config<sessions>{$*session-selection};
-    $t<theme><window-hsize>[0] = $w;
-    $t<theme><window-hsize>[1] = $h;
+    $!dispatch-config<sessions>{$*session-selection}<window-hsize>[0] = $w;
+    $!dispatch-config<sessions>{$*session-selection}<window-hsize>[1] = $h;
 note "$?LINE $!dispatch-config.raku()";
   }
 
   else {
-    $!dispatch-config<theme><window-hsize>[0] = $w;
-    $!dispatch-config<theme><window-hsize>[1] = $h;
+    $!dispatch-config<window-hsize>[0] = $w;
+    $!dispatch-config<window-hsize>[1] = $h;
   }
 }
 
 #-------------------------------------------------------------------------------
 method set-window-vsize ( Int:D $w, Int:D $h ) {
-  $!dispatch-config<theme><window-vsize>[0] = $w;
-  $!dispatch-config<theme><window-vsize>[1] = $h;
+  if ?$*session-selection {
+    $!dispatch-config<sessions>{$*session-selection}<window-vsize>[0] = $w;
+    $!dispatch-config<sessions>{$*session-selection}<window-vsize>[1] = $h;
+note "$?LINE $!dispatch-config.raku()";
+  }
+
+  else {
+    $!dispatch-config<window-vsize>[0] = $w;
+    $!dispatch-config<window-vsize>[1] = $h;
+  }
 }
 
 #-------------------------------------------------------------------------------
 method get-log-window-size ( --> List ) {
-  | $!dispatch-config<theme><log-window-size>;
+  | $!dispatch-config<log-window-size>;
 }
 
 #-------------------------------------------------------------------------------
 method set-log-window-size ( Int:D $w, Int:D $h ) {
-  $!dispatch-config<theme><log-window-size>[0] = $w;
-  $!dispatch-config<theme><log-window-size>[1] = $h;
+  $!dispatch-config<log-window-size>[0] = $w;
+  $!dispatch-config<log-window-size>[1] = $h;
 }
 
 #-------------------------------------------------------------------------------
 method get-icon-size ( --> List ) {
-  | $!dispatch-config<theme><icon-size>;
+
+  my Int ( $w, $h ) = | $!dispatch-config<icon-size> // 350, 400;
+  if ?$*session-selection {
+    my Hash $ss = $!dispatch-config<sessions>{$*session-selection} // %();
+    $w = $ss<icon-size>[0] // $w;
+    $h = $ss<icon-size>[1] // $h;
+  }
+
+note "$?LINE $w, $h";
+
+  ( $w, $h)
 }
 
 #-------------------------------------------------------------------------------
 method set-icon-size ( Int:D $w, Int:D $h ) {
-  $!dispatch-config<theme><icon-size>[0] = $w;
-  $!dispatch-config<theme><icon-size>[1] = $h;
+  if ?$*session-selection {
+    $!dispatch-config<sessions>{$*session-selection}<icon-size>[0] = $w;
+    $!dispatch-config<sessions>{$*session-selection}<icon-size>[1] = $h;
+note "$?LINE $!dispatch-config.raku()";
+  }
+
+  else {
+    $!dispatch-config<icon-size>[0] = $w;
+    $!dispatch-config<icon-size>[1] = $h;
+  }
 }
 
 #-------------------------------------------------------------------------------
 method get-window-title ( --> Str ) {
-  my $title = $!dispatch-config<theme><title> // 'Session Manager';
-  $!dispatch-config<sessions>{$*session-selection}<theme><title> // $title;
+  my $title = $!dispatch-config<title> // 'Session Manager';
+  $!dispatch-config<sessions>{$*session-selection}<title> // $title;
 }
 
 #-------------------------------------------------------------------------------
 method set-window-title ( Str:D $title ) {
-  $!dispatch-config<theme><title> = $title;
+  if ?$*session-selection {
+    $!dispatch-config<sessions>{$*session-selection}<title> = $title;
+  }
+
+  else {
+    $!dispatch-config<title> = $title;
+  }
 }
 
 #`{{
