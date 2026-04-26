@@ -59,7 +59,11 @@ method instance ( --> SessionManager::Gui::Config ) {
 #--[menu entry modify configuration]--------------------------------------------
 method modify-configuration ( N-Object $parameter ) {
 note "$?LINE config";
-
+  
 }
 
 
+#-------------------------------------------------------------------------------
+method init-fields ( ) {
+  
+}

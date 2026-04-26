@@ -90,7 +90,7 @@ method load-config ( ) {
   }
 
   else {
-    note "Sessions selection $*session-selection is not defined reverting to default";
+    note "Sessions selection is not defined, reverting to default";
     $*session-selection = Nil;
   }
 
@@ -302,7 +302,10 @@ note "$?LINE $!dispatch-config.raku()";
 #-------------------------------------------------------------------------------
 method get-window-title ( --> Str ) {
   my $title = $!dispatch-config<title> // 'Session Manager';
-  $!dispatch-config<sessions>{$*session-selection}<title> // $title;
+  $!dispatch-config<sessions>{$*session-selection}<title>
+    if ?$*session-selection;
+
+  $title
 }
 
 #-------------------------------------------------------------------------------

@@ -628,7 +628,7 @@ method set-grouptitle ( ) {
 
 #-------------------------------------------------------------------------------
 method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
-  
+
   with $!session-id .= new-entry {
     .set-sensitive($id-is-sensitive);
     .set-placeholder-text('unique session id');
