@@ -226,7 +226,7 @@ method get-window-vsize ( --> List ) {
     $h = $ss<window-vsize>[1] // $h;
   }
 
-note "$?LINE $w, $h";
+#note "$?LINE $w, $h";
 
   ( $w, $h)
 }
@@ -236,7 +236,7 @@ method set-window-hsize ( Int:D $w, Int:D $h ) {
   if ?$*session-selection {
     $!dispatch-config<sessions>{$*session-selection}<window-hsize>[0] = $w;
     $!dispatch-config<sessions>{$*session-selection}<window-hsize>[1] = $h;
-note "$?LINE $!dispatch-config.raku()";
+#note "$?LINE $!dispatch-config.raku()";
   }
 
   else {
@@ -250,7 +250,7 @@ method set-window-vsize ( Int:D $w, Int:D $h ) {
   if ?$*session-selection {
     $!dispatch-config<sessions>{$*session-selection}<window-vsize>[0] = $w;
     $!dispatch-config<sessions>{$*session-selection}<window-vsize>[1] = $h;
-note "$?LINE $!dispatch-config.raku()";
+#note "$?LINE $!dispatch-config.raku()";
   }
 
   else {
@@ -280,7 +280,7 @@ method get-icon-size ( --> List ) {
     $h = $ss<icon-size>[1] // $h;
   }
 
-note "$?LINE $w, $h";
+#note "$?LINE $w, $h";
 
   ( $w, $h)
 }
@@ -290,7 +290,7 @@ method set-icon-size ( Int:D $w, Int:D $h ) {
   if ?$*session-selection {
     $!dispatch-config<sessions>{$*session-selection}<icon-size>[0] = $w;
     $!dispatch-config<sessions>{$*session-selection}<icon-size>[1] = $h;
-note "$?LINE $!dispatch-config.raku()";
+#note "$?LINE $!dispatch-config.raku()";
   }
 
   else {
