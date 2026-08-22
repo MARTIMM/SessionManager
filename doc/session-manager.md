@@ -9,6 +9,13 @@ The purpose of this program is that it can quickly setup an environment for some
 * start a reader with some language documentation
   etcetera.
 
+What can be combined with the desktop at hand. I am used to the KDE desktop and not so much with gnome desktop on the linux system. Both are using protocols from the [freedesktop.org](https://www.freedesktop.org/wiki/). This application could make use of the tools already provided;
+* DBus to communicate between instances
+* Zeitgeist to log desktop events
+* Desktop files
+* KDE Activities
+
+
 ## Checklist
 * [x] The program shows a list of sessions.
 * [x] When a session button is pressed, it shows additional buttons to start tasks needed for that session.
@@ -103,18 +110,28 @@ variable name: value
     * [ ] Change css class of action icon in session group.
 
 ##### Action data
+
 ```plantuml
 @startyaml
 action id: 
-  "D":  []
   "c": command
-  "i": picture visible when --legacy is used
-  "l": logging, true or false
+  "i": --legacy picture
+  "l": logging, boolean
   "o": overlay picture
-  "p": work path of command
+  "p": work path
   "sh": shell command
   "t": action title
   "w": wait after finish
+@endyaml
+```
+
+An example action could be
+```plantuml
+@startyaml
+"places1-dolphin": 
+  "c": "dolphin --new-window $home"
+  "o": "$PImag/600px-Dolphin-logo.svg.png"
+  "t": "home directory"
 @endyaml
 ```
 
@@ -141,10 +158,12 @@ session id:
     actions: 
       - action id
       - second id
+      - …
   group2:
     actions: 
       - action id
       - second id
+      - …
   "icon": session picture
   "over": session overlay picture
   "title": session title
