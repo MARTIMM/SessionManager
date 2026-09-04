@@ -55,8 +55,12 @@ has GnomeTools::Gtk::Theming $!theme;
 has Box $!box;
 
 #-------------------------------------------------------------------------------
-submethod BUILD ( Grid :$session-manager-box, #`{{Mu :$app-window }} ) {
+submethod new ( |c --> SessionManager::Gui::Toolbar ) {
+  self.new-scrolledwindow(|c);
+}
 
+#-------------------------------------------------------------------------------
+submethod BUILD ( Grid :$session-manager-box ) {
   my SessionManager::Config $config .= instance;
   my GtkOrientation $orientation =
       $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
