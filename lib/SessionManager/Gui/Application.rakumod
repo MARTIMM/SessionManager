@@ -172,9 +172,7 @@ method window-content ( --> Grid ) {
 
   # Use of grid makes it easier to remove boxes from the grid later on
   my Grid $session-manager-box .= new-grid;
-  my SessionManager::Gui::Toolbar $toolbar .= new-scrolledwindow(
-    :$session-manager-box #, :$!app-window
-  );
+  my SessionManager::Gui::Toolbar $toolbar .= new(:$session-manager-box);
   $session-manager-box.attach( $toolbar, 0, 0, 1, 1);
 
   $session-manager-box
