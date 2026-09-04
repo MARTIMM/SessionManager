@@ -30,19 +30,27 @@ What can be combined with the desktop at hand. I am used to the KDE desktop and 
   * [ ] DBus might play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera.
 
 # Configuration editing
-
+## Main display of editor
+* Show from left to right
+  * [ ] Variables
+  * [ ] Actions
+  * [ ] Sessions
+  * [ ] Session selections
+  
+## Editing
 * Editing of configuration must be done in a separate program. At the moment there are several dialogs to edit the sessions, actions and variables. However, I think it must be one larger dialog showing all of these types together because, when showed separately, it is difficult to select actions for sessions and variables for use in sessions, actions and other variables.
   * [ ] Editing actions.
   * [ ] Editing variables.
   * [ ] Editing sessions.
   * [ ] Editing main session config.
-  * [ ] Generate dektop file to start session manager for a selected sesion
-  * [ ] Generate dektop file to start an action from the configuration
+  * [ ] Save the configuration
 
+## Desktop files
 * Generate desktop files
   * [ ] Desktop file to start program with all sessions selected.
   * [ ] Desktop file to start a selection of sessions.
-  * [ ] Desktop file to start a specific action.
+  * [ ] Generate dektop file to start session manager for a selected sesion
+  * [ ] Desktop file to start a specific action from the configuration.
 
 ## The several changeble types
 * Global settings
