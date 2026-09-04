@@ -10,7 +10,6 @@ use Gnome::N::N-Object:api<2>;
 use Gnome::Gio::T-ioenums:api<2>;
 
 use Gnome::Gtk4::T-enums:api<2>;
-use Gnome::Gtk4::Grid:api<2>;
 
 use GnomeTools::Gio::Menu;
 
@@ -20,16 +19,15 @@ use GnomeTools::Gtk::Application;
 #use SessionManager::Sessions;
 #use SessionManager::Variables;
 use SessionManager::Config;
-use SessionManager::Gui::Toolbar;
+#use SessionManager::Gui::Toolbar;
 #use SessionManager::Gui::Actions;
 #use SessionManager::Gui::Variables;
 #use SessionManager::Gui::Sessions;
-use SessionManager::Gui::Config;
+#use SessionManager::Gui::Config;
+use SessionManager::Gui::EditGrid;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Editor:auth<github:MARTIMM>;
-
-constant Grid = Gnome::Gtk4::Grid;
 
 constant APP_ID is export = 'io.github.martimm.session-manager';
 
@@ -142,13 +140,9 @@ method app-activate ( ) {
 }
 
 #-------------------------------------------------------------------------------
-method window-content ( --> Grid ) {
+method window-content ( --> SessionManager::Gui::EditGrid ) {
 
-  # Use of grid makes it easier to remove boxes from the grid later on
-  my Grid $session-manager-box .= new-grid;
-  my SessionManager::Gui::Toolbar $toolbar .= new(:$session-manager-box);
-  $session-manager-box.attach( $toolbar, 0, 0, 1, 1);
-
+  my SessionManager::Gui::EditGrid $session-manager-box .= new;
   $session-manager-box
 }
 
