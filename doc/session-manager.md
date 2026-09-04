@@ -17,17 +17,34 @@ What can be combined with the desktop at hand. I am used to the KDE desktop and 
 
 
 ## Checklist
-* [x] The program shows a list of sessions.
-* [x] When a session button is pressed, it shows additional buttons to start tasks needed for that session.
-* [x] The additional buttons are grouped in action lists.
-* [ ] A button can be added to start all actions in an actions group.
+* Sessions
+  * [x] The program shows a list of all defined sessions.
+  * [x] The program shows a selection of sessions. By default it takes all sessions described in the sessions config.
+  * [ ] When only one session is selected, show only the action levels
+  * [x] When a session button is pressed, it shows additional buttons to start tasks needed for that session.
+* Actions
+  * [x] The additional buttons are grouped in action lists.
+  * [ ] A button can be added to start all actions in an actions group.
   * [ ] Optionally each action can show a checkbutton which can be (de-)selected to disable or enable the start of that action.
-* [x] There is only one dispatcher instance running. All other instances started later will communicate with the main running program.
-* [ ] It is possible to swap configurations when starting another instance.
-* [ ] DBus might play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera.
-* [ ] Editing of actions, variables and sessions. See below.
+* [x] There can be multiple dispatcher instances running.
+  * [ ] DBus might play a part by sending commands to the activated parts. This function can check if apps are started, send commands to change, etcetera.
 
 # Configuration editing
+
+* Editing of configuration must be done in a separate program. At the moment there are several dialogs to edit the sessions, actions and variables. However, I think it must be one larger dialog showing all of these types together because, when showed separately, it is difficult to select actions for sessions and variables for use in sessions, actions and other variables.
+  * [ ] Editing actions.
+  * [ ] Editing variables.
+  * [ ] Editing sessions.
+  * [ ] Editing main session config.
+  * [ ] Generate dektop file to start session manager for a selected sesion
+  * [ ] Generate dektop file to start an action from the configuration
+
+* Generate desktop files
+  * [ ] Desktop file to start program with all sessions selected.
+  * [ ] Desktop file to start a selection of sessions.
+  * [ ] Desktop file to start a specific action.
+
+## The several changeble types
 * Global settings
   * [x] Create root and simple setup when directory is empty. Directory must exist!
   * [x] A default session configuration: **root**/sessions-manager.yaml
