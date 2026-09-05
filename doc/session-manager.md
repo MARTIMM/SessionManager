@@ -161,14 +161,17 @@ An example action could be
 ```
 
 ### Sessions
+At this point (2026/09/05) I think that several layers in the form of groups can be made simpler. Remove group levels and use more sessions to group the actions.
   * [x] Storage in **root**/Config/sessions.yaml
   * [x] Add a session
+<!--
   * Session group levels
     * [x] Add a session group
     * [ ] Delete a session group
     * [ ] Remove unused groups
-  * [x] Add actions to a group
-  * [x] Remove actions from a group
+-->
+  * [x] Add actions to a session
+  * [x] Remove actions from a session
   * [x] Rename a session id
   * [ ] Remove a session
   * Session focus
@@ -179,19 +182,13 @@ An example action could be
 ```plantuml
 @startyaml
 session id: 
-  group1: 
-    actions: 
-      - action id
-      - second id
-      - …
-  group2:
-    actions: 
-      - action id
-      - second id
-      - …
-  "icon": session picture
-  "over": session overlay picture
-  "title": session title
+  actions: 
+    - action id
+    - second id
+    - …
+  icon: session picture
+  over: session overlay picture
+  title: session title
 @endyaml
 ```
 
@@ -200,12 +197,12 @@ session id:
 @startyaml
 
 theme:
-  "title": Environment starter
+  title: Environment starter
 
-  icon-size": [ 200, 200]
-  "window-hsize": [ 1000, 200]
-  "window-vsize": [ 200, 1000]
-  "log-window-size": [ 900, 1300]
+  icon-size: [ 200, 200]
+  window-hsize: [ 1000, 200]
+  window-vsize: [ 200, 1000]
+  log-window-size: [ 900, 1300]
 
 sessions:
   0:
