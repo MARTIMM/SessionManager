@@ -82,7 +82,12 @@ method remote-options ( Array $args, Bool :$is-remote --> Int ) {
   $!exit-code = 0;
 #note "$?LINE $args.gist()";
 
-  if ?@$args {
+  if $args.elems < 2 {
+    $!exit-code = 1;
+    note "\nYou must specify a sesion directory";
+  }
+
+  else {
     $*config-directory = $args[1];
     if $*config-directory.IO.absolute.Str eq
        "$*HOME/Languages/Raku/Projects/SessionManager"
@@ -106,11 +111,6 @@ method remote-options ( Array $args, Bool :$is-remote --> Int ) {
       $!exit-code = 1;
       note "\nConfiguration path '$*config-directory' is not a directory (or wrong one)";
     }
-  }
-
-  else {
-    $!exit-code = 1;
-    note "\nYou must specify a sesion directory";
   }
 
   $!exit-code
