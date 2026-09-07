@@ -1,4 +1,4 @@
-v6.d;
+use v6.d;
 
 #use YAMLish;
 
