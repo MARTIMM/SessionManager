@@ -31,11 +31,13 @@ constant Label = Gnome::Gtk4::Label;
 constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 }}
 
+# Instead of making a full fledged singleton, it is enough to make the
+# same variables available in all instances. The data is loaded by
+# the SessionManager::Config instance.
 my Hash $variables = %();
 my Hash $temporary = %();
 #has Str $!original-name;
 #has ListBoxRow $!original-row;
-
 
 #`{{
 #-------------------------------------------------------------------------------
@@ -97,7 +99,7 @@ method get-n-variables ( --> Int ) {
 
 #-------------------------------------------------------------------------------
 method get-variable ( Str:D $name --> Str ) {
-  $variables{$name}
+  $variables{$name}//''
 }
 
 #-------------------------------------------------------------------------------
