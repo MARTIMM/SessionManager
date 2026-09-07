@@ -90,7 +90,7 @@ method load-config ( ) {
   }
 
   else {
-    note "Sessions selection is not defined, reverting to default";
+#    note "Sessions selection is not defined, reverting to default";
     $*session-selection = Nil;
   }
 
