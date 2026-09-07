@@ -8,6 +8,7 @@ use SessionManager::Config;
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListView;
+use GnomeTools::Gtk::Statusbar;
 
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Label:api<2>;
@@ -15,9 +16,12 @@ use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::Image:api<2>;
 use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
+use Gnome::Gtk4::Box:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
+
+use Gnome::Pango::T-layout:api<2>;
 
 use YAMLish;
 
@@ -29,6 +33,7 @@ also is Gnome::Gtk4::Grid;
 
 constant ListView = GnomeTools::Gtk::ListView;
 constant Dialog = GnomeTools::Gtk::Dialog;
+constant Statusbar = GnomeTools::Gtk::Statusbar;
 
 constant Entry = Gnome::Gtk4::Entry;
 constant Label = Gnome::Gtk4::Label;
@@ -37,11 +42,16 @@ constant Button = Gnome::Gtk4::Button;
 constant Box = Gnome::Gtk4::Box;
 constant Image = Gnome::Gtk4::Image;
 
-has SessionManager::Variables $!variables;
-has ListView $!variables-view;
+constant EDIT_WIDTH = 500;
+constant EDIT_HEIGHT = 1000;
+constant EDIT_WIDTH-CHARS = 80;
 
+#has SessionManager::Variables $!variables;
+has ListView $!variables-view;
+has Grid $!dialog-grid;
 has Entry $!variable-name;
 has Entry $!variable-spec;
+has Statusbar $!statusbar;
 
 #-------------------------------------------------------------------------------
 submethod new ( |c --> SessionManager::Gui::EditVariableGrid ) {
@@ -51,25 +61,151 @@ submethod new ( |c --> SessionManager::Gui::EditVariableGrid ) {
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
 
-  $!variable-name .= new-entry;
-  $!variable-spec .= new-entry;
+  # When the data is loaded, the $!variables does not have to be initialized
+  # Just only when other methods need to be called there.
+  #$!variables .= new;
 
-  with $!variables-view .= new(:!multi-select) {
+  with self {
+    my Int $row = 0;
+    with my Label $title = self.make-label {
+      .set-use-markup(True);
+      .set-markup(Q[<span size="xx-large">Variables</span>]);
+      .set-halign(GTK_ALIGN_FILL);
+    }
+    .attach( $title, 0, $row++, 1, 1);
+
+    my Label $vstrut1 = self.make-label;
+    $vstrut1.set-text(' ');
+    .attach( $vstrut1, 0, $row++, 1, 1);
+
+#    my Grid $v = self!dialog-grid;
+    .attach( self!dialog-grid, 0, $row++, 1, 1);
+
+    $!statusbar .= new;
+    .attach( $!statusbar, 0, $row++, 1, 1);
+
+#    my Box $button-row = self!button-row;
+    .attach( self!button-row, 0, $row++, 1, 1);
+
+    my Label $vstrut2 = self.make-label;
+    $vstrut2.set-text(' ');
+    .attach( $vstrut2, 0, $row++, 1, 1);
+
+    $!variables-view = self!list-view;
+    .attach( $!variables-view,  0, $row++, 1, 1);
+  }
+}
+
+#-------------------------------------------------------------------------------
+method !list-view ( --> ListView ) {
+  with my ListView $variables-view .= new(:!multi-select) {
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
 #    .set-unbind( self, 'unbind-item');
     .set-teardown( self, 'teardown-item');
 
     .set-selection-changed( self, 'selection-changed');
-
-    .append($!variables.get-variables.sort: {$^a.lc leg $^b.lc});
+    my SessionManager::Variables $v .= new;
+    .append($v.get-variables.sort: {$^a.lc leg $^b.lc});
 #    .append($!variables.get-variables[^2]);
 
     # Select the first one
     .set-selection(0);
+    .set-size-request( EDIT_WIDTH, EDIT_HEIGHT);
   }
 
-  self.attach( $!variables-view, 0, 0, 1, 1);
+  $variables-view
+}
+
+#-------------------------------------------------------------------------------
+method !dialog-grid ( --> Grid ) {
+  with my Grid $dialog-grid .= new-grid {
+    with my Label $name-label .= new-label {
+      .set-text('Variable name');
+    }
+    .attach( $name-label, 0, 0, 1, 1);
+    $!variable-name = self.make-entry;
+    .attach( $!variable-name, 1, 0, 1, 1);
+
+    with my Label $spec-label .= new-label {
+      .set-text('Specification');
+    }
+    .attach( $spec-label, 0, 1, 1, 1);
+    $!variable-spec = self.make-entry;
+    .attach( $!variable-spec, 1, 1, 1, 1);
+  }
+
+  $dialog-grid
+}
+
+#-------------------------------------------------------------------------------
+method variable-add ( ) {
+  $!statusbar.set-status('');
+
+  my SessionManager::Variables $v .= new;
+  my Str $variable = $!variable-name.get-text;
+  if !$variable {
+    $!statusbar.set-status("Name '$variable' empty");
+  }
+
+  elsif ?$v.get-variable($variable) {
+    $!statusbar.set-status("Name '$variable' already defined");
+  }
+
+  else {
+    my Str $spec = $!variable-spec.get-text;
+    $v.add-variable( $variable, $spec);
+    $!statusbar.set-status("Variable '$variable' added with '$spec'");
+    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    $!variables-view.splice( $original-pos, 0, $variable);
+  }
+}
+
+#-------------------------------------------------------------------------------
+method variable-delete ( ) {
+  $!statusbar.set-status('');
+return;
+  my SessionManager::Variables $v .= new;
+  my Str $variable = $!variable-name.get-text;
+  if !$variable {
+    $!statusbar.set-status("Name '$variable' empty");
+  }
+
+  elsif !$v.get-variable($variable) {
+    $!statusbar.set-status("Name '$variable' not defined");
+  }
+
+  else {
+    my Str $spec = $!variable-spec.get-text;
+    $v.add-variable( $variable, $spec);
+    $!statusbar.set-status("Variable '$variable' added with '$spec'");
+    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    $!variables-view.splice( $original-pos, 0, $variable);
+  }
+}
+
+#-------------------------------------------------------------------------------
+method !button-row ( --> Box ) {
+  my Button $button;
+  with my Box $button-row .= new-box( GTK_ORIENTATION_HORIZONTAL, 4) {
+    my Label $hstrut = self.make-label;
+    $hstrut.set-text('');
+    .append($hstrut);
+
+    with $button .= new-button {
+      .set-label('Add');
+      .register-signal( self, 'variable-add', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Delete');
+      .register-signal( self, 'variable-delete', 'clicked');
+    }
+    .append($button);
+  }
+  
+  $button-row
 }
 
 #-------------------------------------------------------------------------------
@@ -82,6 +218,8 @@ method setup-item ( ) {
     .attach( $used, 0, 0, 2, 2);
     .attach( $name, 2, 0, 1, 1);
     .attach( $value, 2, 1, 1, 1);
+
+    .set-size-request( EDIT_WIDTH, -1);
   }
 
   $grid;
@@ -89,7 +227,8 @@ method setup-item ( ) {
 
 #-------------------------------------------------------------------------------
 method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
-  my Str $value = $!variables.substitute-vars($!variables.get-variable($name));
+  my SessionManager::Variables $v .= new;
+  my Str $value = $v.substitute-vars($v.get-variable($name));
   self.set-text-at( 2, 0, $name, $grid);
   self.set-text-at( 2, 1, $value, $grid);
 
@@ -100,7 +239,8 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
 #-------------------------------------------------------------------------------
 method check-variable-inuse ( Str:D $name --> Bool ) {
   # Check if variable is used in the variables store
-  my Bool $name-inuse = $!variables.is-var-in-use($name);
+  my SessionManager::Variables $v .= new;
+  my Bool $name-inuse = $v.is-var-in-use($name);
 
   # If variable is not in use in the variable store, check the
   # use of it in the actions store.
@@ -133,9 +273,25 @@ method make-label ( --> Label ) {
     .set-halign(GTK_ALIGN_START);
     .set-justify(GTK_JUSTIFY_LEFT);
     .set-hexpand(True);
+    .set-wrap(True);
+    .set-wrap-mode(PANGO_WRAP_WORD);
+    .set-max-width-chars(EDIT_WIDTH-CHARS);
   }
 
   $label
+}
+
+#-------------------------------------------------------------------------------
+method make-entry ( --> Entry ) {
+  with my Entry $entry .= new-entry {
+    .set-halign(GTK_ALIGN_FILL);
+    .set-hexpand(True);
+#    .set-wrap(True);
+#    .set-wrap-mode(PANGO_WRAP_WORD);
+#    .set-max-width-chars(EDIT_WIDTH-CHARS);
+  }
+
+  $entry
 }
 
 #-------------------------------------------------------------------------------
@@ -152,7 +308,8 @@ method make-image ( --> Image ) {
 method selection-changed ( UInt $pos, @selections ) {
   my Str $name = @selections[0];
   $!variable-name.set-text($name);
-  my Str $value = $!variables.get-variable($name);
+  my SessionManager::Variables $v .= new;
+  my Str $value = $v.get-variable($name);
   $!variable-spec.set-text($value);
 }
 
