@@ -145,7 +145,7 @@ method variable-add ( ) {
   my SessionManager::Variables $v .= new;
   my Str $variable = $!variable-name.get-text;
   if !$variable {
-    $!statusbar.set-status("Name '$variable' empty");
+    $!statusbar.set-status("No variable name");
   }
 
   elsif ?$v.get-variable($variable) {
@@ -162,25 +162,60 @@ method variable-add ( ) {
 }
 
 #-------------------------------------------------------------------------------
-method variable-delete ( ) {
+method variable-rename ( ) {
   $!statusbar.set-status('');
-return;
+
   my SessionManager::Variables $v .= new;
   my Str $variable = $!variable-name.get-text;
   if !$variable {
-    $!statusbar.set-status("Name '$variable' empty");
+    $!statusbar.set-status("No variable name");
+  }
+
+  elsif ?$v.get-variable($variable) {
+    $!statusbar.set-status("Name '$variable' already defined");
+  }
+
+  else {
+    # Change the entry in the listview, returns array of possible selections
+    my Str $original-name = $!variables-view.get-selection()[0];
+
+    # Rename the use of the variable in the variables hash.
+    $v.rename-variable( $original-name, $variable);
+
+    # Rename the use of the variable in the actions list.
+    my SessionManager::Actions $actions .= new;
+    $actions.subst-vars( $original-name, $variable);
+
+    # Change the row in the listview
+    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    $!variables-view.splice( $original-pos, 1, $variable);
+    $!statusbar.set-status("Renamed successfully everything");
+  }
+}
+
+#-------------------------------------------------------------------------------
+method variable-delete ( ) {
+  $!statusbar.set-status('');
+
+  my SessionManager::Variables $v .= new;
+  my Str $variable = $!variable-name.get-text;
+  if !$variable {
+    $!statusbar.set-status("No variable name");
   }
 
   elsif !$v.get-variable($variable) {
     $!statusbar.set-status("Name '$variable' not defined");
   }
+  
+  elsif self.check-variable-inuse($variable) {
+    $!statusbar.set-status("Variable '$variable' is still in use");
+  }
 
   else {
-    my Str $spec = $!variable-spec.get-text;
-    $v.add-variable( $variable, $spec);
-    $!statusbar.set-status("Variable '$variable' added with '$spec'");
+    $v.remove-variable($variable);
+    $!statusbar.set-status("Variable '$variable' removed");
     my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
-    $!variables-view.splice( $original-pos, 0, $variable);
+    $!variables-view.splice( $original-pos, 1);
   }
 }
 
