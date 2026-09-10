@@ -23,7 +23,7 @@ use Gnome::N::N-Object:api<2>;
 
 use Gnome::Pango::T-layout:api<2>;
 
-use YAMLish;
+#use YAMLish;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::EditVariableGrid;
