@@ -141,8 +141,8 @@ method !dialog-grid ( --> Grid ) {
 #-------------------------------------------------------------------------------
 method variable-add ( ) {
   $!statusbar.set-status('');
-
   my SessionManager::Variables $v .= new;
+
   my Str $variable = $!variable-name.get-text;
   if !$variable {
     $!statusbar.set-status("No variable name");
@@ -164,8 +164,8 @@ method variable-add ( ) {
 #-------------------------------------------------------------------------------
 method variable-rename ( ) {
   $!statusbar.set-status('');
-
   my SessionManager::Variables $v .= new;
+
   my Str $variable = $!variable-name.get-text;
   if !$variable {
     $!statusbar.set-status("No variable name");
@@ -194,10 +194,41 @@ method variable-rename ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method variable-modify ( ) {
+  $!statusbar.set-status('');
+  my SessionManager::Variables $v .= new;
+
+  my Str $variable = $!variable-name.get-text;
+  if !$variable {
+    $!statusbar.set-status("No variable name specified");
+  }
+
+  elsif !$v.get-variable($variable) {
+    $!statusbar.set-status("Name '$variable' not existing");
+  }
+
+  else {
+    # Change the row in the listview
+    my $original-pos = $!variables-view.get-selection(:rows)[0];
+    if $original-pos.defined {
+      $!variables-view.splice( $original-pos, 1, $variable);
+
+      my Str $variable-spec = $!variable-spec.get-text;
+      $v.set-variable( $variable, $variable-spec);
+      $!statusbar.set-status("Variable $variable modified to '$variable-spec'");
+    }
+
+    else {
+      $!statusbar.set-status("Cannot modify: no veriable selected in list");
+    }
+  }
+}
+
+#-------------------------------------------------------------------------------
 method variable-delete ( ) {
   $!statusbar.set-status('');
-
   my SessionManager::Variables $v .= new;
+
   my Str $variable = $!variable-name.get-text;
   if !$variable {
     $!statusbar.set-status("No variable name");
@@ -234,12 +265,24 @@ method !button-row ( --> Box ) {
     .append($button);
 
     with $button .= new-button {
+      .set-label('Rename');
+      .register-signal( self, 'variable-rename', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Modify');
+      .register-signal( self, 'variable-modify', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
       .set-label('Delete');
       .register-signal( self, 'variable-delete', 'clicked');
     }
     .append($button);
   }
-  
+
   $button-row
 }
 
