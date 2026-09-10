@@ -183,7 +183,7 @@ method do-rename-variable ( ) {
   }
 
   # Keep dialog open for other edits
- }
+}
 
 #-------------------------------------------------------------------------------
 method do-modify-variable ( ) {
