@@ -5,7 +5,9 @@ use SessionManager::Actions;
 use SessionManager::Sessions;
 use SessionManager::Config;
 
-use GnomeTools::Gtk::Dialog;
+use SessionManager::Gui::EditTools;
+
+#use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListView;
 use GnomeTools::Gtk::Statusbar;
@@ -32,7 +34,7 @@ also is Gnome::Gtk4::Grid;
 #constant ConfigPath = '/Config/variables.yaml';
 
 constant ListView = GnomeTools::Gtk::ListView;
-constant Dialog = GnomeTools::Gtk::Dialog;
+#constant Dialog = GnomeTools::Gtk::Dialog;
 constant Statusbar = GnomeTools::Gtk::Statusbar;
 
 constant Entry = Gnome::Gtk4::Entry;
@@ -44,7 +46,7 @@ constant Image = Gnome::Gtk4::Image;
 
 constant EDIT_WIDTH = 500;
 constant EDIT_HEIGHT = 1000;
-constant EDIT_WIDTH-CHARS = 80;
+#constant EDIT_WIDTH_CHARS = 80;
 
 #has SessionManager::Variables $!variables;
 has ListView $!variables-view;
@@ -67,14 +69,14 @@ submethod BUILD ( ) {
 
   with self {
     my Int $row = 0;
-    with my Label $title = self.make-label {
+    with my Label $title = make-label() {
       .set-use-markup(True);
       .set-markup(Q[<span size="xx-large">Variables</span>]);
       .set-halign(GTK_ALIGN_FILL);
     }
     .attach( $title, 0, $row++, 1, 1);
 
-    my Label $vstrut1 = self.make-label;
+    my Label $vstrut1 = make-label();
     $vstrut1.set-text(' ');
     .attach( $vstrut1, 0, $row++, 1, 1);
 
@@ -87,7 +89,7 @@ submethod BUILD ( ) {
 #    my Box $button-row = self!button-row;
     .attach( self!button-row, 0, $row++, 1, 1);
 
-    my Label $vstrut2 = self.make-label;
+    my Label $vstrut2 = make-label();
     $vstrut2.set-text(' ');
     .attach( $vstrut2, 0, $row++, 1, 1);
 
@@ -119,21 +121,30 @@ method !list-view ( --> ListView ) {
 
 #-------------------------------------------------------------------------------
 method !dialog-grid ( --> Grid ) {
-  with my Grid $dialog-grid .= new-grid {
-    with my Label $name-label .= new-label {
-      .set-text('Variable name');
-    }
-    .attach( $name-label, 0, 0, 1, 1);
-    $!variable-name = self.make-entry;
-    .attach( $!variable-name, 1, 0, 1, 1);
-
-    with my Label $spec-label .= new-label {
-      .set-text('Specification');
-    }
-    .attach( $spec-label, 0, 1, 1, 1);
-    $!variable-spec = self.make-entry;
-    .attach( $!variable-spec, 1, 1, 1, 1);
+  my Grid $dialog-grid .= new-grid;
+  my Int $row = 0;
+#`{{
+  with my Label $name-label .= new-label {
+    .set-text('Variable name');
   }
+
+  .attach( $name-label, 0, 0, 1, 1);
+  .attach( $!variable-name, 1, 0, 1, 1);
+}}
+  my Label $l = make-label( :width(16), :label-text('Variable name'));
+  $!variable-name = make-entry;
+  add-content( $row++, $dialog-grid, $l, $!variable-name);
+
+#`{{
+  with my Label $spec-label .= new-label {
+    .set-text('Specification');
+  }
+  .attach( $spec-label, 0, 1, 1, 1);
+  .attach( $!variable-spec, 1, 1, 1, 1);
+}}
+  $l = make-label( :width(16), :label-text('Specification'));
+  $!variable-spec = make-entry;
+  add-content( $row++, $dialog-grid, $l, $!variable-spec);
 
   $dialog-grid
 }
@@ -254,7 +265,7 @@ method variable-delete ( ) {
 method !button-row ( --> Box ) {
   my Button $button;
   with my Box $button-row .= new-box( GTK_ORIENTATION_HORIZONTAL, 4) {
-    my Label $hstrut = self.make-label;
+    my Label $hstrut = make-label;
     $hstrut.set-text('');
     .append($hstrut);
 
@@ -288,9 +299,9 @@ method !button-row ( --> Box ) {
 
 #-------------------------------------------------------------------------------
 method setup-item ( ) {
-  my Label $name = self.make-label;
-  my Label $value = self.make-label;
-  my Image $used = self.make-image;
+  my Label $name = make-label();
+  my Label $value = make-label();
+  my Image $used = make-image();
 
   with my Grid $grid .= new-grid {
     .attach( $used, 0, 0, 2, 2);
@@ -307,11 +318,11 @@ method setup-item ( ) {
 method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   my SessionManager::Variables $v .= new;
   my Str $value = $v.substitute-vars($v.get-variable($name));
-  self.set-text-at( 2, 0, $name, $grid);
-  self.set-text-at( 2, 1, $value, $grid);
+  set-text-at( 2, 0, $name, $grid);
+  set-text-at( 2, 1, $value, $grid);
 
   my Bool $name-inuse = self.check-variable-inuse($name);
-  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------
@@ -345,6 +356,17 @@ method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
   $grid.clear-object;
 }
 
+#-------------------------------------------------------------------------------
+method selection-changed ( UInt $pos, @selections ) {
+  my Str $name = @selections[0];
+  $!variable-name.set-text($name);
+  my SessionManager::Variables $v .= new;
+  my Str $value = $v.get-variable($name);
+  $!variable-spec.set-text($value);
+}
+
+
+=finish
 #-------------------------------------------------------------------------------
 method make-label ( --> Label ) {
   with my Label $label .= new-label {
@@ -380,15 +402,6 @@ method make-image ( --> Image ) {
   }
 
   $image
-}
-
-#-------------------------------------------------------------------------------
-method selection-changed ( UInt $pos, @selections ) {
-  my Str $name = @selections[0];
-  $!variable-name.set-text($name);
-  my SessionManager::Variables $v .= new;
-  my Str $value = $v.get-variable($name);
-  $!variable-spec.set-text($value);
 }
 
 #-------------------------------------------------------------------------------
