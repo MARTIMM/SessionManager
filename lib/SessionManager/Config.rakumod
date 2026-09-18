@@ -27,12 +27,11 @@ my $instance;
 has Hash $!dispatch-config;
 #has Gnome::Gtk4::CssProvider $!css-provider;
 
-has GnomeTools::Gtk::Theming $!theme;
+has GnomeTools::Gtk::Theming $.theme;
 
 #-------------------------------------------------------------------------------
 #submethod BUILD ( Bool :$load-manual-build-config = False ) {
 submethod BUILD ( ) {
-#note "$?LINE $*config-directory";
 
   mkdir $*config-directory ~ '/Config', 0o700
         unless ($*config-directory ~ '/Config').IO.e;
@@ -41,12 +40,16 @@ submethod BUILD ( ) {
         unless ($*config-directory ~ '/Pictures').IO.e;
 
   # Copy style sheets to data directory and load into program
-  my Str $css-path = $*config-directory ~ '/Config/manager.css';
+  my $cfg-path = [~] $*HOME.Str, '/.config/', $*app-id;
+  mkdir $cfg-path, 0o700 unless $cfg-path.IO.e;
+
+  my Str $css-path = $cfg-path ~ '/manager.css';
   %?RESOURCES<manager.css>.copy($css-path);
   my $css-cnt = [~] '@import url("', $css-path.IO.absolute, '");', "\n\n",
                     %?RESOURCES<manager-changes.css>.slurp;
-  $css-path = $*config-directory ~ '/Config/manager-changes.css';
+  $css-path = $cfg-path ~ '/manager-changes.css';
   $css-path.IO.spurt($css-cnt);
+
   $!theme .= new(:$css-path);
 
 #  self.load-config(:$load-manual-build-config);

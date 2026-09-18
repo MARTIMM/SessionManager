@@ -9,6 +9,7 @@ use SessionManager::Gui::Editor;
 
 #-------------------------------------------------------------------------------
 # Initialize global variables
+my Str $*app-id = 'io.github.martimm.session-manager';
 
 my Version $*manager-version = v0.8.0;
 my Bool $*verbose = False;
