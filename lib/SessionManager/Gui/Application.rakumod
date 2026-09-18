@@ -31,7 +31,7 @@ unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
 
 constant Grid = Gnome::Gtk4::Grid;
 
-constant APP_ID is export = 'io.github.martimm.session-manager';
+#constant $*app-id is export = 'io.github.martimm.session-manager';
 
 constant LocalOptions = [<version help|h>];
 constant RemoteOptions = [ |<verbose|v legacy session|s=s>
@@ -43,7 +43,7 @@ has Int $.exit-code = 0;
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   with $!application .= new(
-    :app-id(APP_ID),
+    :app-id($*app-id),
     :app-flags(
       G_APPLICATION_HANDLES_COMMAND_LINE +|
       G_APPLICATION_NON_UNIQUE
@@ -319,7 +319,7 @@ use Gnome::Gio::ApplicationCommandLine:api<2>;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
 
-constant APP_ID is export = 'io.github.martimm.session-manager';
+constant $*app-id is export = 'io.github.martimm.session-manager';
 
 constant Grid = Gnome::Gtk4::Grid;
 constant LocalOptions = [<version h help>];
@@ -334,7 +334,7 @@ submethod BUILD ( ) {
 # $!dispatch-testing = True;
 
   $!application .= new-application(
-    APP_ID, G_APPLICATION_HANDLES_COMMAND_LINE
+    $*app-id, G_APPLICATION_HANDLES_COMMAND_LINE
   );
 
   # Register all necessary signals
