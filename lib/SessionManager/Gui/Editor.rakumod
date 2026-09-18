@@ -29,7 +29,7 @@ use SessionManager::Gui::EditGrid;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Editor:auth<github:MARTIMM>;
 
-constant APP_ID is export = 'io.github.martimm.session-manager';
+#constant $*app-id is export = 'io.github.martimm.session-manager';
 
 constant LocalOptions = [<help|h>];
 
@@ -39,7 +39,7 @@ has Int $.exit-code = 0;
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
   with $!application .= new(
-    :app-id(APP_ID),
+    :app-id($*app-id),
     :app-flags(
       G_APPLICATION_HANDLES_COMMAND_LINE +|
       G_APPLICATION_NON_UNIQUE

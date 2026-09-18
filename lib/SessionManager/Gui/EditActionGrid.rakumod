@@ -94,6 +94,10 @@ submethod new ( |c --> SessionManager::Gui::EditActionGrid ) {
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
+
+  my SessionManager::Config $config .= instance;
+  $config.theme.add-css-class( self, 'edit-grid');
+
   $!data-ids = %();
   $!sessions .= new;
   $!actions .= new;
@@ -225,6 +229,46 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 }
 
 #-------------------------------------------------------------------------------
+method setup-item ( --> Widget ) {
+  my Label $action-id = make-label();
+  my Label $action-value = make-label();
+  my Image $used = make-image();
+
+  with my Grid $grid .= new-grid {
+    .attach( $used, 0, 0, 2, 2);
+    .attach( $action-id, 2, 0, 1, 1);
+    .attach( $action-value, 2, 1, 1, 1);
+  }
+
+  $grid;
+}
+
+#-------------------------------------------------------------------------------
+method bind-item ( Grid() $grid, Str $name ) {
+#note $?LINE;
+  my Hash $action-object = $!actions.get-raw-action($name);
+  set-text-at( 2, 0, $name, $grid);
+  set-text-at( 2, 1, $action-object<t>//'', $grid);
+
+  my Bool $name-inuse = self.check-action-inuse($name);
+  set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+}
+
+#-------------------------------------------------------------------------------
+method check-action-inuse ( Str:D $name --> Bool ) {
+  # Check if action is used in the sessions store
+  $!sessions.is-action-in-use($name);
+}
+
+#-------------------------------------------------------------------------------
+#method unbind-item
+
+#-------------------------------------------------------------------------------
+method teardown-item ( Grid() $grid ) {
+  $grid.clear-object;
+}
+
+#-------------------------------------------------------------------------------
 method !dialog-grid ( --> Grid ) {
 
   my Int $row = 0;
@@ -274,6 +318,22 @@ method !button-row ( ) {
 
 }
 
+#-------------------------------------------------------------------------------
+method select-from-list ( Entry :$search ) {
+  my Str $search-text = $search.get-text;
+  my @actions = $!actions.get-action-ids.sort: {$^a.lc leg $^b.lc};
+  $!actions-view.remove(0..^@actions.elems);
+  for @actions -> $item {
+    $!actions-view.append($item) if $item ~~ m/ $search-text /;
+  }
+}
+
+#-------------------------------------------------------------------------------
+method reset-list ( Entry :$search ) {
+  $!actions-view.remove(^$!actions-view.get-n-items);
+  $!actions-view.append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+  $search.set-text('');
+}
 
 #-------------------------------------------------------------------------------
 method set-input-fields ( UInt $pos, @selections,

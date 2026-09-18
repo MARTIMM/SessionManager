@@ -67,6 +67,9 @@ submethod BUILD ( ) {
   # Just only when other methods need to be called there.
   #$!variables .= new;
 
+  my SessionManager::Config $config .= instance;
+  $config.theme.add-css-class( self, 'edit-grid');
+
   with self {
     my Int $row = 0;
     with my Label $title = make-label() {
