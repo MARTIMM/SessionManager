@@ -113,17 +113,31 @@ submethod BUILD ( ) {
       .set-halign(GTK_ALIGN_FILL);
     }
     .attach( $title, 0, $row++, 1, 1);
-    my Label $vstrut1 = make-label();
+    my Label $vstrut1 = make-label;
     $vstrut1.set-text(' ');
     .attach( $vstrut1, 0, $row++, 1, 1);
 
     .attach( self!dialog-grid, 0, $row++, 1, 1);
 
+    $!statusbar .= new;
+    .attach( $!statusbar, 0, $row++, 1, 1);
+note $?LINE;
+
+#    my Box $button-row = self!button-row;
+    .attach( self!button-row, 0, $row++, 1, 1);
+
+note $?LINE;
+    my Label $vstrut2 = make-label;
+    $vstrut2.set-text(' ');
+    .attach( $vstrut2, 0, $row++, 1, 1);
+
+note $?LINE;
+
+
 
     .attach( $!actions-view, 0, $row++, 1, 1);
 
-
-    my Entry $search = make-entry();
+    my Entry $search = make-entry;
 #    $search.set-size-request( 250, -1);
     with my Button $search-button .= new-button {
       .set-label('Select from list');
@@ -133,15 +147,21 @@ submethod BUILD ( ) {
       .set-label('Reset search');
       .register-signal( self, 'reset-list', 'clicked', :$search);
     }
+note $?LINE;
 
-    my Label $strut1 .= new-label;
+    my Label $vstrut3 = make-label;
+    $vstrut3.set-text(' ');
+    .attach( $vstrut3, 0, $row++, 1, 1);
+note $?LINE;
 
     my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
     $bt-box.append($search);
     $bt-box.append($search-button);
-    $bt-box.append($strut1);
+#    my Label $hstrut1 .= new-label;
+#    $bt-box.append($hstrut1);
     $bt-box.append($reset-button);
     .attach( $bt-box, 0, $row++, 1, 1);
+note $?LINE;
 
 #`{{
 
@@ -313,14 +333,46 @@ method !dialog-grid ( --> Grid ) {
   my Label $strut2 .= new-label;
   $sw-box.append($strut2);
   add-content( $row++, $dialog-grid, 'Turn logging on', $sw-box);
-  add-content( $row++, $dialog-grid, 'Turn logging on', $!aspec-wait);
+  add-content( $row++, $dialog-grid, 'Wait before close', $!aspec-wait);
 
   $dialog-grid
 }
 
 #-------------------------------------------------------------------------------
-method !button-row ( ) {
+method !button-row ( --> Box ) {
 
+  my Button $button;
+  with my Box $button-row .= new-box( GTK_ORIENTATION_HORIZONTAL, 4) {
+#    my Label $hstrut = make-label;
+#    $hstrut.set-text('');
+#    .append($hstrut);
+
+    with $button .= new-button {
+      .set-label('Add');
+      .register-signal( self, 'action-add', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Rename');
+      .register-signal( self, 'action-rename', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Modify');
+      .register-signal( self, 'action-modify', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Delete');
+      .register-signal( self, 'action-delete', 'clicked');
+    }
+    .append($button);
+  }
+
+  $button-row
 }
 
 #-------------------------------------------------------------------------------
