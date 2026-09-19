@@ -118,6 +118,31 @@ submethod BUILD ( ) {
     .attach( $vstrut1, 0, $row++, 1, 1);
 
     .attach( self!dialog-grid, 0, $row++, 1, 1);
+
+
+    .attach( $!actions-view, 0, $row++, 1, 1);
+
+
+    my Entry $search = make-entry();
+#    $search.set-size-request( 250, -1);
+    with my Button $search-button .= new-button {
+      .set-label('Select from list');
+      .register-signal( self, 'select-from-list', 'clicked', :$search);
+    }
+    with my Button $reset-button .= new-button {
+      .set-label('Reset search');
+      .register-signal( self, 'reset-list', 'clicked', :$search);
+    }
+
+    my Label $strut1 .= new-label;
+
+    my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
+    $bt-box.append($search);
+    $bt-box.append($search-button);
+    $bt-box.append($strut1);
+    $bt-box.append($reset-button);
+    .attach( $bt-box, 0, $row++, 1, 1);
+
 #`{{
 
     $!statusbar .= new;
@@ -273,43 +298,23 @@ method !dialog-grid ( --> Grid ) {
 
   my Int $row = 0;
   my Grid $dialog-grid .= new-grid;
-#  with self {
-    add-content( $row++, $dialog-grid, 'Current actions', $!actions-view);
 
-    my Entry $search .= new-entry;
-    $search.set-size-request( 250, -1);
-    with my Button $search-button .= new-button {
-      .set-label('Select from list');
-      .register-signal( self, 'select-from-list', 'clicked', :$search);
-    }
-    with my Button $reset-button .= new-button {
-      .set-label('Reset search');
-      .register-signal( self, 'reset-list', 'clicked', :$search);
-    }
-    my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
-    $bt-box.append($search-button);
-    $bt-box.append($reset-button);
-    my Label $strut1 .= new-label;
-    $bt-box.append($strut1);
-    add-content( $row++, $dialog-grid, 'Search in list', $search, $bt-box);
+  add-content( $row++, $dialog-grid, 'Action id', $!action-id);
+  add-content( $row++, $dialog-grid, 'Action Title', $!aspec-title, $!aspec-title-subst);
+  add-content( $row++, $dialog-grid, 'Command to run', $!aspec-cmd, $!aspec-cmd-subst);
+  add-content( $row++, $dialog-grid, 'Shell to work in', $!aspec-shell);
+  add-content( $row++, $dialog-grid, 'Path to start in', $!aspec-path, $!aspec-path-subst);
+  add-content( $row++, $dialog-grid, 'Icon', $!aspec-icon, $!aspec-icon-subst);
+  add-content( $row++, $dialog-grid, 'Picture', $!aspec-pic, $!aspec-pic-subst);
+  add-content( $row++, $dialog-grid, 'Wait before log window closes', $!aspec-wait);
 
-    add-content( $row++, $dialog-grid, 'Action id', $!action-id);
-    add-content( $row++, $dialog-grid, 'Action Title', $!aspec-title, $!aspec-title-subst);
-    add-content( $row++, $dialog-grid, 'Command to run', $!aspec-cmd, $!aspec-cmd-subst);
-    add-content( $row++, $dialog-grid, 'Shell to work in', $!aspec-shell);
-    add-content( $row++, $dialog-grid, 'Path to start in', $!aspec-path, $!aspec-path-subst);
-    add-content( $row++, $dialog-grid, 'Icon', $!aspec-icon, $!aspec-icon-subst);
-    add-content( $row++, $dialog-grid, 'Picture', $!aspec-pic, $!aspec-pic-subst);
-    add-content( $row++, $dialog-grid, 'Wait before log window closes', $!aspec-wait);
+  my Box $sw-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 0);
+  $sw-box.append($!aspec-log);
+  my Label $strut2 .= new-label;
+  $sw-box.append($strut2);
+  add-content( $row++, $dialog-grid, 'Turn logging on', $sw-box);
+  add-content( $row++, $dialog-grid, 'Turn logging on', $!aspec-wait);
 
-    my Box $sw-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 0);
-    $sw-box.append($!aspec-log);
-    my Label $strut2 .= new-label;
-    $sw-box.append($strut2);
-    add-content( $row++, $dialog-grid, 'Turn logging on', $sw-box);
-    add-content( $row++, $dialog-grid, 'Turn logging on', $!aspec-wait);
-#  }
-  
   $dialog-grid
 }
 
