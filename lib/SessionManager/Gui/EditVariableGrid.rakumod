@@ -268,9 +268,9 @@ method variable-delete ( ) {
 method !button-row ( --> Box ) {
   my Button $button;
   with my Box $button-row .= new-box( GTK_ORIENTATION_HORIZONTAL, 4) {
-    my Label $hstrut = make-label;
-    $hstrut.set-text('');
-    .append($hstrut);
+#    my Label $hstrut = make-label;
+#    $hstrut.set-text('');
+#    .append($hstrut);
 
     with $button .= new-button {
       .set-label('Add');
