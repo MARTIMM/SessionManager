@@ -32,8 +32,8 @@ submethod BUILD ( ) {
     my SessionManager::Gui::EditSessionGrid $sessions .= new;
     .attach( $sessions, 2, 0, 1, 1);
 
-    .set-column-spacing(20);
-    .set-row-spacing(20);
+#    .set-column-spacing(20);
+#    .set-row-spacing(20);
   }
 }
 
