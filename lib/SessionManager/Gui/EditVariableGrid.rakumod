@@ -74,9 +74,7 @@ submethod BUILD ( ) {
     my Int $row = 0;
     .attach( make-title('Variables'), 0, $row++, 1, 1);
 
-    my Label $vstrut1 = make-label();
-    $vstrut1.set-text(' ');
-    .attach( $vstrut1, 0, $row++, 1, 1);
+    .attach( make-vertical-space, 0, $row++, 1, 1);
 
 #    my Grid $v = self!dialog-grid;
     .attach( self!dialog-grid, 0, $row++, 1, 1);
@@ -87,9 +85,7 @@ submethod BUILD ( ) {
 #    my Box $button-row = self!button-row;
     .attach( self!button-row, 0, $row++, 1, 1);
 
-    my Label $vstrut2 = make-label();
-    $vstrut2.set-text(' ');
-    .attach( $vstrut2, 0, $row++, 1, 1);
+    .attach( make-vertical-space, 0, $row++, 1, 1);
 
     $!variables-view = self!list-view;
     .attach( $!variables-view,  0, $row++, 1, 1);
