@@ -107,12 +107,7 @@ submethod BUILD ( ) {
     self.init-fields;
 
     my Int $row = 0;
-    with my Label $title = make-label() {
-      .set-use-markup(True);
-      .set-markup(Q[<span size="xx-large">Actions</span>]);
-      .set-halign(GTK_ALIGN_FILL);
-    }
-    .attach( $title, 0, $row++, 1, 1);
+    .attach( make-title('Actions'), 0, $row++, 1, 1);
     my Label $vstrut1 = make-label;
     $vstrut1.set-text(' ');
     .attach( $vstrut1, 0, $row++, 1, 1);
@@ -121,18 +116,13 @@ submethod BUILD ( ) {
 
     $!statusbar .= new;
     .attach( $!statusbar, 0, $row++, 1, 1);
-note $?LINE;
 
 #    my Box $button-row = self!button-row;
     .attach( self!button-row, 0, $row++, 1, 1);
 
-note $?LINE;
     my Label $vstrut2 = make-label;
     $vstrut2.set-text(' ');
     .attach( $vstrut2, 0, $row++, 1, 1);
-
-note $?LINE;
-
 
 
     .attach( $!actions-view, 0, $row++, 1, 1);
@@ -147,12 +137,10 @@ note $?LINE;
       .set-label('Reset search');
       .register-signal( self, 'reset-list', 'clicked', :$search);
     }
-note $?LINE;
 
     my Label $vstrut3 = make-label;
     $vstrut3.set-text(' ');
     .attach( $vstrut3, 0, $row++, 1, 1);
-note $?LINE;
 
     my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
     $bt-box.append($search);
@@ -161,7 +149,6 @@ note $?LINE;
 #    $bt-box.append($hstrut1);
     $bt-box.append($reset-button);
     .attach( $bt-box, 0, $row++, 1, 1);
-note $?LINE;
 
 #`{{
 

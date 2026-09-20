@@ -72,12 +72,7 @@ submethod BUILD ( ) {
 
   with self {
     my Int $row = 0;
-    with my Label $title = make-label() {
-      .set-use-markup(True);
-      .set-markup(Q[<span size="xx-large">Variables</span>]);
-      .set-halign(GTK_ALIGN_FILL);
-    }
-    .attach( $title, 0, $row++, 1, 1);
+    .attach( make-title('Variables'), 0, $row++, 1, 1);
 
     my Label $vstrut1 = make-label();
     $vstrut1.set-text(' ');
