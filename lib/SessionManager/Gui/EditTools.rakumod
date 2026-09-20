@@ -30,6 +30,40 @@ sub make-title ( Str:D $title --> Label ) is export {
 }
 
 #-------------------------------------------------------------------------------
+sub make-horizontal-strut ( --> Label ) is export {
+  with my Label $l = make-label() {
+    .set-wrap(False);
+    .set-halign(GTK_ALIGN_FILL);
+    .set-hexpand(True);
+    .set-text('');
+  }
+
+  $l
+}
+
+#-------------------------------------------------------------------------------
+sub make-vertical-space ( --> Label ) is export {
+  with my Label $l = make-label() {
+    .set-wrap(False);
+    .set-text('');
+  }
+
+  $l
+}
+
+#-------------------------------------------------------------------------------
+sub make-vertical-strut ( --> Label ) is export {
+  with my Label $l = make-label() {
+    .set-wrap(False);
+    .set-valign(GTK_ALIGN_FILL);
+    .set-vexpand(True);
+    .set-text('');
+  }
+
+  $l
+}
+
+#-------------------------------------------------------------------------------
 sub make-label (
   Str :$label-text, Int :$width = EDIT_WIDTH_CHARS,
   Bool :$justify-left = True
