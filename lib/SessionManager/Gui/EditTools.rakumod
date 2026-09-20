@@ -19,6 +19,17 @@ constant Grid = Gnome::Gtk4::Grid;
 constant EDIT_WIDTH_CHARS = 80;
 
 #-------------------------------------------------------------------------------
+sub make-title ( Str:D $title --> Label ) is export {
+  with my Label $l = make-label() {
+    .set-use-markup(True);
+    .set-markup('<span size="xx-large">' ~ $title ~ '</span>');
+    .set-halign(GTK_ALIGN_FILL);
+  }
+
+  $l
+}
+
+#-------------------------------------------------------------------------------
 sub make-label (
   Str :$label-text, Int :$width = EDIT_WIDTH_CHARS,
   Bool :$justify-left = True
