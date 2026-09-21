@@ -14,7 +14,6 @@ use GnomeTools::Gtk::ListView;
 use GnomeTools::Gtk::Statusbar;
 
 use Gnome::Gtk4::TextView:api<2>;
-use Gnome::Gtk4::TextBuffer:api<2>;
 use Gnome::Gtk4::T-textiter:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Switch:api<2>;
@@ -26,6 +25,7 @@ use Gnome::Gtk4::Button:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
+use Gnome::Gtk4::TextBuffer:api<2>;
 
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
@@ -119,10 +119,7 @@ submethod BUILD ( ) {
 
 #    my Box $button-row = self!button-row;
     .attach( self!button-row, 0, $row++, 1, 1);
-
-    my Label $vstrut2 = make-label;
-    $vstrut2.set-text(' ');
-    .attach( $vstrut2, 0, $row++, 1, 1);
+    .attach( make-vertical-space, 0, $row++, 1, 1);
 
 
     .attach( $!actions-view, 0, $row++, 1, 1);
@@ -138,15 +135,11 @@ submethod BUILD ( ) {
       .register-signal( self, 'reset-list', 'clicked', :$search);
     }
 
-    my Label $vstrut3 = make-label;
-    $vstrut3.set-text(' ');
-    .attach( $vstrut3, 0, $row++, 1, 1);
+    .attach( make-vertical-space, 0, $row++, 1, 1);
 
     my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
     $bt-box.append($search);
     $bt-box.append($search-button);
-#    my Label $hstrut1 .= new-label;
-#    $bt-box.append($hstrut1);
     $bt-box.append($reset-button);
     .attach( $bt-box, 0, $row++, 1, 1);
 
@@ -361,6 +354,147 @@ method !button-row ( --> Box ) {
 
   $button-row
 }
+
+#-------------------------------------------------------------------------------
+method action-add ( ) {
+  my Str $id = $!action-id.get-text;
+note "$?LINE $id";
+
+  if !$id {
+    $!statusbar.set-status('The action id may not be empty');
+  }
+
+  elsif $id ~~ any(|$!actions.get-action-ids) {
+    $!statusbar.set-status('This action id is already defined');
+  }
+
+  else {
+    my SessionManager::Config $config .= instance;
+    my Hash $raw-action = %();
+    $raw-action<t> = $!aspec-title.get-text;
+#`{{
+    my TextBuffer() $tb = $aspec-cmd.get-buffer;
+    my N-TextIter() $t0 = $tb.get-start-iter;
+    my N-TextIter() $te = $tb.get-end-iter;
+    $raw-action<c> = $tb.get-text( $t0, $te, False);
+}}
+    $raw-action<c> = get-textview-text($!aspec-cmd);
+    $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
+    $raw-action<i> = $config.set-picture($!aspec-pic.get-text);
+    $raw-action<l> = $!aspec-log.get-state;
+    $raw-action<w> = $!aspec-wait.get-text.Int;
+    $raw-action<p> = $!aspec-path.get-text;
+    $raw-action<sh> = $!aspec-shell.get-text;
+note "$?LINE $raw-action.raku()";
+
+    $!actions.add-action( $raw-action, :$id);
+#    my SessionManager::ActionData $ad = $actions.get-action($id);
+#    $ad.set-shell($aspec-shell.get-text);
+
+#    $!statusbar.set-status("The action '$id' is succesfully created");
+#    $!id-to-return-from-dialog = $id;
+    $!statusbar.set-status("Added action '$id'");
+
+    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+    $!actions-view.splice( $original-pos, 0, $id);
+  }
+}
+
+#`{{
+#-------------------------------------------------------------------------------
+method action-rename ( ) {
+#  my SessionManager::Actions $actions .= new;
+  my Str $new-id = $!action-id.get-text;
+
+  if !$new-id {
+    $!statusbar.set-status('An action id may not be empty');
+  }
+
+  elsif $new-id ~~ any(|$!actions.get-action-ids) {
+    $!statusbar.set-status('This action id is already defined');
+  }
+
+  else {
+    # Change the row in the listbox
+    #with my Label $l .= new-with-mnemonic($new-id) {
+    #  .set-justify(GTK_JUSTIFY_LEFT);
+    #  .set-halign(GTK_ALIGN_START);
+    #}
+
+    # Get selected id, listbox is not in multi select so always one selection
+    my Str $old-id = $!actions-view.get-selection()[0];
+
+#    my Array $widgets = $listbox.get-selection(:get-widgets);
+#    my Label() $id-label = $widgets[0];
+
+#    # Get the id and change the actions and action data
+#    my Str $id = $id-label.get-text;
+    $!actions.rename-action( $old-id, $new-id);
+
+    # Change the use of actions in sessions
+    $!sessions.rename-group-actions( $old-id, $new-id);
+
+    $!statusbar.set-status('Renamed everything successfully');
+    #$id-label.set-text($new-id);
+
+    # Change text in listbox row
+    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+    $!actions-view.splice( $original-pos, 1, $new-id);
+  }
+}
+
+#-------------------------------------------------------------------------------
+method action-modify ( ) {
+  my SessionManager::Config $config .= instance;
+  my Hash $raw-action = %();
+  $raw-action<t> = $!aspec-title.get-text;
+
+#`{{
+  my TextBuffer() $tb = $aspec-cmd.get-buffer;
+  my N-TextIter $t0 .= new;
+  my N-TextIter $te .= new;
+  $tb.get-bounds( $t0, $te);
+  $raw-action<c> = $tb.get-text( $t0, $te, False);
+}}
+  $raw-action<c> = self.get-text($!aspec-cmd);
+
+  $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
+  $raw-action<i> = $config.set-picture($!aspec-pic.get-text);
+  $raw-action<l> = $!aspec-log.get-state;
+  $raw-action<w> = $!aspec-wait.get-text.Int;
+  $raw-action<p> = $!aspec-path.get-text;
+  $raw-action<sh> = $!aspec-shell.get-text;
+
+#note "$?LINE $raw-action.gist()";
+  my SessionManager::Actions $actions .= new;
+  my Str $id = $!action-id.get-text;
+  $actions.modify-action( $id, $raw-action);
+
+  $!statusbar.set-status("The action '$id' is succesfully modified");
+
+#BUG Type check failed in assignment to $original-pos; expected UInt but got Any
+# happens when doing change twice
+  my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+  $!actions-view.splice( $original-pos, 1, $id);
+note "\n$original-pos, $id\n$raw-action.gist()";
+}
+
+#-------------------------------------------------------------------------------
+method action-delete ( ) {
+  my Str $id = $!action-id.get-text;
+  if self.check-action-inuse($id) {
+    $!statusbar.set-status("Cannot delete id. Id '$id' is still in use.");
+  }
+
+  else {
+    $!statusbar.set-status("Deleting '$id' successful");
+
+    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+    $!actions-view.splice( $original-pos, 1);
+    $!actions.delete-action($id);
+  }
+}
+}}
 
 #-------------------------------------------------------------------------------
 method select-from-list ( Entry :$search ) {
