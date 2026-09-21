@@ -5,6 +5,9 @@ use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::Image:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
+use Gnome::Gtk4::T-textiter:api<2>;
+use Gnome::Gtk4::TextView:api<2>;
+use Gnome::Gtk4::TextBuffer:api<2>;
 
 use Gnome::Pango::T-layout:api<2>;
 
@@ -15,6 +18,8 @@ constant Entry = Gnome::Gtk4::Entry;
 constant Label = Gnome::Gtk4::Label;
 constant Image = Gnome::Gtk4::Image;
 constant Grid = Gnome::Gtk4::Grid;
+constant TextView = Gnome::Gtk4::TextView;
+constant TextBuffer = Gnome::Gtk4::TextBuffer;
 
 constant EDIT_WIDTH_CHARS = 80;
 
@@ -122,6 +127,16 @@ sub set-image-at (
   my Image() $used = $grid.get-child-at( $row, $col);
   my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
   $used.set-from-file(%?RESOURCES{$resource});
+}
+
+#-------------------------------------------------------------------------------
+sub get-textview-text ( TextView:D $textview --> Str ) is export {
+  my TextBuffer() $tb = $textview.get-buffer;
+  my N-TextIter $t0 .= new;
+  my N-TextIter $te .= new;
+  $tb.get-bounds( $t0, $te);
+
+  $tb.get-text( $t0, $te, False)
 }
 
 #-------------------------------------------------------------------------------
