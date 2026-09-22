@@ -30,10 +30,8 @@ submethod BUILD ( ) {
     my SessionManager::Gui::EditActionGrid $actions .= new;
     .append($actions);
 
-#`{{
     my SessionManager::Gui::EditSessionGrid $sessions .= new;
     .append($sessions);
-}}
   }
 }
 
