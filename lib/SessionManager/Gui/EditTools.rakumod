@@ -153,18 +153,9 @@ multi sub add-content (
   Int $row, Grid $grid, Label $l, *@widgets,
   Int :$columns = 1, Int :$rows = 1
 ) is export {
-#  my Label $name-label .= new-label;
-#  $name-label.set-text('Variable name');
 
-#  $grid.attach( $name-label, 0, 0, 1, 1);
-#  my Label $l = make-label();
-#  $l.set-text($label-text);
   my Int $column = 0;
   $grid.attach( $l, $column++, $row, 1, 1);
-  my $col = 1;
-  for @widgets -> $w {
-    $grid.attach( $w, $col++, $row, 1, 1);
-  }
 
   my Int $c = $columns;
   for @widgets -> $widget {
