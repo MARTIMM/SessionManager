@@ -125,9 +125,11 @@ method !dialog-grid ( --> Grid ) {
   .attach( $name-label, 0, 0, 1, 1);
   .attach( $!entry-variable-name, 1, 0, 1, 1);
 }}
+  my &addc = &add-content.assuming($dialog-grid);
+
   my Label $l = make-label( :width(16), :label-text('Variable name'));
   $!entry-variable-name = make-entry;
-  add-content( $row++, $dialog-grid, $l, $!entry-variable-name);
+  addc( $row++, $l, $!entry-variable-name);
 
 #`{{
   with my Label $spec-label .= new-label {
@@ -138,7 +140,7 @@ method !dialog-grid ( --> Grid ) {
 }}
   $l = make-label( :width(16), :label-text('Specification'));
   $!entry-variable-spec = make-entry;
-  add-content( $row++, $dialog-grid, $l, $!entry-variable-spec);
+  addc( $row++, $l, $!entry-variable-spec);
 
   $dialog-grid
 }

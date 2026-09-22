@@ -297,21 +297,31 @@ method !dialog-grid ( --> Grid ) {
 
   my Int $row = 0;
   my Grid $dialog-grid .= new-grid;
-
-  add-content( $row++, $dialog-grid, 'Action id', $!action-id);
-  add-content( $row++, $dialog-grid, 'Action Title', $!aspec-title, $!aspec-title-subst);
+  my &addc = &add-content.assuming($dialog-grid);
+  addc( $row++, 'Action id', $!action-id);
+  addc( $row++, 'Action Title', $!aspec-title, 2, $!aspec-title-subst);
+  addc( $row++, 'Command to run', $!aspec-cmd, $!aspec-cmd-subst);
+  addc( $row++, 'Shell to work in', $!aspec-shell);
+  addc( $row++, 'Path to start in', $!aspec-path, $!aspec-path-subst);
+  addc( $row++, 'Icon', $!aspec-icon, $!aspec-icon-subst);
+  addc( $row++, 'Picture', $!aspec-pic, $!aspec-pic-subst);
+  addc( $row++, 'Wait before log window closes', $!aspec-wait);
+#`{{  add-content( $row++, $dialog-grid, 'Action id', $!action-id);
+  add-content( $row++, $dialog-grid, 'Action Title', $!aspec-title, 2, $!aspec-title-subst);
   add-content( $row++, $dialog-grid, 'Command to run', $!aspec-cmd, $!aspec-cmd-subst);
   add-content( $row++, $dialog-grid, 'Shell to work in', $!aspec-shell);
   add-content( $row++, $dialog-grid, 'Path to start in', $!aspec-path, $!aspec-path-subst);
   add-content( $row++, $dialog-grid, 'Icon', $!aspec-icon, $!aspec-icon-subst);
   add-content( $row++, $dialog-grid, 'Picture', $!aspec-pic, $!aspec-pic-subst);
   add-content( $row++, $dialog-grid, 'Wait before log window closes', $!aspec-wait);
+}}
 
   with my Box $sw-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 0) {
     .append($!aspec-log);
 #    .append(make-horizontal-strut); # Push aspec-log to the left
   }
-  add-content( $row++, $dialog-grid, 'Turn logging on', $sw-box);
+  addc( $row++, 'Turn logging on', $sw-box);
+#  add-content( $row++, $dialog-grid, 'Turn logging on', $sw-box);
 
   $dialog-grid
 }
