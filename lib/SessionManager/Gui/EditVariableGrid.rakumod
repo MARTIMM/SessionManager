@@ -51,8 +51,8 @@ constant EDIT_HEIGHT = 1000;
 #has SessionManager::Variables $!variables;
 has ListView $!variables-view;
 has Grid $!dialog-grid;
-has Entry $!variable-name;
-has Entry $!variable-spec;
+has Entry $!entry-variable-name;
+has Entry $!entry-variable-spec;
 has Statusbar $!statusbar;
 
 #-------------------------------------------------------------------------------
@@ -123,22 +123,22 @@ method !dialog-grid ( --> Grid ) {
   }
 
   .attach( $name-label, 0, 0, 1, 1);
-  .attach( $!variable-name, 1, 0, 1, 1);
+  .attach( $!entry-variable-name, 1, 0, 1, 1);
 }}
   my Label $l = make-label( :width(16), :label-text('Variable name'));
-  $!variable-name = make-entry;
-  add-content( $row++, $dialog-grid, $l, $!variable-name);
+  $!entry-variable-name = make-entry;
+  add-content( $row++, $dialog-grid, $l, $!entry-variable-name);
 
 #`{{
   with my Label $spec-label .= new-label {
     .set-text('Specification');
   }
   .attach( $spec-label, 0, 1, 1, 1);
-  .attach( $!variable-spec, 1, 1, 1, 1);
+  .attach( $!entry-variable-spec, 1, 1, 1, 1);
 }}
   $l = make-label( :width(16), :label-text('Specification'));
-  $!variable-spec = make-entry;
-  add-content( $row++, $dialog-grid, $l, $!variable-spec);
+  $!entry-variable-spec = make-entry;
+  add-content( $row++, $dialog-grid, $l, $!entry-variable-spec);
 
   $dialog-grid
 }
@@ -148,7 +148,7 @@ method variable-add ( ) {
   $!statusbar.set-status('');
   my SessionManager::Variables $v .= new;
 
-  my Str $variable = $!variable-name.get-text;
+  my Str $variable = $!entry-variable-name.get-text;
   if !$variable {
     $!statusbar.set-status("No variable name");
   }
@@ -158,7 +158,7 @@ method variable-add ( ) {
   }
 
   else {
-    my Str $spec = $!variable-spec.get-text;
+    my Str $spec = $!entry-variable-spec.get-text;
     $v.add-variable( $variable, $spec);
     $!statusbar.set-status("Variable '$variable' added with '$spec'");
     my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
@@ -171,7 +171,7 @@ method variable-rename ( ) {
   $!statusbar.set-status('');
   my SessionManager::Variables $v .= new;
 
-  my Str $variable = $!variable-name.get-text;
+  my Str $variable = $!entry-variable-name.get-text;
   if !$variable {
     $!statusbar.set-status("No variable name");
   }
@@ -203,7 +203,7 @@ method variable-modify ( ) {
   $!statusbar.set-status('');
   my SessionManager::Variables $v .= new;
 
-  my Str $variable = $!variable-name.get-text;
+  my Str $variable = $!entry-variable-name.get-text;
   if !$variable {
     $!statusbar.set-status("No variable name specified");
   }
@@ -218,7 +218,7 @@ method variable-modify ( ) {
     if $original-pos.defined {
       $!variables-view.splice( $original-pos, 1, $variable);
 
-      my Str $variable-spec = $!variable-spec.get-text;
+      my Str $variable-spec = $!entry-variable-spec.get-text;
       $v.set-variable( $variable, $variable-spec);
       $!statusbar.set-status("Variable $variable modified to '$variable-spec'");
     }
@@ -234,7 +234,7 @@ method variable-delete ( ) {
   $!statusbar.set-status('');
   my SessionManager::Variables $v .= new;
 
-  my Str $variable = $!variable-name.get-text;
+  my Str $variable = $!entry-variable-name.get-text;
   if !$variable {
     $!statusbar.set-status("No variable name");
   }
@@ -353,10 +353,10 @@ method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
 #-------------------------------------------------------------------------------
 method selection-changed ( UInt $pos, @selections ) {
   my Str $name = @selections[0];
-  $!variable-name.set-text($name);
+  $!entry-variable-name.set-text($name);
   my SessionManager::Variables $v .= new;
   my Str $value = $v.get-variable($name);
-  $!variable-spec.set-text($value);
+  $!entry-variable-spec.set-text($value);
 }
 
 
