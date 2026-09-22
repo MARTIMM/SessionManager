@@ -141,16 +141,16 @@ sub get-textview-text ( TextView:D $textview --> Str ) is export {
 
 #-------------------------------------------------------------------------------
 multi sub add-content (
-  Int $row, Grid $grid, Str $label-text, *@widgets, *%options
+  Grid $grid, Int $row, Str $label-text, *@widgets, *%options
 ) is export {
   my Label $l = make-label;
   $l.set-text($label-text);
-  add-content( $row, $grid, $l, |@widgets, |%options);
+  add-content( $grid, $row, $l, |@widgets, |%options);
 }
 
 #-------------------------------------------------------------------------------
 multi sub add-content (
-  Int $row, Grid $grid, Label $l, *@widgets,
+  Grid $grid, Int $row, Label $l, *@widgets,
   Int :$columns = 1, Int :$rows = 1
 ) is export {
 
