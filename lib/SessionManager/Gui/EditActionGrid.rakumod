@@ -167,47 +167,35 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-placeholder-text('description of this action');
   }
 
-  with $!aspec-title-subst .= new-label {
-    .set-halign(GTK_ALIGN_START);
-#    .set-size-request( 600, -1);
-  }
+  $!aspec-title-subst = make-label;
 
   with $!aspec-icon .= new-entry {
     .set-placeholder-text('optional small picture of application');
     .set-sensitive(!$id-only);
   }
 
-  with $!aspec-icon-subst .= new-label {
-    .set-halign(GTK_ALIGN_START);
-  }
+  $!aspec-icon-subst = make-label;
 
   with $!aspec-pic .= new-entry {
     .set-placeholder-text('optional picture of application');
     .set-sensitive(!$id-only);
   }
 
-  with $!aspec-pic-subst .= new-label {
-    .set-halign(GTK_ALIGN_START);
-  }
+  $!aspec-pic-subst = make-label;
 
   with $!aspec-path .= new-entry {
     .set-placeholder-text('optional path to start in');
     .set-sensitive(!$id-only);
   }
 
-  with $!aspec-path-subst .= new-label {
-    .set-halign(GTK_ALIGN_START);
-  }
+  $!aspec-path-subst = make-label;
 
   with $!aspec-cmd .= new-textview {
     .set-size-request( -1, 100);
     .set-sensitive(!$id-only);
   }
 
-  with $!aspec-cmd-subst .= new-label {
-    .set-halign(GTK_ALIGN_START);
-#    .set-wrap(True);
-  }
+  $!aspec-cmd-subst = make-label;
 
   with $!aspec-shell .= new-entry {
     .set-sensitive(!$id-only);
