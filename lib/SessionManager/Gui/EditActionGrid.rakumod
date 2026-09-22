@@ -108,9 +108,7 @@ submethod BUILD ( ) {
 
     my Int $row = 0;
     .attach( make-title('Actions'), 0, $row++, 1, 1);
-    my Label $vstrut1 = make-label;
-    $vstrut1.set-text(' ');
-    .attach( $vstrut1, 0, $row++, 1, 1);
+    .attach( make-vertical-space, 0, $row++, 1, 1);
 
     .attach( self!dialog-grid, 0, $row++, 1, 1);
 
@@ -147,12 +145,8 @@ submethod BUILD ( ) {
 
     $!statusbar .= new;
     .attach( $!statusbar, 0, $row++, 1, 1);
-
-   .attach( self!button-row, 0, $row++, 1, 1);
-
-    my Label $vstrut2 = make-label();
-    $vstrut2.set-text(' ');
-    .attach( $vstrut2, 0, $row++, 1, 1);
+    .attach( self!button-row, 0, $row++, 1, 1);
+    .attach( make-vertical-space, 0, $row++, 1, 1);
   }}
 #    $!variables-view = self!list-view;
 #    .attach( $!variables-view,  0, $row++, 1, 1);
@@ -236,7 +230,12 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #  $!aspec-temp-vars.set-size-request( -1, 100);
 
   with $!actions-view .= new(:!multi-select) {
-    .set-size-request( -1, 500);
+#NOTE with set-size-request() many warnings come;
+# (sessioneditor:20240): Gtk-WARNING **: 14:24:34.559: Trying to measure
+# GtkApplicationWindow 0x3faba110 for height of 1300, but it needs at least 1362
+#    .set-size-request( -1, 500);
+# It stretches automatically because of the height of the variables
+# edit at the first column of the box
 
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
@@ -308,12 +307,11 @@ method !dialog-grid ( --> Grid ) {
   add-content( $row++, $dialog-grid, 'Picture', $!aspec-pic, $!aspec-pic-subst);
   add-content( $row++, $dialog-grid, 'Wait before log window closes', $!aspec-wait);
 
-  my Box $sw-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 0);
-  $sw-box.append($!aspec-log);
-  my Label $strut2 .= new-label;
-  $sw-box.append($strut2);
+  with my Box $sw-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 0) {
+    .append($!aspec-log);
+#    .append(make-horizontal-strut); # Push aspec-log to the left
+  }
   add-content( $row++, $dialog-grid, 'Turn logging on', $sw-box);
-  add-content( $row++, $dialog-grid, 'Wait before close', $!aspec-wait);
 
   $dialog-grid
 }
