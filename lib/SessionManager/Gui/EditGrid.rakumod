@@ -1,6 +1,7 @@
 use v6.d;
 
-use Gnome::Gtk4::Grid:api<2>;
+use Gnome::Gtk4::Box:api<2>;
+use Gnome::Gtk4::T-enums:api<2>;
 
 use SessionManager::Gui::EditVariableGrid;
 use SessionManager::Gui::EditActionGrid;
@@ -10,11 +11,11 @@ use SessionManager::Config;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::EditGrid;
-also is Gnome::Gtk4::Grid;
+also is Gnome::Gtk4::Box;
 
 #-------------------------------------------------------------------------------
 submethod new ( |c --> SessionManager::Gui::EditGrid ) {
-  self.new-grid(|c);
+  self.new-box( GTK_ORIENTATION_HORIZONTAL, 0, |c);
 }
 
 #-------------------------------------------------------------------------------
@@ -24,16 +25,15 @@ submethod BUILD ( ) {
 
   with self {
     my SessionManager::Gui::EditVariableGrid $variables .= new;
-    .attach( $variables, 0, 0, 1, 1);
+    .append($variables);
 
     my SessionManager::Gui::EditActionGrid $actions .= new;
-    .attach( $actions, 1, 0, 1, 1);
+    .append($actions);
 
+#`{{
     my SessionManager::Gui::EditSessionGrid $sessions .= new;
-    .attach( $sessions, 2, 0, 1, 1);
-
-#    .set-column-spacing(20);
-#    .set-row-spacing(20);
+    .append($sessions);
+}}
   }
 }
 
