@@ -18,8 +18,8 @@ use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListBox;
 use GnomeTools::Gtk::ListView;
 
-use Gnome::Gtk4::TextBuffer:api<2>;
 use Gnome::Gtk4::T-textiter:api<2>;
+use Gnome::Gtk4::TextBuffer:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Switch:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
@@ -323,7 +323,6 @@ method add-fields-to-content ( ) {
     my Label $strut2 .= new-label;
     $sw-box.append($strut2);
     .add-content( 'Turn logging on', $sw-box);
-    .add-content( 'Turn logging on', $!aspec-wait);
 #    .add-content( 'Environment', my Entry $aspec-env .= new-entry);
 #    .add-content( 'Variables', my Entry $aspec-vars .= new-entry);
 #    .add-content( '', my Entry $aspec- .= new-entry);
