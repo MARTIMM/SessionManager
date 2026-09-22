@@ -234,8 +234,8 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 # (sessioneditor:20240): Gtk-WARNING **: 14:24:34.559: Trying to measure
 # GtkApplicationWindow 0x3faba110 for height of 1300, but it needs at least 1362
 #    .set-size-request( -1, 500);
-# It stretches automatically because of the height of the variables
-# edit at the first column of the box
+# The listview will stretch automatically because of the height of the
+# variables edit at the first column of the box
 
     .set-setup( self, 'setup-item');
     .set-bind( self, 'bind-item');
