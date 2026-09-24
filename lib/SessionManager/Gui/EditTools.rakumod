@@ -140,7 +140,7 @@ sub get-textview-text ( TextView:D $textview --> Str ) is export {
 }
 
 #-------------------------------------------------------------------------------
-multi sub add-content (
+our $add-content1 = multi sub add-content (
   Grid $grid, Int $row, Str $label-text, *@widgets, *%options
 ) is export {
   my Label $l = make-label;
@@ -149,7 +149,7 @@ multi sub add-content (
 }
 
 #-------------------------------------------------------------------------------
-multi sub add-content (
+our $add-content2 = multi sub add-content (
   Grid $grid, Int $row, Label $l, *@widgets,
   Int :$columns = 1, Int :$rows = 1
 ) is export {
