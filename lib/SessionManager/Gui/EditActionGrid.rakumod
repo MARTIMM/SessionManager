@@ -383,20 +383,26 @@ note "$?LINE $id";
     $raw-action<sh> = $!aspec-shell.get-text;
 note "$?LINE $raw-action.raku()";
 
-    $!actions.add-action( $raw-action, :$id);
 #    my SessionManager::ActionData $ad = $actions.get-action($id);
 #    $ad.set-shell($aspec-shell.get-text);
 
 #    $!statusbar.set-status("The action '$id' is succesfully created");
 #    $!id-to-return-from-dialog = $id;
-    $!statusbar.set-status("Added action '$id'");
 
-    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
-    $!actions-view.splice( $original-pos, 0, $id);
+    my $original-pos = $!actions-view.get-selection(:get-positions)[0];
+    if $original-pos.defined {
+      $!actions.add-action( $raw-action, :$id);
+      $!statusbar.set-status("Added action '$id'");
+      $!actions-view.splice( $original-pos, 0, $id);
+    }
+
+    else {
+      $!statusbar.set-status('No selection from list, please select first');
+    }
+
   }
 }
 
-#`{{
 #-------------------------------------------------------------------------------
 method action-rename ( ) {
 #  my SessionManager::Actions $actions .= new;
@@ -418,24 +424,29 @@ method action-rename ( ) {
     #}
 
     # Get selected id, listbox is not in multi select so always one selection
-    my Str $old-id = $!actions-view.get-selection()[0];
+    my $old-id = $!actions-view.get-selection()[0];
+    if $old-id.defined {
+  #    my Array $widgets = $listbox.get-selection(:get-widgets);
+  #    my Label() $id-label = $widgets[0];
 
-#    my Array $widgets = $listbox.get-selection(:get-widgets);
-#    my Label() $id-label = $widgets[0];
+  #    # Get the id and change the actions and action data
+  #    my Str $id = $id-label.get-text;
+      $!actions.rename-action( $old-id, $new-id);
 
-#    # Get the id and change the actions and action data
-#    my Str $id = $id-label.get-text;
-    $!actions.rename-action( $old-id, $new-id);
+      # Change the use of actions in sessions
+      $!sessions.rename-group-actions( $old-id, $new-id);
 
-    # Change the use of actions in sessions
-    $!sessions.rename-group-actions( $old-id, $new-id);
+      $!statusbar.set-status('Renamed everything successfully');
+      #$id-label.set-text($new-id);
 
-    $!statusbar.set-status('Renamed everything successfully');
-    #$id-label.set-text($new-id);
+      # Change text in listbox row
+      my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
+      $!actions-view.splice( $original-pos, 1, $new-id);
+    }
 
-    # Change text in listbox row
-    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
-    $!actions-view.splice( $original-pos, 1, $new-id);
+    else {
+      $!statusbar.set-status('The action must be selected before renaming');
+    }
   }
 }
 
@@ -462,17 +473,23 @@ method action-modify ( ) {
   $raw-action<sh> = $!aspec-shell.get-text;
 
 #note "$?LINE $raw-action.gist()";
-  my SessionManager::Actions $actions .= new;
-  my Str $id = $!action-id.get-text;
-  $actions.modify-action( $id, $raw-action);
-
-  $!statusbar.set-status("The action '$id' is succesfully modified");
 
 #BUG Type check failed in assignment to $original-pos; expected UInt but got Any
 # happens when doing change twice
-  my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
-  $!actions-view.splice( $original-pos, 1, $id);
-note "\n$original-pos, $id\n$raw-action.gist()";
+  my $original-pos = $!actions-view.get-selection(:get-positions)[0];
+  if $original-pos.defined {
+    my SessionManager::Actions $actions .= new;
+    my Str $id = $!action-id.get-text;
+    $!actions-view.splice( $original-pos, 1, $id);
+  note "\n$original-pos, $id\n$raw-action.gist()";
+    $actions.modify-action( $id, $raw-action);
+
+    $!statusbar.set-status("The action '$id' is succesfully modified");
+  }
+
+  else {
+    
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -483,13 +500,20 @@ method action-delete ( ) {
   }
 
   else {
-    $!statusbar.set-status("Deleting '$id' successful");
+    my $original-pos = $!actions-view.get-selection(:get-positions)[0];
+    if $original-pos.defined {
+      $!actions-view.splice( $original-pos, 1);
+      $!actions.delete-action($id);
+      $!statusbar.set-status("Deleting '$id' successful");
+    }
 
-    my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
-    $!actions-view.splice( $original-pos, 1);
-    $!actions.delete-action($id);
+    else {
+      $!statusbar.set-status("Can only delete when an action is selected");
+    }
   }
 }
+
+#`{{
 }}
 
 #-------------------------------------------------------------------------------
