@@ -125,11 +125,25 @@ method !dialog-grid ( --> Grid ) {
   .attach( $name-label, 0, 0, 1, 1);
   .attach( $!entry-variable-name, 1, 0, 1, 1);
 }}
-  my &addc = &add-content.assuming($dialog-grid);
 
-  my Label $l = make-label( :width(16), :label-text('Variable name'));
+  #NOTE Issue #6711: 'Cannot use .assume on multis';
+  # Proper way to do it with multis;
+  #   # in class SessionManager::Gui::EditTools
+  #   our $ln = multi sub ln($a,$b,$c) {
+  #               dd $a,$b,$c
+  #             }; # save candidate in $ln
+  #   my &ln1 = $ln.assuming("ab",*);
+  #   ln1("foo","bar");
+  # -->    "ab"
+  #        "foo"
+  #        "bar"
+  my &addc = $SessionManager::Gui::EditTools::add-content1.assuming(
+    $dialog-grid, *
+  );
+
+#  my Label $l = make-label( :width(16), :label-text('Variable name'));
   $!entry-variable-name = make-entry;
-  addc( $row++, $l, $!entry-variable-name);
+  addc( $row++, 'Variable name', $!entry-variable-name);
 
 #`{{
   with my Label $spec-label .= new-label {
@@ -138,9 +152,9 @@ method !dialog-grid ( --> Grid ) {
   .attach( $spec-label, 0, 1, 1, 1);
   .attach( $!entry-variable-spec, 1, 1, 1, 1);
 }}
-  $l = make-label( :width(16), :label-text('Specification'));
+#  $l = make-label( :width(16), :label-text('Specification'));
   $!entry-variable-spec = make-entry;
-  addc( $row++, $l, $!entry-variable-spec);
+  addc( $row++, 'Specification', $!entry-variable-spec);
 
   $dialog-grid
 }
@@ -163,7 +177,7 @@ method variable-add ( ) {
     my Str $spec = $!entry-variable-spec.get-text;
     $v.add-variable( $variable, $spec);
     $!statusbar.set-status("Variable '$variable' added with '$spec'");
-    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    my UInt $original-pos = $!variables-view.get-selection(:get-positions)[0];
     $!variables-view.splice( $original-pos, 0, $variable);
   }
 }
@@ -194,7 +208,7 @@ method variable-rename ( ) {
     $actions.subst-vars( $original-name, $variable);
 
     # Change the row in the listview
-    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    my UInt $original-pos = $!variables-view.get-selection(:get-positions)[0];
     $!variables-view.splice( $original-pos, 1, $variable);
     $!statusbar.set-status("Renamed successfully everything");
   }
@@ -216,7 +230,7 @@ method variable-modify ( ) {
 
   else {
     # Change the row in the listview
-    my $original-pos = $!variables-view.get-selection(:rows)[0];
+    my $original-pos = $!variables-view.get-selection(:get-positions)[0];
     if $original-pos.defined {
       $!variables-view.splice( $original-pos, 1, $variable);
 
@@ -252,7 +266,7 @@ method variable-delete ( ) {
   else {
     $v.remove-variable($variable);
     $!statusbar.set-status("Variable '$variable' removed");
-    my UInt $original-pos = $!variables-view.get-selection(:rows)[0];
+    my UInt $original-pos = $!variables-view.get-selection(:get-positions)[0];
     $!variables-view.splice( $original-pos, 1);
   }
 }
