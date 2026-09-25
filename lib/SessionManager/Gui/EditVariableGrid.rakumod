@@ -114,6 +114,23 @@ method !list-view ( --> ListView ) {
 }
 
 #-------------------------------------------------------------------------------
+method !refresh-list-view ( ListView $variables-view ) {
+  with $variables-view {
+    my UInt $n = .get-n-items;
+    .splice( 0, $n);
+
+    my SessionManager::Variables $v .= new;
+    .append($v.get-variables.sort: {$^a.lc leg $^b.lc});
+
+    # Select the first one
+    .set-selection(0);
+    .set-size-request( EDIT_WIDTH, EDIT_HEIGHT);
+  }
+
+  $variables-view
+}
+
+#-------------------------------------------------------------------------------
 method !dialog-grid ( --> Grid ) {
   my Grid $dialog-grid .= new-grid;
   my Int $row = 0;
@@ -174,11 +191,12 @@ method variable-add ( ) {
   }
 
   else {
+#    my $original-pos = $!variables-view.get-selection(:get-positions)[0];
     my Str $spec = $!entry-variable-spec.get-text;
     $v.add-variable( $variable, $spec);
     $!statusbar.set-status("Variable '$variable' added with '$spec'");
-    my UInt $original-pos = $!variables-view.get-selection(:get-positions)[0];
-    $!variables-view.splice( $original-pos, 0, $variable);
+    self!refresh-list-view($!variables-view);
+#    $!variables-view.splice( $original-pos, 0, $variable);
   }
 }
 
