@@ -463,7 +463,7 @@ method action-modify ( ) {
   $tb.get-bounds( $t0, $te);
   $raw-action<c> = $tb.get-text( $t0, $te, False);
 }}
-  $raw-action<c> = self.get-text($!aspec-cmd);
+  $raw-action<c> = get-textview-text($!aspec-cmd);
 
   $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
   $raw-action<i> = $config.set-picture($!aspec-pic.get-text);
