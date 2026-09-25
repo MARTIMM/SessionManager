@@ -287,12 +287,17 @@ method !dialog-grid ( --> Grid ) {
   my Grid $dialog-grid .= new-grid;
   my &addc = &add-content.assuming($dialog-grid);
   addc( $row++, 'Action id', $!action-id);
-  addc( $row++, 'Action Title', $!aspec-title, 2, $!aspec-title-subst);
-  addc( $row++, 'Command to run', $!aspec-cmd, $!aspec-cmd-subst);
+  addc( $row++, 'Action Title', $!aspec-title);
+  addc( $row++, '', $!aspec-title-subst);
+  addc( $row++, 'Command to run', $!aspec-cmd);
+  addc( $row++, '', $!aspec-cmd-subst);
   addc( $row++, 'Shell to work in', $!aspec-shell);
-  addc( $row++, 'Path to start in', $!aspec-path, $!aspec-path-subst);
-  addc( $row++, 'Icon', $!aspec-icon, $!aspec-icon-subst);
-  addc( $row++, 'Picture', $!aspec-pic, $!aspec-pic-subst);
+  addc( $row++, 'Path to start in', $!aspec-path);
+  addc( $row++, '', $!aspec-path-subst);
+  addc( $row++, 'Icon', $!aspec-icon);
+  addc( $row++, '', $!aspec-icon-subst);
+  addc( $row++, 'Picture', $!aspec-pic);
+  addc( $row++, '', $!aspec-pic-subst);
   addc( $row++, 'Wait before log window closes', $!aspec-wait);
 #`{{  add-content( $row++, $dialog-grid, 'Action id', $!action-id);
   add-content( $row++, $dialog-grid, 'Action Title', $!aspec-title, 2, $!aspec-title-subst);
@@ -445,7 +450,7 @@ method action-rename ( ) {
     }
 
     else {
-      $!statusbar.set-status('The action must be selected before renaming');
+      $!statusbar.set-status('An action must be selected before renaming');
     }
   }
 }
@@ -481,14 +486,14 @@ method action-modify ( ) {
     my SessionManager::Actions $actions .= new;
     my Str $id = $!action-id.get-text;
     $!actions-view.splice( $original-pos, 1, $id);
-  note "\n$original-pos, $id\n$raw-action.gist()";
+#note "\n$?LINE $original-pos, $id\n$raw-action.gist()";
     $actions.modify-action( $id, $raw-action);
 
     $!statusbar.set-status("The action '$id' is succesfully modified");
   }
 
   else {
-    
+    $!statusbar.set-status('An action must be selected before modifying');
   }
 }
 
@@ -508,7 +513,7 @@ method action-delete ( ) {
     }
 
     else {
-      $!statusbar.set-status("Can only delete when an action is selected");
+      $!statusbar.set-status('An action must be selected before deleting');
     }
   }
 }
