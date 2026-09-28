@@ -8,6 +8,7 @@ use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::T-textiter:api<2>;
 use Gnome::Gtk4::TextView:api<2>;
 use Gnome::Gtk4::TextBuffer:api<2>;
+use Gnome::Gtk4::Widget:api<2>;
 
 use Gnome::Pango::T-layout:api<2>;
 
@@ -20,6 +21,7 @@ constant Image = Gnome::Gtk4::Image;
 constant Grid = Gnome::Gtk4::Grid;
 constant TextView = Gnome::Gtk4::TextView;
 constant TextBuffer = Gnome::Gtk4::TextBuffer;
+constant Widget = Gnome::Gtk4::Widget;
 
 constant EDIT_WIDTH_CHARS = 80;
 
@@ -150,12 +152,12 @@ our $add-content1 = multi sub add-content (
 
 #-------------------------------------------------------------------------------
 our $add-content2 = multi sub add-content (
-  Grid $grid, Int $row, Label $l, *@widgets,
+  Grid $grid, Int $row, Widget $w, *@widgets,
   Int :$columns = 1, Int :$rows = 1
 ) is export {
 
   my Int $column = 0;
-  $grid.attach( $l, $column++, $row, 1, 1);
+  $grid.attach( $w, $column++, $row, 1, 1);
 
   my Int $c = $columns;
   for @widgets -> $widget {
