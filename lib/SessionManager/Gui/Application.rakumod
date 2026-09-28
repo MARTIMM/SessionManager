@@ -188,16 +188,17 @@ method menu ( --> GnomeTools::Gio::Menu ) {
   my GnomeTools::Gio::Menu $bar .= new;
   my GnomeTools::Gio::Menu $parent-menu = $bar;
   with my GnomeTools::Gio::Menu $m1 .= new( :$parent-menu, :name<File>) {
-    $parent-menu = $m1;
-    with my GnomeTools::Gio::Menu $sc1 .= new( :$parent-menu, :section(Str)) {
-      .item( 'Modify Configuration', $config-edit, 'modify-configuration');
-      .item( 'Restart', self, 'file-restart');
-    }
-    with my GnomeTools::Gio::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
+#    $parent-menu = $m1;
+#    with my GnomeTools::Gio::Menu $sc1 .= new( :$parent-menu, :section(Str)) {
+#      .item( 'Modify Configuration', $config-edit, 'modify-configuration');
+#      .item( 'Restart', self, 'file-restart');
+#    }
+#    with my GnomeTools::Gio::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
       .item( 'Quit', self, 'file-quit');
-    }
+#    }
   }
 
+#`{{
   $parent-menu = $bar;
   with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Sessions>) {
     .item( 'Add', $session-edit, 'add');
@@ -226,6 +227,7 @@ method menu ( --> GnomeTools::Gio::Menu ) {
     .item( 'Modify', $variable-edit, 'modify');
     .item( 'Delete', $variable-edit, 'delete');
   }
+}}
 
   $bar
 }
