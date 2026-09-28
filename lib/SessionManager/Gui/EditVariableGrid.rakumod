@@ -70,26 +70,18 @@ submethod BUILD ( ) {
   my SessionManager::Config $config .= instance;
   $config.theme.add-css-class( self, 'edit-grid');
 
-  with self {
-    my Int $row = 0;
-    .attach( make-title('Variables'), 0, $row++, 1, 1);
+  my &addc = $SessionManager::Gui::EditTools::add-content2.assuming(
+    self, *
+  );
 
-    .attach( make-vertical-space, 0, $row++, 1, 1);
-
-#    my Grid $v = self!dialog-grid;
-    .attach( self!dialog-grid, 0, $row++, 1, 1);
-
-    $!statusbar .= new;
-    .attach( $!statusbar, 0, $row++, 1, 1);
-
-#    my Box $button-row = self!button-row;
-    .attach( self!button-row, 0, $row++, 1, 1);
-
-    .attach( make-vertical-space, 0, $row++, 1, 1);
-
-    $!variables-view = self!list-view;
-    .attach( $!variables-view,  0, $row++, 1, 1);
-  }
+  my Int $row = 0;
+  addc( $row++, make-title('Variables'));
+  addc( $row++, make-vertical-space);
+  addc( $row++, self!dialog-grid);
+  addc( $row++, $!statusbar .= new);
+  addc( $row++, self!button-row);
+  addc( $row++, make-vertical-space);
+  addc( $row++, $!variables-view = self!list-view);
 }
 
 #-------------------------------------------------------------------------------
