@@ -134,15 +134,18 @@ variable name: value
     * [ ] Visibility in overlay.
     * [ ] Change css class of action icon in session group.
 
+09 2026 - Overlay icons are removed
+
 ##### Action data
 
 ```plantuml
 @startyaml
 action id: 
   "c": command
-  "i": --legacy picture
+  '"i": --legacy picture
+  "i": picture
   "l": logging, boolean
-  "o": overlay picture
+  '"o": overlay picture
   "p": work path
   "sh": shell command
   "t": action title
@@ -178,16 +181,19 @@ At this point (2026/09/05) I think that several layers in the form of groups can
     * [ ] Change title of application window
     * [ ] Change css class of session icon in toolbar
 
+09 2026 - Overlay icons are removed
+09 2026 - groups of actions are removed. Only one layer of actions. Other actions can be placed in other sessions. Makes editing easier.
+
 ##### Session data
 ```plantuml
 @startyaml
 session id: 
   actions: 
-    - action id
-    - second id
+    - 1st action id
+    - 2nd action id
     - …
   icon: session picture
-  over: session overlay picture
+  'over: session overlay picture
   title: session title
 @endyaml
 ```
@@ -225,7 +231,8 @@ sessions:
   root directory:
     - session-manager.yaml
     - Pictures:
-      - overlay or picture
+      '- overlay or picture
+      - picture
       - ...
     - Config:
       - variables.yaml
