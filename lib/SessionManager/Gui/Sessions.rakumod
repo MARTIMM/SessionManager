@@ -142,7 +142,7 @@ method do-add-session ( ) {
     $!sessions.set-session-overlay( $sid, $!session-overlay.get-text);
 
     # Always add a group with an actions key and an empty list of actions
-    $!sessions.set-group-actions( $sid, 'group1');
+    $!sessions.set-actions($sid);
 
     # Add to the dropdown list and select
     $!sessions-dd.append($sid);
@@ -285,7 +285,7 @@ method do-delete-session ( ) {
 
   my Str $sid = $!sessions-dd.get-text;
   for $!sessions.get-group-ids($sid) -> $gid {
-    $actions-found = ?$!sessions.get-group-actions( $sid, $gid);
+    $actions-found = ?$!sessions.get-actions( $sid);
     last if $actions-found;
   }
 
@@ -305,6 +305,7 @@ note "$?LINE $original-pos";
   }
 }
 
+#`{{
 #--[menu entry groups]-------------------------------------------------------
 method groups ( N-Object $parameter ) {
   with $!dialog .= new(
@@ -374,7 +375,6 @@ method do-change-group ( ) {
   $!dialog.set-status("$group is succesfully changed");
 }
 
-#`{{
 #-------------------------------------------------------------------------------
 method delete-group ( N-Object $parameter, ) {
   note "Delete group";
@@ -511,8 +511,8 @@ method reset-list ( Entry :$search ) {
 # selected entries of the total actions list
 method set-actions ( ) {
   my Str $c-session = $!sessions-dd.get-text;
-  my Str $c-group = $!groups-dd.get-text;
-#  $!sessions.set-group-actions( $c-session, $c-group, $listbox.get-list);
+#  my Str $c-group = $!groups-dd.get-text;
+#  $!sessions.set-actions( $c-session, $listbox.get-list);
 
   # Remove dialog
   $!dialog.destroy-dialog;
@@ -521,9 +521,9 @@ method set-actions ( ) {
 #-------------------------------------------------------------------------------
 method add-actions ( ) {
   my Str $sessionid = $!sessions-dd.get-text;
-  my Str $groupname = $!groups-dd.get-text // '';
+#  my Str $groupname = $!groups-dd.get-text // '';
   my @selections = $!actions-view.get-selection;
-  $!sessions.add-actions( $sessionid, $groupname, |@selections);
+  $!sessions.add-actions( $sessionid, |@selections);
 
   for $!actions-view.get-selection(:rows) -> $pos {
     $!actions-view.splice( $pos, 1, @selections.shift);
@@ -533,38 +533,14 @@ method add-actions ( ) {
 #-------------------------------------------------------------------------------
 method remove-actions ( ) {
   my Str $sessionid = $!sessions-dd.get-text;
-  my Str $groupname = $!groups-dd.get-text // '';
+#  my Str $groupname = $!groups-dd.get-text // '';
   my @selections = $!actions-view.get-selection;
-  $!sessions.remove-actions( $sessionid, $groupname, |@selections);
+  $!sessions.remove-actions( $sessionid, |@selections);
 
   for $!actions-view.get-selection(:rows) -> $pos {
     $!actions-view.splice( $pos, 1, @selections.shift);
   }
 }
-
-#`{{
-#-------------------------------------------------------------------------------
-method modify-action ( ) {
-  my SessionManager::Gui::Actions $gui-actions .= instance;
-  my Str $action-id = $!actions-view.get-selection()[0] // '';
-  if ?$action-id {
-    $gui-actions.modify(:target-id($action-id));
-  }
-
-  else {
-    $!dialog.set-status('Please select an action id from the list');
-  }
-
-#`{{
-  if ?$action-id {
-    my Str $c-session = $sessions-dd.get-text;
-    my Str $c-group = $groups-dd.get-text;
-    $!sessions.set-group-actions( $c-session, $c-group, $action-id);
-    $listbox.reset-list($!sessions.get-group-actions( $c-session, $c-group));
-  }
-}}
-}
-}}
 
 #-------------------------------------------------------------------------------
 method set-grouplist ( ) {
@@ -598,32 +574,6 @@ method set-grouptitle ( ) {
       $!sessions-dd.get-text, $!groups-dd.get-text
     )
   );
-
-#  my Str $sessionid = $!sessions-dd.get-text;
-#  my Str $groupname = $!groups-dd.get-text // '';
-#  $!group-title.set-text($!sessions.get-group-title( $sessionid, $groupname));
-
-#  my Str $group-name = $!groups-dd.get-text;
-#  $!group-title.set-text($!sessions.get-group-title( $sessionid, $group-name));
-#`{{
-  # Select the items found in this group
-  if ?$!actions-view {
-    my @group-actions;
-    for @($!sessions.get-group-actions( $sessionid, $groupname)) -> $ga {
-      @group-actions.push: $!actions-view.find($ga);
-    }
-    $!actions-view.set-selection(@group-actions);
-  }
-}}
-
-#`{{
-  $all-actions-list.reset-list(
-    $!sessions.get-group-actions( $session-id, $group-name)
-  ) if ?$all-actions-list;
-  $all-actions-list.append(
-    $!sessions.get-group-actions( $session-id, $group-name)
-  ) if ?$all-actions-list;
-}}
 }
 
 #-------------------------------------------------------------------------------

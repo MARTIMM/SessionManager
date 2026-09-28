@@ -437,7 +437,7 @@ method action-rename ( ) {
       $!actions.rename-action( $old-id, $new-id);
 
       # Change the use of actions in sessions
-      $!sessions.rename-group-actions( $old-id, $new-id);
+      $!sessions.rename-actions( $old-id, $new-id);
 
       $!statusbar.set-status('Renamed everything successfully');
       #$id-label.set-text($new-id);

@@ -333,7 +333,7 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   );
 
   # Select the items found in this group
-#  my @group-actions = $!sessions.get-group-actions( $sessionid, $groupname);
+#  my @group-actions = $!sessions.get-actions($sessionid);
 #  @group-actions.push: $!actions-view.find($ga);
 #  $!actions-view.set-selection(@group-actions);
 
