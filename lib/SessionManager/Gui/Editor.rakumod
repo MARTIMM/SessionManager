@@ -158,8 +158,27 @@ method menu ( --> GnomeTools::Gio::Menu ) {
   my GnomeTools::Gio::Menu $parent-menu = $bar;
   with my GnomeTools::Gio::Menu $m1 .= new( :$parent-menu, :name<File>) {
     $parent-menu = $m1;
-    with my GnomeTools::Gio::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
+    with my GnomeTools::Gio::Menu $sc1 .= new( :$parent-menu, :section(Str)) {
       .item( 'Quit', self, 'file-quit');
+    }
+  }
+
+  $parent-menu = $bar;
+  with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Test>) {
+    $parent-menu = $m2;
+    with my GnomeTools::Gio::Menu $sc2 .= new( :$parent-menu, :section(Str)) {
+      .item( 'Start Session', self, 'test-session');
+    }
+  }
+
+  $parent-menu = $bar;
+  with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Generate>) {
+    $parent-menu = $m3;
+    with my GnomeTools::Gio::Menu $sc3 .= new( :$parent-menu, :section(Str)) {
+      .item( 'Session Config', self, 'store-session-config');
+    }
+    with my GnomeTools::Gio::Menu $sc3 .= new( :$parent-menu, :section(Str)) {
+      .item( 'Desktop Config', self, 'store-desktop-config');
     }
   }
 
