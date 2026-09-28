@@ -10,7 +10,7 @@ use SessionManager::Config;
 
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
-use GnomeTools::Gtk::ListBox;
+#use GnomeTools::Gtk::ListBox;
 use GnomeTools::Gtk::ListView;
 
 use Gnome::Gtk4::Entry:api<2>;
@@ -36,7 +36,7 @@ has SessionManager::Sessions $!sessions;
 
 constant Dialog = GnomeTools::Gtk::Dialog;
 constant DropDown = GnomeTools::Gtk::DropDown;
-constant ListBox = GnomeTools::Gtk::ListBox;
+#constant ListBox = GnomeTools::Gtk::ListBox;
 constant ListView = GnomeTools::Gtk::ListView;
 
 #constant Actions = SessionManager::Gui::Actions;
