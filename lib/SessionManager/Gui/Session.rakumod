@@ -75,8 +75,9 @@ method session-button ( --> Widget ) {
   my Widget $widget;
   my SessionManager::Config $config .= instance;
 
-  if $*legacy {
-    $widget = self.legacy-button('session-actions');
+#  if $*legacy {
+    $widget = self.legacy-button( 'session-actions', :session-buttons);
+#`{{
   }
 
   else {
@@ -88,6 +89,7 @@ method session-button ( --> Widget ) {
 
     $widget = $button;
   }
+}}
 
   $widget
 }
@@ -97,11 +99,12 @@ method session-button ( --> Widget ) {
 method session-actions ( ) {
   # Cleanup previous action boxes, start at the deepest level
   my SessionManager::Config $config .= instance;
-  for 10...1 -> $x {
-    if $*legacy {
-      if $!session-manager-box.get-child-at( 0, $x) {
-        $!session-manager-box.remove-row($x);
+#  for 10...1 -> $x {
+#    if $*legacy {
+      if $!session-manager-box.get-child-at( 0, 1) {
+        $!session-manager-box.remove-row(1);
       }
+#`{{
     }
 
     else {
@@ -109,24 +112,23 @@ method session-actions ( ) {
         $!session-manager-box.remove-column($x);
       }
     }
-  }
+}}
+#  }
 
   # Maximum of 10 levels. Originally started from 0, now 1.
-  for 1..10 -> $level {
-    last unless $!manage-session{"group$level"}:exists;
+#  for 1..10 -> $level {
+#    last unless $!manage-session{"group$level"}:exists;
 
-    my GtkOrientation $orientation =
-       $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
-    my Box $session-buttons .= new-box( $orientation, 20);
-
-    for @($!manage-session{"group$level"}<actions>) -> $id {
+#    my GtkOrientation $orientation =
+#       $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
+    my Box $session-buttons .= new-box( GTK_ORIENTATION_HORIZONTAL, 20);
+    for @($!manage-session<actions>) -> $id {
       my SessionManager::Command $command =
         SessionManager::RunActionCommand.new(:$id);
       my Widget $widget;
-      if $*legacy {
-        $widget = self.legacy-button(
-          'setup-run', :$id, :$command, :level($level - 1)
-        );
+#      if $*legacy {
+        $widget = self.legacy-button( 'setup-run', :$id, :$command);
+#`{{
       }
 
       else {
@@ -137,19 +139,21 @@ method session-actions ( ) {
         $widget.register-signal( self, 'setup-run', 'clicked', :$id, :$command);
         $!theme.add-css-class( $widget, 'session-action-button');
       }
-
+}}
       $session-buttons.append($widget);
     }
 
     # Add session actions group
-    if $*legacy {
-      $!session-manager-box.attach( $session-buttons, 0, $level, 1, 1);
+#    if $*legacy {
+      $!session-manager-box.attach( $session-buttons, 0, 1, 1, 1);
+#`{{
     }
 
     else {
       $!session-manager-box.attach( $session-buttons, $level, 0, 1, 1);
     }
-  }
+}}
+#  }
 }
 
 #-------------------------------------------------------------------------------
@@ -272,8 +276,8 @@ method set-box-widget ( Button $button, Str $label-text, Str $image-path ) {
 
 #-------------------------------------------------------------------------------
 method legacy-button (
-  Str $method, Int :$level = -1,
-  SessionManager::Command :$command, *%options --> Overlay
+  Str $method , Bool :$session-buttons = False, #, Int :$level = -1,
+  SessionManager::Command :$command, *%options --> Button
 ) {
   my SessionManager::Config $config .= instance;
   my SessionManager::Variables $variables .= new;
@@ -282,15 +286,16 @@ method legacy-button (
   my Str $picture-file;
   my Str $overlay-icon;
   my Str $tooltip-text;
-  if $level == -1 {
+
+  if $session-buttons {
     $picture-file = $variables.substitute-vars($!manage-session<icon> // '');
-    $overlay-icon = $variables.substitute-vars($!manage-session<over> // '');
+#    $overlay-icon = $variables.substitute-vars($!manage-session<over> // '');
     $tooltip-text = $variables.substitute-vars($!manage-session<title> // '');
   }
 
   else {
     $picture-file = $variables.substitute-vars($command.picture // '');
-    $overlay-icon = $variables.substitute-vars($command.overlay-picture // '');
+#    $overlay-icon = $variables.substitute-vars($command.overlay-picture // '');
     $tooltip-text = $variables.substitute-vars($command.tooltip // '');
   }
 
@@ -317,6 +322,7 @@ method legacy-button (
     .register-signal( self, $method, 'clicked', :$command, |%options);
   }
 
+#`{{
   my Overlay $overlay .= new-overlay;
   $overlay.set-child($button);
   if ?$overlay-icon and $overlay-icon.IO ~~ :r {
@@ -332,6 +338,8 @@ method legacy-button (
   }
 
   $overlay
+}}
+  $button
 }
 
 

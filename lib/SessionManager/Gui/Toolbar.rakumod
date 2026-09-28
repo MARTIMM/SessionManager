@@ -62,19 +62,18 @@ submethod new ( |c --> SessionManager::Gui::Toolbar ) {
 #-------------------------------------------------------------------------------
 submethod BUILD ( Grid :$session-manager-box ) {
   my SessionManager::Config $config .= instance;
-  my GtkOrientation $orientation =
-      $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
+#  my GtkOrientation $orientation =
+#      $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
 
-  $!box .= new-box( $orientation, 10);
+  $!box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
   self.set-child($!box);
 
   with $!box {
-    .set-orientation($orientation);
     $!theme.add-css-class( $!box, 'session-toolbar');
 #    .set-spacing(10);
 
     my ( $iw, $ih) = $config.get-icon-size;
-    if $*legacy {
+#    if $*legacy {
       .set-hexpand(True);
       self.set-hexpand(True);
 #      self.set-halign(GTK_ALIGN_FILL);
@@ -85,6 +84,7 @@ submethod BUILD ( Grid :$session-manager-box ) {
       # rest (border, margin, etc) is set to 0px;
       self.set-min-content-height($ih + 2 * .get-spacing + 15);
       self.set-size-request( $ww, $wh);
+#`{{
     }
 
     else {
@@ -95,6 +95,7 @@ submethod BUILD ( Grid :$session-manager-box ) {
       self.set-min-content-width($iw + 2 * .get-spacing + 15);
       self.set-size-request( $ww, $wh);
     }
+}}
   }
 
   my SessionManager::Sessions $sessions .= new;
