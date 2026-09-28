@@ -105,11 +105,12 @@ submethod BUILD ( ) {
 
   self.init-fields;
 
+  my &addc = $SessionManager::Gui::EditTools::add-content2.assuming(
+    self, *
+  );
+
+  my Int $row = 0;
   with self {
-    my Int $row = 0;
-    my &addc = $SessionManager::Gui::EditTools::add-content2.assuming(
-      self, *
-    );
   #  my &addc = &add-content.assuming($dialog-grid);
     addc( $row++, make-title('Actions'));
     addc( $row++, make-vertical-space);
