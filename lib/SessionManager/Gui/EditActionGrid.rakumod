@@ -73,12 +73,12 @@ has ListView $!actions-view;
 has Entry $!action-id;
 has Entry $!aspec-title;
 has Entry $!aspec-path;
-has Entry $!aspec-icon;
+#has Entry $!aspec-icon;
 has Entry $!aspec-pic;
 
 has Label $!aspec-title-subst;
 has Label $!aspec-path-subst;
-has Label $!aspec-icon-subst;
+#has Label $!aspec-icon-subst;
 has Label $!aspec-pic-subst;
 has Label $!aspec-cmd-subst;
 
@@ -103,24 +103,25 @@ submethod BUILD ( ) {
   $!actions .= new;
   $!variables .= new;
 
+  self.init-fields;
+
   with self {
-    self.init-fields;
-
     my Int $row = 0;
-    .attach( make-title('Actions'), 0, $row++, 1, 1);
-    .attach( make-vertical-space, 0, $row++, 1, 1);
-
-    .attach( self!dialog-grid, 0, $row++, 1, 1);
+    my &addc = $SessionManager::Gui::EditTools::add-content2.assuming(
+      self, *
+    );
+  #  my &addc = &add-content.assuming($dialog-grid);
+    addc( $row++, make-title('Actions'));
+    addc( $row++, make-vertical-space);
+    addc( $row++, self!dialog-grid);
 
     $!statusbar .= new;
-    .attach( $!statusbar, 0, $row++, 1, 1);
+    addc( $row++, $!statusbar);
 
 #    my Box $button-row = self!button-row;
-    .attach( self!button-row, 0, $row++, 1, 1);
-    .attach( make-vertical-space, 0, $row++, 1, 1);
-
-
-    .attach( $!actions-view, 0, $row++, 1, 1);
+    addc( $row++, self!button-row);
+    addc( $row++, make-vertical-space);
+    addc( $row++, $!actions-view);
 
     my Entry $search = make-entry;
 #    $search.set-size-request( 250, -1);
@@ -133,13 +134,13 @@ submethod BUILD ( ) {
       .register-signal( self, 'reset-list', 'clicked', :$search);
     }
 
-    .attach( make-vertical-space, 0, $row++, 1, 1);
+    addc( $row++, make-vertical-space);
 
     my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
     $bt-box.append($search);
     $bt-box.append($search-button);
     $bt-box.append($reset-button);
-    .attach( $bt-box, 0, $row++, 1, 1);
+    addc( $row++, $bt-box);
 
 #`{{
 
@@ -168,13 +169,14 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
   }
 
   $!aspec-title-subst = make-label;
-
+#`{{
   with $!aspec-icon .= new-entry {
     .set-placeholder-text('optional small picture of application');
     .set-sensitive(!$id-only);
   }
 
   $!aspec-icon-subst = make-label;
+}}
 
   with $!aspec-pic .= new-entry {
     .set-placeholder-text('optional picture of application');
@@ -285,7 +287,10 @@ method !dialog-grid ( --> Grid ) {
 
   my Int $row = 0;
   my Grid $dialog-grid .= new-grid;
-  my &addc = &add-content.assuming($dialog-grid);
+  my &addc = $SessionManager::Gui::EditTools::add-content1.assuming(
+    $dialog-grid, *
+  );
+#  my &addc = &add-content.assuming($dialog-grid);
   addc( $row++, 'Action id', $!action-id);
   addc( $row++, 'Action Title', $!aspec-title);
   addc( $row++, '', $!aspec-title-subst);
@@ -294,8 +299,8 @@ method !dialog-grid ( --> Grid ) {
   addc( $row++, 'Shell to work in', $!aspec-shell);
   addc( $row++, 'Path to start in', $!aspec-path);
   addc( $row++, '', $!aspec-path-subst);
-  addc( $row++, 'Icon', $!aspec-icon);
-  addc( $row++, '', $!aspec-icon-subst);
+#  addc( $row++, 'Icon', $!aspec-icon);
+#  addc( $row++, '', $!aspec-icon-subst);
   addc( $row++, 'Picture', $!aspec-pic);
   addc( $row++, '', $!aspec-pic-subst);
   addc( $row++, 'Wait before log window closes', $!aspec-wait);
@@ -380,7 +385,7 @@ note "$?LINE $id";
     $raw-action<c> = $tb.get-text( $t0, $te, False);
 }}
     $raw-action<c> = get-textview-text($!aspec-cmd);
-    $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
+#    $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
     $raw-action<i> = $config.set-picture($!aspec-pic.get-text);
     $raw-action<l> = $!aspec-log.get-state;
     $raw-action<w> = $!aspec-wait.get-text.Int;
@@ -470,7 +475,7 @@ method action-modify ( ) {
 }}
   $raw-action<c> = get-textview-text($!aspec-cmd);
 
-  $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
+#  $raw-action<o> = $config.set-picture($!aspec-icon.get-text);
   $raw-action<i> = $config.set-picture($!aspec-pic.get-text);
   $raw-action<l> = $!aspec-log.get-state;
   $raw-action<w> = $!aspec-wait.get-text.Int;
@@ -578,8 +583,8 @@ method set-input-fields ( UInt $pos, @selections,
   with $!aspec-log { .set-state($action-object<l>.Bool); }
 
   $t = $action-object<o> // '';
-  $!aspec-icon.set-text($t);
-  $!aspec-icon-subst.set-text($!variables.substitute-vars($t));
+#  $!aspec-icon.set-text($t);
+#  $!aspec-icon-subst.set-text($!variables.substitute-vars($t));
 
   $t = $action-object<i> // '';
   $!aspec-pic.set-text($t);
