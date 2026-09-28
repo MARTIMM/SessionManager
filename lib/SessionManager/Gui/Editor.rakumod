@@ -161,12 +161,15 @@ method menu ( --> GnomeTools::Gio::Menu ) {
   }
 
   with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Test>) {
-    .item( 'Start Session', self, 'test-session');
+    .item( 'Test Single Session', self, 'test-single-session');
+    .item( 'Test Session Group', self, 'test-session-group');
+    .item( 'Test Desktop Session', self, 'test-desktop-session');
   }
 
-  with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Generate>) {
-    .item( 'Session Config', self, 'store-session-config');
-    .item( 'Desktop Config', self, 'store-desktop-config');
+  with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Save>) {
+    .item( 'Single Session Config', self, 'save-single-session-config');
+    .item( 'Session Config', self, 'save-session-config');
+    .item( 'Desktop Config', self, 'save-desktop-config');
   }
 
   $bar
