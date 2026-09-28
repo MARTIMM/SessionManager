@@ -327,9 +327,8 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   set-text-at( 2, 1, $action-object<t>//'', $grid);
 
   my Str $sessionid = $!sessions-dd.get-text;
-  my Str $groupname = $!groups-dd.get-text // '';
   my Bool $name-inuse = $!sessions.is-action-in-use-in-session(
-    $sessionid, $groupname, $name
+    $sessionid, $name
   );
 
   # Select the items found in this group
