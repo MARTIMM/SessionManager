@@ -34,8 +34,7 @@ constant Grid = Gnome::Gtk4::Grid;
 #constant $*app-id is export = 'io.github.martimm.session-manager';
 
 constant LocalOptions = [<version help|h>];
-constant RemoteOptions = [ |<verbose|v legacy session|s=s>
-];
+constant RemoteOptions = [ |<verbose|v legacy session|s=s>];
 
 has GnomeTools::Gtk::Application $!application;
 has Int $.exit-code = 0;
