@@ -278,12 +278,12 @@ method teardown-item ( Grid() $grid ) {
 #-------------------------------------------------------------------------------
 method !dialog-grid ( --> Grid ) {
 
-  my Int $row = 0;
   my Grid $dialog-grid .= new-grid;
   my &addc = $SessionManager::Gui::EditTools::add-content1.assuming(
     $dialog-grid, *
   );
-#  my &addc = &add-content.assuming($dialog-grid);
+
+  my Int $row = 0;
   addc( $row++, 'Action id', $!action-id);
   addc( $row++, 'Action Title', $!aspec-title);
   addc( $row++, '', $!aspec-title-subst);
