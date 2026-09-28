@@ -110,38 +110,31 @@ submethod BUILD ( ) {
   );
 
   my Int $row = 0;
-  with self {
-  #  my &addc = &add-content.assuming($dialog-grid);
-    addc( $row++, make-title('Actions'));
-    addc( $row++, make-vertical-space);
-    addc( $row++, self!dialog-grid);
+  addc( $row++, make-title('Actions'));
+  addc( $row++, make-vertical-space);
+  addc( $row++, self!dialog-grid);
+  addc( $row++, $!statusbar .= new);
+  addc( $row++, self!button-row);
+  addc( $row++, make-vertical-space);
+  addc( $row++, $!actions-view);
+  addc( $row++, make-vertical-space);
 
-    $!statusbar .= new;
-    addc( $row++, $!statusbar);
-
-#    my Box $button-row = self!button-row;
-    addc( $row++, self!button-row);
-    addc( $row++, make-vertical-space);
-    addc( $row++, $!actions-view);
-
-    my Entry $search = make-entry;
+  my Entry $search = make-entry;
 #    $search.set-size-request( 250, -1);
-    with my Button $search-button .= new-button {
-      .set-label('Select from list');
-      .register-signal( self, 'select-from-list', 'clicked', :$search);
-    }
-    with my Button $reset-button .= new-button {
-      .set-label('Reset search');
-      .register-signal( self, 'reset-list', 'clicked', :$search);
-    }
+  with my Button $search-button .= new-button {
+    .set-label('Select from list');
+    .register-signal( self, 'select-from-list', 'clicked', :$search);
+  }
+  with my Button $reset-button .= new-button {
+    .set-label('Reset search');
+    .register-signal( self, 'reset-list', 'clicked', :$search);
+  }
 
-    addc( $row++, make-vertical-space);
-
-    my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
-    $bt-box.append($search);
-    $bt-box.append($search-button);
-    $bt-box.append($reset-button);
-    addc( $row++, $bt-box);
+  my Box $bt-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 10);
+  $bt-box.append($search);
+  $bt-box.append($search-button);
+  $bt-box.append($reset-button);
+  addc( $row++, $bt-box);
 
 #`{{
 
@@ -152,7 +145,6 @@ submethod BUILD ( ) {
   }}
 #    $!variables-view = self!list-view;
 #    .attach( $!variables-view,  0, $row++, 1, 1);
-  }
 }
 
 #-------------------------------------------------------------------------------
