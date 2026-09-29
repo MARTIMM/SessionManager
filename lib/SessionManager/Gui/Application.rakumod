@@ -252,6 +252,7 @@ method file-quit ( N-Object $parameter ) {
 
 #-------------------------------------------------------------------------------
 method save-config ( ) {
+#`{{
   # save changed config
   my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
@@ -259,6 +260,7 @@ method save-config ( ) {
   $actions.save;
   $variables.save;
   $sessions.save;
+}}
 }
 
 
