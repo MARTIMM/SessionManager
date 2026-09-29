@@ -286,7 +286,8 @@ method legacy-button (
   my SessionManager::Config $config .= instance;
   my SessionManager::Variables $variables .= new;
 
-  my Str $title = "Session\n$!manage-session<title>";
+note "$?LINE $!manage-session.raku()";
+  my Str $title = "Session\n" ~ $!manage-session<title> // '';
   my Str $picture-file;
   my Str $overlay-icon;
   my Str $tooltip-text;
