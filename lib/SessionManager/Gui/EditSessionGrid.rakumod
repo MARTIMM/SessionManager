@@ -166,30 +166,57 @@ method !button-row ( --> Box ) {
 
     with $button .= new-button {
       .set-label('Add');
-      .register-signal( self, 'action-add', 'clicked');
+      .register-signal( self, 'session-add', 'clicked');
     }
     .append($button);
 
     with $button .= new-button {
       .set-label('Rename');
-      .register-signal( self, 'action-rename', 'clicked');
+      .register-signal( self, 'session-rename', 'clicked');
     }
     .append($button);
 
     with $button .= new-button {
       .set-label('Modify');
-      .register-signal( self, 'action-modify', 'clicked');
+      .register-signal( self, 'session-modify', 'clicked');
     }
     .append($button);
 
     with $button .= new-button {
       .set-label('Delete');
-      .register-signal( self, 'action-delete', 'clicked');
+      .register-signal( self, 'session-delete', 'clicked');
     }
     .append($button);
   }
 
   $button-row
+}
+
+#-------------------------------------------------------------------------------
+method session-add ( ) {
+  my Str $sid = $!session-id.get-text;
+  my Str $current-sid = $!sessions-dd.get-text;
+
+  if $sid eq $current-sid {
+    $!statusbar.set-status("$sid already defined");
+  }
+
+  else {
+    # Set the title, icon and overlay of the session
+    $!sessions.set-session-title( $sid, $!session-title.get-text);
+    $!sessions.set-session-icon( $sid, $!session-icon.get-text);
+#    $!sessions.set-session-overlay( $sid, $!session-overlay.get-text);
+
+    # Always add actions key and an empty list of actions
+    $!sessions.set-actions($sid);
+
+    # Add to the dropdown list and select
+    $!sessions-dd.append($sid);
+    $!sessions-dd.select($sid);
+
+    # Success
+    $!statusbar.set-status("$sid successfully added");
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -336,7 +363,7 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
 #  @group-actions.push: $!actions-view.find($ga);
 #  $!actions-view.set-selection(@group-actions);
 
-  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------
