@@ -13,7 +13,7 @@ my Str $*app-id = 'io.github.martimm.session-manager';
 
 my Version $*manager-version = v0.8.0;
 my Bool $*verbose = False;
-my Bool $*legacy = False;
+#my Bool $*legacy = False;
 my Str $*manager = 'session-manager.yaml';
 my Str $*session-selection;
 
