@@ -113,6 +113,7 @@ method session-actions ( ) {
       }
     }
 }}
+note $?LINE, ', ', $!manage-session.raku();
 #  }
 
   # Maximum of 10 levels. Originally started from 0, now 1.
@@ -122,7 +123,9 @@ method session-actions ( ) {
 #    my GtkOrientation $orientation =
 #       $*legacy ?? GTK_ORIENTATION_HORIZONTAL !! GTK_ORIENTATION_VERTICAL;
     my Box $session-buttons .= new-box( GTK_ORIENTATION_HORIZONTAL, 20);
+note $?LINE;
     for @($!manage-session<actions>) -> $id {
+note $?LINE, ', ', $id;
       my SessionManager::Command $command =
         SessionManager::RunActionCommand.new(:$id);
       my Widget $widget;
@@ -142,6 +145,7 @@ method session-actions ( ) {
 }}
       $session-buttons.append($widget);
     }
+note $?LINE, ', ', $session-buttons.raku;
 
     # Add session actions group
 #    if $*legacy {
@@ -168,7 +172,7 @@ method setup-run ( Str:D :$id, SessionManager::Command:D :$command ) {
     my TextView $textview .= new-textview;
     $textview.set-wrap-mode(GTK_WRAP_WORD);
 
-  #note "$?LINE $*THREAD.id()";
+note "$?LINE $*THREAD.id()";
     with my ScrolledWindow $scrolled-window .= new-scrolledwindow {
       .set-child($textview);
     }
