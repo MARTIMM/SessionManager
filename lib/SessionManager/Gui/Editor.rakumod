@@ -160,16 +160,17 @@ method menu ( --> GnomeTools::Gio::Menu ) {
     .item( 'Quit', self, 'file-quit');
   }
 
-  with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Test>) {
-    .item( 'Test Single Session', self, 'test-single-session');
-    .item( 'Test Session Group', self, 'test-session-group');
-    .item( 'Test Desktop Session', self, 'test-desktop-session');
+  with my GnomeTools::Gio::Menu $m2 .= new( :$parent-menu, :name<Start>) {
+    .item( 'Start Default Session', self, 'start-default-session');
+    .item( 'Start Selected Sessions', self, 'start-selected-sessions');
+    .item( 'Start Single Session', self, 'start-single-session');
+    .item( 'Start Desktop Session', self, 'start-desktop-session');
   }
 
   with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Save>) {
     .item( 'Single Session Config', self, 'save-single-session-config');
-    .item( 'Session Config', self, 'save-session-config');
     .item( 'Desktop Config', self, 'save-desktop-config');
+#NOTE always complete save on exit and starts
   }
 
   $bar
@@ -191,4 +192,8 @@ method save-config ( ) {
   $sessions.save;
 }
 
-
+#-------------------------------------------------------------------------------
+method start-default-session ( N-Object $parameter ) {
+  self.save-config;
+  shell "bin/sessionmanager $*config-directory &";
+}
