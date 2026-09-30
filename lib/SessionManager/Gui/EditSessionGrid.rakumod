@@ -240,10 +240,36 @@ method session-rename ( ) {
 
 #-------------------------------------------------------------------------------
 method session-modify ( ) {
+  my SessionManager::Config $config .= instance;
+  my Str $sid = $!session-id.get-text;
+#  my Str $current-sid = $!sessions-dd.get-text;
+
+  # Change the title, icon and overlay of the session
+  $!sessions.set-session-title( $sid, $!session-title.get-text);
+  $!sessions.set-session-icon(
+    $sid, $config.set-picture($!session-icon.get-text)
+  );
+#  $!sessions.set-session-overlay(
+#    $sid, $config.set-picture($!session-overlay.get-text)
+#  );
+
+  # Success
+  $!statusbar.set-status("$sid successfully modified");
 }
 
 #-------------------------------------------------------------------------------
 method session-delete ( ) {
+  my Bool $actions-found = False;
+
+  my Str $sid = $!sessions-dd.get-text;
+
+  $!sessions.delete-session($sid);
+
+#    my UInt $original-pos = $!sessions-dd.get-selection(:rows)[0];
+#note "$?LINE $original-pos";
+#    $!sessions-dd.splice( $original-pos, 1);
+  refill-dropdown( $!sessions-dd, $!sessions.get-session-ids.sort);
+  $!statusbar.set-status("Session '$sid' deleted");
 }
 
 #-------------------------------------------------------------------------------
