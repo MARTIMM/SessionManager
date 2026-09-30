@@ -12,6 +12,8 @@ use Gnome::Gtk4::Widget:api<2>;
 
 use Gnome::Pango::T-layout:api<2>;
 
+use GnomeTools::Gtk::DropDown;
+
 #-------------------------------------------------------------------------------
 unit module SessionManager::Gui::EditTools;
 
@@ -22,6 +24,8 @@ constant Grid = Gnome::Gtk4::Grid;
 constant TextView = Gnome::Gtk4::TextView;
 constant TextBuffer = Gnome::Gtk4::TextBuffer;
 constant Widget = Gnome::Gtk4::Widget;
+
+constant DropDown = GnomeTools::Gtk::DropDown;
 
 constant EDIT_WIDTH_CHARS = 80;
 
@@ -139,6 +143,12 @@ sub get-textview-text ( TextView:D $textview --> Str ) is export {
   $tb.get-bounds( $t0, $te);
 
   $tb.get-text( $t0, $te, False)
+}
+
+#-------------------------------------------------------------------------------
+sub refill-dropdown ( DropDown $dd, @values ) is export {
+  $dd.remove(^$dd.get-n-items);
+  $dd.append(@values);
 }
 
 #-------------------------------------------------------------------------------
