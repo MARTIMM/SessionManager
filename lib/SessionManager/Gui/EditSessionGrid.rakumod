@@ -220,6 +220,33 @@ method session-add ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method session-rename ( ) {
+  my Str $new-sid = $!session-id.get-text;
+  my Str $old-sid = $!sessions-dd.get-text;
+  if $new-sid eq $old-sid {
+    $!statusbar.set-status("$new-sid already defined");
+  }
+
+  else {
+    $!sessions.rename-session( $old-sid, $new-sid);
+
+#    my UInt $original-pos = $!sessions-dd.get-selection(:rows)[0];
+#note "$?LINE $original-pos";
+#    $!sessions-dd.splice( $original-pos, 1, $new-sid);
+    refill-dropdown( $!sessions-dd, $!sessions.get-session-ids.sort);
+    $!statusbar.set-status("$old-sid successfully renamed to $new-sid");
+  }
+}
+
+#-------------------------------------------------------------------------------
+method session-modify ( ) {
+}
+
+#-------------------------------------------------------------------------------
+method session-delete ( ) {
+}
+
+#-------------------------------------------------------------------------------
 method select-from-list ( Entry :$search ) {
   my Str $search-text = $search.get-text;
   my @actions = $!actions.get-action-ids.sort: {$^a.lc leg $^b.lc};
