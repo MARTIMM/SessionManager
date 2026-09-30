@@ -147,7 +147,7 @@ sub get-textview-text ( TextView:D $textview --> Str ) is export {
 
 #-------------------------------------------------------------------------------
 sub refill-dropdown ( DropDown $dd, @values ) is export {
-  $dd.remove(^$dd.get-n-items);
+  $dd.remove(| ^$dd.get-n-items);
   $dd.append(@values);
 }
 
