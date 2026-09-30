@@ -41,7 +41,6 @@ sub usage ( ) {
     
     Options:
       --help -h           Show this information.
-      --legacy            Show older version layout.
       --session N -sN     Show session setup using an id. Default is to show
                           All defined sessions.
       --version           Show the current version of the program.
