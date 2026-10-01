@@ -164,6 +164,23 @@ method add-actions ( Str:D $sid, *@actions ) {
 }
 
 #-------------------------------------------------------------------------------
+method toggle-action ( Str:D $sid, Str $action --> Bool ) {
+  my Bool $inuse;
+  my $location = $sessions{$sid}<actions>.first( $action, :k);
+  if $location.defined {
+    $sessions{$sid}<actions>.splice( $location, 1);
+    $inuse = False;
+  }
+
+  else {
+    $sessions{$sid}<actions>.push: $action;
+    $inuse = True;
+  }
+
+  $inuse
+}
+
+#-------------------------------------------------------------------------------
 method remove-actions ( Str:D $sid, *@actions ) {
   for @actions -> $action {
     my Int $count = 0;
