@@ -187,6 +187,13 @@ method !button-row ( --> Box ) {
       .register-signal( self, 'session-delete', 'clicked');
     }
     .append($button);
+#`{{
+    with $button .= new-button {
+      .set-label('Change Action Selection');
+      .register-signal( self, 'change-action-selection', 'clicked');
+    }
+    .append($button);
+}}
   }
 
   $button-row
@@ -234,6 +241,7 @@ method session-rename ( ) {
 #note "$?LINE $original-pos";
 #    $!sessions-dd.splice( $original-pos, 1, $new-sid);
     refill-dropdown( $!sessions-dd, $!sessions.get-session-ids.sort);
+    $!sessions-dd.select($new-sid);
     $!statusbar.set-status("$old-sid successfully renamed to $new-sid");
   }
 }
@@ -254,6 +262,7 @@ method session-modify ( ) {
 #  );
 
   # Success
+  $!sessions-dd.select($sid);
   $!statusbar.set-status("$sid successfully modified");
 }
 
@@ -264,12 +273,29 @@ method session-delete ( ) {
   my Str $sid = $!sessions-dd.get-text;
 
   $!sessions.delete-session($sid);
+  my @session-ids = $!sessions.get-session-ids.sort;
+  $!sessions-dd.select(@session-ids[0]) if ?@session-ids;
 
 #    my UInt $original-pos = $!sessions-dd.get-selection(:rows)[0];
 #note "$?LINE $original-pos";
 #    $!sessions-dd.splice( $original-pos, 1);
   refill-dropdown( $!sessions-dd, $!sessions.get-session-ids.sort);
   $!statusbar.set-status("Session '$sid' deleted");
+}
+
+#-------------------------------------------------------------------------------
+method change-action-selection ( UInt $position, @selections ) {
+  my Str $sid = $!session-id.get-text;
+note "$?LINE $sid, $position, @selections.raku()";
+  my Bool $in-use = $!sessions.toggle-action( $sid, @selections[0]);
+note $?LINE;
+  my Grid() $grid = $!actions-view.get-listview-object($position);
+note $?LINE;
+#  my Image() $image = $grid.get-child-at( 0, 0);
+  set-image-at( 0, 0, 'green', '', $in-use, $grid);
+note $?LINE;
+
+#  self.reset-list;
 }
 
 #-------------------------------------------------------------------------------
@@ -286,7 +312,7 @@ method select-from-list ( Entry :$search ) {
 method reset-list ( Entry :$search ) {
   $!actions-view.remove(^$!actions-view.get-n-items);
   $!actions-view.append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
-  $search.set-text('');
+  $search.set-text('');# if $search.defined;
 }
 
 #-------------------------------------------------------------------------------
@@ -356,13 +382,14 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #    .set-unbind( self, 'unbind-item');
     .set-teardown( self, 'teardown-item');
 
-#    .set-selection-changed( self, 'set-input-fields');
+    .set-selection-changed( self, 'change-action-selection');
 
     .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
 #    .append($!actions.get-action-idss[^2]);
 
     # Select the first one
-    .set-selection(0);
+    #NOTE select changes are for adding/removing actions to session.
+    #set-selection(0);
   }
 }
 
