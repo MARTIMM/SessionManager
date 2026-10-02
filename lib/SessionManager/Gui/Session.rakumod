@@ -347,8 +347,6 @@ note "$?LINE $!manage-session.raku()";
   $button
 }
 
-
-
 #-------------------------------------------------------------------------------
 method set-texture ( Str $file --> Texture ) {
 
