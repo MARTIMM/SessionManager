@@ -1,7 +1,7 @@
 use v6.d;
 
 use Gnome::Gtk4::Grid:api<2>;
-use Gnome::Gtk4::Grid:api<2>;
+use Gnome::Gtk4::Picture:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::Image:api<2>;
@@ -38,6 +38,7 @@ constant Button = Gnome::Gtk4::Button;
 constant Box = Gnome::Gtk4::Box;
 constant Image = Gnome::Gtk4::Image;
 constant Widget = Gnome::Gtk4::Widget;
+constant Picture = Gnome::Gtk4::Picture;
 
 constant EDIT_WIDTH = 500;
 constant EDIT_HEIGHT = 1000;
@@ -47,11 +48,12 @@ has SessionManager::Sessions $!sessions;
 
 has Entry $!session-id;
 has Entry $!session-title;
-has Entry $!session-overlay;
+#has Entry $!session-overlay;
 has Entry $!session-icon;
+has Picture $!session-picture;
 
 has Label $!session-title-subst;
-has Label $!session-overlay-subst;
+#has Label $!session-overlay-subst;
 has Label $!session-icon-subst;
 #has Label $!sessiontitle;
 
@@ -143,8 +145,11 @@ method !dialog-grid ( --> Grid ) {
   addc( $row++, 'Title', $!session-title);
   addc( $row++, '', $!session-title-subst);
 #  .add-content( 'Icon', $!session-overlay, $!session-overlay-subst);
-  addc( $row++, 'Picture', $!session-icon);
-  addc( $row++, '', $!session-icon-subst);
+#  addc( $row++, 'Picture', $!session-icon);
+#  addc( $row++, '', $!session-icon-subst);
+  $dialog-grid.attach( make-label(:label-text('Picture')), 0, $row, 1, 1);
+  $dialog-grid.attach( make-label, 0, $row+1, 1, 1);
+  $dialog-grid.attach( $!session-picture, 1, $row, 1, 2);
 
   # Add buttons to the dialog
 #  .add-button( self, 'do-add-session', 'Add');
@@ -286,16 +291,8 @@ method session-delete ( ) {
 #-------------------------------------------------------------------------------
 method change-action-selection ( UInt $position, @selections ) {
   my Str $sid = $!session-id.get-text;
-note "$?LINE $sid, $position, @selections.raku()";
-  my Bool $in-use = $!sessions.toggle-action( $sid, @selections[0]);
-note $?LINE;
-  my Grid() $grid = $!actions-view.get-listview-object($position);
-note $?LINE;
-#  my Image() $image = $grid.get-child-at( 0, 0);
-  set-image-at( 0, 0, 'green', '', $in-use, $grid);
-note $?LINE;
-
-#  self.reset-list;
+  $!sessions.toggle-action( $sid, @selections[0]);
+  $!actions-view.splice( $position, 1, @selections[0]);
 }
 
 #-------------------------------------------------------------------------------
@@ -332,6 +329,8 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-sensitive(!$id-only);
 #    .set-has-tooltip(True);
   }
+  
+  $!session-picture .= new-picture;
 
 #  with $!session-overlay .= new-entry {
 #    .set-sensitive(!$id-only);
@@ -407,6 +406,23 @@ method trap-select-session ( ) {
   $!session-icon.set-text($t);
   $!session-icon-subst.set-text($!variables.substitute-vars($t));
 
+  if ?$t and $t.IO ~~ :r {
+    $!session-picture.clear-object;
+    $!session-picture .= new-picture;
+    with $picture {
+      .set-filename($t);
+#      my Int ( $w, $h) = $config.get-icon-size;
+      .set-size-request( 100, 100);
+
+      .set-margin-top(0);
+      .set-margin-bottom(0);
+      .set-margin-start(0);
+      .set-margin-end(0);
+#      .set-vexpand-set(True);
+#      .set-vexpand(True);
+    }
+  }
+
 #  $t = $!sessions.get-session-overlay($sid);
 #  $!session-overlay.set-text($t);
 #  $!session-overlay-subst.set-text($!variables.substitute-vars($t));
@@ -443,7 +459,7 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
 #  @group-actions.push: $!actions-view.find($ga);
 #  $!actions-view.set-selection(@group-actions);
 
-  set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  set-image-at( 0, 0, 'green', $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------
