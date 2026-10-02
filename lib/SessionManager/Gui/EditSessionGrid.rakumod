@@ -140,16 +140,14 @@ method !dialog-grid ( --> Grid ) {
 
   # Add entries and dropdown widgets in the dialog
   my Int $row = 0;
-  addc( $row++, 'Session list', $!sessions-dd);
-  addc( $row++, 'Session id', $!session-id);
-  addc( $row++, 'Title', $!session-title);
-  addc( $row++, '', $!session-title-subst);
+  addc( $row++, 'Session list', $!sessions-dd, :columns(2));
+  addc( $row++, 'Session id', $!session-id, :columns(2));
+  addc( $row++, 'Title', $!session-title, :columns(2));
+  addc( $row++, '', $!session-title-subst, :columns(2));
 #  .add-content( 'Icon', $!session-overlay, $!session-overlay-subst);
-#  addc( $row++, 'Picture', $!session-icon);
-#  addc( $row++, '', $!session-icon-subst);
-  $dialog-grid.attach( make-label(:label-text('Picture')), 0, $row, 1, 1);
-  $dialog-grid.attach( make-label, 0, $row+1, 1, 1);
-  $dialog-grid.attach( $!session-picture, 1, $row, 1, 2);
+  addc( $row, 'Picture', $!session-icon);
+  $dialog-grid.attach( $!session-picture, 2, $row++, 1, 2);
+  addc( $row++, '', $!session-icon-subst);
 
   # Add buttons to the dialog
 #  .add-button( self, 'do-add-session', 'Add');
@@ -329,8 +327,11 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-sensitive(!$id-only);
 #    .set-has-tooltip(True);
   }
-  
-  $!session-picture .= new-picture;
+
+  with $!session-picture .= new-picture {
+    .set-size-request( 100, 100);
+    .set-content-fit(GTK_CONTENT_FIT_SCALE_DOWN);
+  }
 
 #  with $!session-overlay .= new-entry {
 #    .set-sensitive(!$id-only);
@@ -406,21 +407,22 @@ method trap-select-session ( ) {
   $!session-icon.set-text($t);
   $!session-icon-subst.set-text($!variables.substitute-vars($t));
 
-  if ?$t and $t.IO ~~ :r {
-    $!session-picture.clear-object;
-    $!session-picture .= new-picture;
-    with $picture {
-      .set-filename($t);
+  my Str $pic = $!session-icon-subst.get-text;
+note "$?LINE $t, $pic, ", $pic.IO ~~ :r;
+  if ?$pic and $pic.IO ~~ :r {
+#    $!session-picture.clear-object;
+#    with $!session-picture .= new-picture {
+    $!session-picture.set-filename($pic);
 #      my Int ( $w, $h) = $config.get-icon-size;
-      .set-size-request( 100, 100);
+#      .set-size-request( 100, 100);
 
-      .set-margin-top(0);
-      .set-margin-bottom(0);
-      .set-margin-start(0);
-      .set-margin-end(0);
+#      .set-margin-top(0);
+#      .set-margin-bottom(0);
+#     .set-margin-start(0);
+#      .set-margin-end(0);
 #      .set-vexpand-set(True);
 #      .set-vexpand(True);
-    }
+#    }
   }
 
 #  $t = $!sessions.get-session-overlay($sid);
