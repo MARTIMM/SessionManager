@@ -258,7 +258,7 @@ method bind-item ( Grid() $grid, Str $name ) {
   set-text-at( 2, 1, $action-object<t>//'', $grid);
 
   my Bool $name-inuse = self.check-action-inuse($name);
-  set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  set-image-at( 0, 0, 'green', $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------

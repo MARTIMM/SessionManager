@@ -342,7 +342,7 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   set-text-at( 2, 1, $value, $grid);
 
   my Bool $name-inuse = self.check-variable-inuse($name);
-  set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  set-image-at( 0, 0, 'green', $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------

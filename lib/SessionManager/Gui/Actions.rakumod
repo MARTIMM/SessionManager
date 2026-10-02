@@ -688,7 +688,7 @@ method bind-item ( Grid() $grid, Str $name ) {
   self.set-text-at( 2, 1, $action-object<t>//'', $grid);
 
   my Bool $name-inuse = self.check-action-inuse($name);
-  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  self.set-image-at( 0, 0, 'green', $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------
@@ -731,7 +731,7 @@ method set-text-at ( Int $row, Int $col, Str $text, Gnome::Gtk4::Grid $grid ) {
   my Label() $label = $grid.get-child-at( $row, $col);
   $label.set-text($text);
 }
-
+#`{{
 #-------------------------------------------------------------------------------
 method set-image-at (
   Int $row, Int $col, Str $color, Str $name,
@@ -742,7 +742,7 @@ method set-image-at (
   my Str $resource = $color ~ '-' ~ $on-off ~ '-256.png';
   $used.set-from-file(%?RESOURCES{$resource});
 }
-
+}}
 #`{{
 #-------------------------------------------------------------------------------
 method selection-changed ( UInt $pos, @selections ) {

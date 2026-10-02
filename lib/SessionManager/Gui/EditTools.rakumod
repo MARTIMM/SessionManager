@@ -126,8 +126,7 @@ sub set-text-at (
 
 #-------------------------------------------------------------------------------
 sub set-image-at (
-  Int $row, Int $col, Str $color, Str $name,
-  Bool $name-inuse, Grid $grid
+  Int $row, Int $col, Str $color, Bool $name-inuse, Grid $grid
 ) is export {
   my Str $on-off = $name-inuse ?? 'on' !! 'off';
   my Image() $used = $grid.get-child-at( $row, $col);

@@ -2,6 +2,8 @@ use v6.d;
 
 use YAMLish;
 
+use SessionManager::Gui::EditTools;
+
 use SessionManager::Variables;
 use SessionManager::Actions;
 use SessionManager::Sessions;
@@ -259,9 +261,9 @@ method do-remove-variable ( ) {
 
 #-------------------------------------------------------------------------------
 method setup-item ( ) {
-  my Label $name = self.make-label;
-  my Label $value = self.make-label;
-  my Image $used = self.make-image;
+  my Label $name = make-label;
+  my Label $value = make-label;
+  my Image $used = make-image;
 
   with my Grid $grid .= new-grid {
     .attach( $used, 0, 0, 2, 2);
@@ -275,11 +277,11 @@ method setup-item ( ) {
 #-------------------------------------------------------------------------------
 method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   my Str $value = $!variables.substitute-vars($!variables.get-variable($name));
-  self.set-text-at( 2, 0, $name, $grid);
-  self.set-text-at( 2, 1, $value, $grid);
+  set-text-at( 2, 0, $name, $grid);
+  set-text-at( 2, 1, $value, $grid);
 
   my Bool $name-inuse = self.check-variable-inuse($name);
-  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  set-image-at( 0, 0, 'green', $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------
@@ -313,6 +315,15 @@ method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
 }
 
 #-------------------------------------------------------------------------------
+method selection-changed ( UInt $pos, @selections ) {
+  my Str $name = @selections[0];
+  $!variable-name.set-text($name);
+  my Str $value = $!variables.get-variable($name);
+  $!variable-spec.set-text($value);
+}
+
+=finish
+#-------------------------------------------------------------------------------
 method make-label ( --> Label ) {
   with my Label $label .= new-label {
     .set-halign(GTK_ALIGN_START);
@@ -331,14 +342,6 @@ method make-image ( --> Image ) {
   }
 
   $image
-}
-
-#-------------------------------------------------------------------------------
-method selection-changed ( UInt $pos, @selections ) {
-  my Str $name = @selections[0];
-  $!variable-name.set-text($name);
-  my Str $value = $!variables.get-variable($name);
-  $!variable-spec.set-text($value);
 }
 
 #-------------------------------------------------------------------------------

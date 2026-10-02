@@ -8,6 +8,8 @@ use SessionManager::Actions;
 use SessionManager::Variables;
 use SessionManager::Config;
 
+use SessionManager::Gui::EditTools;
+
 use GnomeTools::Gtk::Dialog;
 use GnomeTools::Gtk::DropDown;
 #use GnomeTools::Gtk::ListBox;
@@ -652,9 +654,9 @@ method trap-select-session ( ) {
 
 #-------------------------------------------------------------------------------
 method setup-item ( ) {
-  my Label $action-id = self.make-label;
-  my Label $action-value = self.make-label;
-  my Image $used = self.make-image;
+  my Label $action-id = make-label;
+  my Label $action-value = make-label;
+  my Image $used = make-image;
 
   with my Grid $grid .= new-grid {
     .attach( $used, 0, 0, 2, 2);
@@ -668,8 +670,8 @@ method setup-item ( ) {
 #-------------------------------------------------------------------------------
 method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   my Hash $action-object = $!actions.get-raw-action($name);
-  self.set-text-at( 2, 0, $name, $grid);
-  self.set-text-at( 2, 1, $action-object<t>//'', $grid);
+  set-text-at( 2, 0, $name, $grid);
+  set-text-at( 2, 1, $action-object<t>//'', $grid);
 
   my Str $sessionid = $!sessions-dd.get-text;
   my Bool $name-inuse = $!sessions.is-action-in-use-in-session(
@@ -681,7 +683,7 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
 #  @group-actions.push: $!actions-view.find($ga);
 #  $!actions-view.set-selection(@group-actions);
 
-  self.set-image-at( 0, 0, 'green', $name, $name-inuse, $grid);
+  set-image-at( 0, 0, 'green', $name-inuse, $grid);
 }
 
 #-------------------------------------------------------------------------------
@@ -698,6 +700,7 @@ method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
   $grid.clear-object;
 }
 
+=finish
 #-------------------------------------------------------------------------------
 method make-label ( --> Label ) {
   with my Label $label .= new-label {
