@@ -1,14 +1,23 @@
 use v6.d;
+use NativeCall;
 
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::Image:api<2>;
+use Gnome::Gtk4::Picture:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::T-textiter:api<2>;
 use Gnome::Gtk4::TextView:api<2>;
 use Gnome::Gtk4::TextBuffer:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
+use Gnome::Gtk4::Frame:api<2>;
+
+use Gnome::GdkPixbuf::Pixbuf:api<2>;
+
+use Gnome::Gdk4::Texture:api<2>;
+
+use Gnome::Glib::T-error:api<2>;
 
 use Gnome::Pango::T-layout:api<2>;
 
@@ -24,6 +33,12 @@ constant Grid = Gnome::Gtk4::Grid;
 constant TextView = Gnome::Gtk4::TextView;
 constant TextBuffer = Gnome::Gtk4::TextBuffer;
 constant Widget = Gnome::Gtk4::Widget;
+constant Picture = Gnome::Gtk4::Picture;
+constant Frame = Gnome::Gtk4::Frame;
+
+constant Pixbuf = Gnome::GdkPixbuf::Pixbuf;
+
+constant Texture = Gnome::Gdk4::Texture;
 
 constant DropDown = GnomeTools::Gtk::DropDown;
 
@@ -56,7 +71,7 @@ sub make-horizontal-strut ( --> Label ) is export {
 sub make-vertical-space ( --> Label ) is export {
   with my Label $l = make-label() {
     .set-wrap(False);
-    .set-text('');
+    .set-text(' ');
   }
 
   $l
@@ -107,13 +122,46 @@ sub make-entry ( --> Entry ) is export {
 }
 
 #-------------------------------------------------------------------------------
+# Used to make small icons like led images
 sub make-image ( --> Image ) is export {
   with my Image $image .= new-image {
     .set-size-request( 40, 40);
-    .set-margin-end(10);
+    .set-margin-end(5);
   }
 
   $image
+}
+
+#-------------------------------------------------------------------------------
+# Used to make larger images used for the session and action buttons
+sub make-picture-frame ( --> Frame ) is export {
+  with my Frame $frame .= new-frame {
+    .set-margin-start(5);
+    .set-child(Picture.new-picture);
+  }
+
+  $frame
+}
+
+#-------------------------------------------------------------------------------
+sub set-picture-in-frame (
+  Str $filename, Frame $frame, Int :$w = 200, Int :$h = 200
+  --> Str
+) is export {
+  my Picture() $picture = $frame.get-child;
+  my Str $message;
+  my $e = CArray[N-Error].new(N-Error);
+  my Pixbuf $pixbuf .= new-from-file-at-size( $filename, $w, $h, $e);
+  if $e[0].defined {
+    $message = $e[0].message;
+  } else {
+    my Texture $texture .= new-for-pixbuf($pixbuf);
+    $picture.set-paintable($texture);
+    $picture.set-size-request( $w, $h);
+    $texture.clear-object;
+  }
+  
+  $message
 }
 
 #-------------------------------------------------------------------------------
