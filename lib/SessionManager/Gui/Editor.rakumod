@@ -168,9 +168,9 @@ method menu ( --> GnomeTools::Gio::Menu ) {
   }
 
   with my GnomeTools::Gio::Menu $m3 .= new( :$parent-menu, :name<Save>) {
+#NOTE total save of configuration always on exit and starts from menu above
     .item( 'Single Session Config', self, 'save-single-session-config');
     .item( 'Desktop Config', self, 'save-desktop-config');
-#NOTE always complete save on exit and starts
   }
 
   $bar
