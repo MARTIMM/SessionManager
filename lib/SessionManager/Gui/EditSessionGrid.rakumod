@@ -1,7 +1,8 @@
 use v6.d;
 
 use Gnome::Gtk4::Grid:api<2>;
-use Gnome::Gtk4::Picture:api<2>;
+use Gnome::Gtk4::Frame:api<2>;
+#use Gnome::Gtk4::Picture:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
 use Gnome::Gtk4::Image:api<2>;
@@ -38,7 +39,8 @@ constant Button = Gnome::Gtk4::Button;
 constant Box = Gnome::Gtk4::Box;
 constant Image = Gnome::Gtk4::Image;
 constant Widget = Gnome::Gtk4::Widget;
-constant Picture = Gnome::Gtk4::Picture;
+#constant Picture = Gnome::Gtk4::Picture;
+constant Frame = Gnome::Gtk4::Frame;
 
 constant EDIT_WIDTH = 500;
 constant EDIT_HEIGHT = 1000;
@@ -50,7 +52,7 @@ has Entry $!session-id;
 has Entry $!session-title;
 #has Entry $!session-overlay;
 has Entry $!session-icon;
-has Picture $!session-picture;
+has Frame $!picture-frame;
 
 has Label $!session-title-subst;
 #has Label $!session-overlay-subst;
@@ -90,9 +92,8 @@ submethod BUILD ( ) {
 
   self.init-fields;
 
-  my &addc = $SessionManager::Gui::EditTools::add-content2.assuming(
-    self, *
-  );
+  my &addc =
+    $SessionManager::Gui::EditTools::add-content2.assuming( self, *);
 
   my Int $row = 0;
   addc( $row++, make-title('Sessions'));
@@ -134,20 +135,27 @@ method !dialog-grid ( --> Grid ) {
   }
 
   my Grid $dialog-grid .= new-grid;
-  my &addc = $SessionManager::Gui::EditTools::add-content1.assuming(
-    $dialog-grid, *
-  );
+  my &addc =
+    $SessionManager::Gui::EditTools::add-content1.assuming( $dialog-grid, *);
 
   # Add entries and dropdown widgets in the dialog
   my Int $row = 0;
   addc( $row++, 'Session list', $!sessions-dd, :columns(2));
   addc( $row++, 'Session id', $!session-id, :columns(2));
   addc( $row++, 'Title', $!session-title, :columns(2));
-  addc( $row++, '', $!session-title-subst, :columns(2));
+  addc( $row++, '', $!session-title-subst);
 #  .add-content( 'Icon', $!session-overlay, $!session-overlay-subst);
+
   addc( $row, 'Picture', $!session-icon);
-  $dialog-grid.attach( $!session-picture, 2, $row++, 1, 2);
+  $dialog-grid.attach( $!picture-frame, 2, $row++, 1, 4);
   addc( $row++, '', $!session-icon-subst);
+
+  # Add 2 empty rows to make above lines smaller, note the size
+  # of 4 rows for the image.
+  my &addc2 =
+    $SessionManager::Gui::EditTools::add-content2.assuming( $dialog-grid, *);
+  addc2( $row++, make-vertical-space);
+  addc2( $row++, make-vertical-space);
 
   # Add buttons to the dialog
 #  .add-button( self, 'do-add-session', 'Add');
@@ -328,10 +336,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #    .set-has-tooltip(True);
   }
 
-  with $!session-picture .= new-picture {
-    .set-size-request( 100, 100);
-    .set-content-fit(GTK_CONTENT_FIT_SCALE_DOWN);
-  }
+  $!picture-frame = make-picture-frame;
 
 #  with $!session-overlay .= new-entry {
 #    .set-sensitive(!$id-only);
@@ -396,6 +401,8 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #-------------------------------------------------------------------------------
 # Selecting from session dropdown must set the id and title text entry
 method trap-select-session ( ) {
+  $!statusbar.set-status('') if ?$!statusbar;
+
   my Str $sid = $!sessions-dd.get-text;
   $!session-id.set-text($sid);
 
@@ -408,26 +415,8 @@ method trap-select-session ( ) {
   $!session-icon-subst.set-text($!variables.substitute-vars($t));
 
   my Str $pic = $!session-icon-subst.get-text;
-note "$?LINE $t, $pic, ", $pic.IO ~~ :r;
-  if ?$pic and $pic.IO ~~ :r {
-#    $!session-picture.clear-object;
-#    with $!session-picture .= new-picture {
-    $!session-picture.set-filename($pic);
-#      my Int ( $w, $h) = $config.get-icon-size;
-#      .set-size-request( 100, 100);
-
-#      .set-margin-top(0);
-#      .set-margin-bottom(0);
-#     .set-margin-start(0);
-#      .set-margin-end(0);
-#      .set-vexpand-set(True);
-#      .set-vexpand(True);
-#    }
-  }
-
-#  $t = $!sessions.get-session-overlay($sid);
-#  $!session-overlay.set-text($t);
-#  $!session-overlay-subst.set-text($!variables.substitute-vars($t));
+  my Str $message = set-picture-in-frame( $pic, $!picture-frame);
+  $!statusbar.set-status($message) if ?$message;
 }
 
 #-------------------------------------------------------------------------------
