@@ -17,6 +17,7 @@ use Gnome::Gtk4::TextView:api<2>;
 use Gnome::Gtk4::T-textiter:api<2>;
 use Gnome::Gtk4::ScrolledWindow:api<2>;
 use Gnome::Gtk4::Switch:api<2>;
+use Gnome::Gtk4::Frame:api<2>;
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Label:api<2>;
 use Gnome::Gtk4::Entry:api<2>;
@@ -53,6 +54,7 @@ constant ScrolledWindow = Gnome::Gtk4::ScrolledWindow;
 constant TextView = Gnome::Gtk4::TextView;
 constant TextBuffer = Gnome::Gtk4::TextBuffer;
 constant Widget = Gnome::Gtk4::Widget;
+constant Frame = Gnome::Gtk4::Frame;
 
 constant EDIT_WIDTH = 500;
 constant EDIT_HEIGHT = 1000;
@@ -75,6 +77,7 @@ has Entry $!aspec-title;
 has Entry $!aspec-path;
 #has Entry $!aspec-icon;
 has Entry $!aspec-pic;
+has Frame $!picture-frame;
 
 has Label $!aspec-title-subst;
 has Label $!aspec-path-subst;
@@ -99,6 +102,8 @@ submethod BUILD ( ) {
   $config.theme.add-css-class( self, 'edit-grid');
 
   $!data-ids = %();
+  $!statusbar .= new;
+
   $!sessions .= new;
   $!actions .= new;
   $!variables .= new;
@@ -113,7 +118,7 @@ submethod BUILD ( ) {
   addc( $row++, make-title('Actions'));
   addc( $row++, make-vertical-space);
   addc( $row++, self!dialog-grid);
-  addc( $row++, $!statusbar .= new);
+  addc( $row++, $!statusbar);
   addc( $row++, self!button-row);
   addc( $row++, make-vertical-space);
   addc( $row++, $!actions-view);
@@ -175,6 +180,8 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-placeholder-text('optional picture of application');
     .set-sensitive(!$id-only);
   }
+
+  $!picture-frame = make-picture-frame;
 
   $!aspec-pic-subst = make-label;
 
@@ -284,34 +291,35 @@ method !dialog-grid ( --> Grid ) {
   );
 
   my Int $row = 0;
-  addc( $row++, 'Action id', $!action-id);
-  addc( $row++, 'Action Title', $!aspec-title);
-  addc( $row++, '', $!aspec-title-subst);
-  addc( $row++, 'Command to run', $!aspec-cmd);
+  addc( $row++, 'Action id', $!action-id, :columns(2));
+  addc( $row++, 'Action Title', $!aspec-title, :columns(2));
+  addc( $row++, '', $!aspec-title-subst, :columns(2));
+  addc( $row++, 'Command to run', $!aspec-cmd, :columns(2));
   addc( $row++, '', $!aspec-cmd-subst);
-  addc( $row++, 'Shell to work in', $!aspec-shell);
-  addc( $row++, 'Path to start in', $!aspec-path);
+  addc( $row++, 'Shell to work in', $!aspec-shell, :columns(2));
+  addc( $row++, 'Path to start in', $!aspec-path, :columns(2));
   addc( $row++, '', $!aspec-path-subst);
 #  addc( $row++, 'Icon', $!aspec-icon);
 #  addc( $row++, '', $!aspec-icon-subst);
-  addc( $row++, 'Picture', $!aspec-pic);
+
+  addc( $row, 'Picture', $!aspec-pic);
+  $dialog-grid.attach( $!picture-frame, 2, $row++, 1, 4);
   addc( $row++, '', $!aspec-pic-subst);
-  addc( $row++, 'Wait before log window closes', $!aspec-wait);
-#`{{  add-content( $row++, $dialog-grid, 'Action id', $!action-id);
-  add-content( $row++, $dialog-grid, 'Action Title', $!aspec-title, 2, $!aspec-title-subst);
-  add-content( $row++, $dialog-grid, 'Command to run', $!aspec-cmd, $!aspec-cmd-subst);
-  add-content( $row++, $dialog-grid, 'Shell to work in', $!aspec-shell);
-  add-content( $row++, $dialog-grid, 'Path to start in', $!aspec-path, $!aspec-path-subst);
-  add-content( $row++, $dialog-grid, 'Icon', $!aspec-icon, $!aspec-icon-subst);
-  add-content( $row++, $dialog-grid, 'Picture', $!aspec-pic, $!aspec-pic-subst);
-  add-content( $row++, $dialog-grid, 'Wait before log window closes', $!aspec-wait);
-}}
+
+  # Add 2 empty rows to make above lines smaller, note the size
+  # of 4 rows for the image.
+  my &addc2 =
+    $SessionManager::Gui::EditTools::add-content2.assuming( $dialog-grid, *);
+  addc2( $row++, make-vertical-space);
+  addc2( $row++, make-vertical-space);
+
+  addc( $row++, 'Wait before log window closes', $!aspec-wait, :columns(2));
 
   with my Box $sw-box .= new-box( GTK_ORIENTATION_HORIZONTAL, 0) {
     .append($!aspec-log);
 #    .append(make-horizontal-strut); # Push aspec-log to the left
   }
-  addc( $row++, 'Turn logging on', $sw-box);
+  addc( $row++, 'Turn logging on', $sw-box, :columns(2));
 #  add-content( $row++, $dialog-grid, 'Turn logging on', $sw-box);
 
   $dialog-grid
@@ -543,8 +551,8 @@ method set-input-fields ( UInt $pos, @selections,
   Entry :$aspec-wait, Switch :$aspec-log, Entry :$aspec-icon,
   Entry :$aspec-pic, Entry :$aspec-shell
 ) {
-#TODO show tooltip over fields with filled in variables
-#  $!actions .= new;
+  $!statusbar.set-status('');
+
   my $id = @selections[0];
   my Hash $action-object = $!actions.get-raw-action($id);
 
@@ -582,6 +590,10 @@ method set-input-fields ( UInt $pos, @selections,
   $t = $action-object<i> // '';
   $!aspec-pic.set-text($t);
   $!aspec-pic-subst.set-text($!variables.substitute-vars($t));
+
+  my Str $pic = $!aspec-pic-subst.get-text;
+  my Str $message = set-picture-in-frame( $pic, $!picture-frame);
+  $!statusbar.set-status($message) if ?$message;
 
   with $!aspec-shell { .set-placeholder-text($action-object<sh>); }
 }
