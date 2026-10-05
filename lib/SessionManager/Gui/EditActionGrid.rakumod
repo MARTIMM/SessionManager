@@ -357,6 +357,12 @@ method !button-row ( --> Box ) {
       .register-signal( self, 'action-delete', 'clicked');
     }
     .append($button);
+
+    with $button .= new-button {
+      .set-label('Save');
+      .register-signal( self, 'action-save', 'clicked');
+    }
+    .append($button);
   }
 
   $button-row
@@ -528,8 +534,10 @@ method action-delete ( ) {
   }
 }
 
-#`{{
-}}
+#-------------------------------------------------------------------------------
+method action-save ( ) {
+  SessionManager::Actions.new.save;
+}
 
 #-------------------------------------------------------------------------------
 method select-from-list ( Entry :$search ) {

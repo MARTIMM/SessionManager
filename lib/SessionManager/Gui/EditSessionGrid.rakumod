@@ -200,13 +200,12 @@ method !button-row ( --> Box ) {
       .register-signal( self, 'session-delete', 'clicked');
     }
     .append($button);
-#`{{
+
     with $button .= new-button {
-      .set-label('Change Action Selection');
-      .register-signal( self, 'change-action-selection', 'clicked');
+      .set-label('Save');
+      .register-signal( self, 'session-save', 'clicked');
     }
     .append($button);
-}}
   }
 
   $button-row
@@ -294,6 +293,11 @@ method session-delete ( ) {
 #    $!sessions-dd.splice( $original-pos, 1);
   refill-dropdown( $!sessions-dd, $!sessions.get-session-ids.sort);
   $!statusbar.set-status("Session '$sid' deleted");
+}
+
+#-------------------------------------------------------------------------------
+method session-save ( ) {
+  SessionManager::Sessions.new.save;
 }
 
 #-------------------------------------------------------------------------------

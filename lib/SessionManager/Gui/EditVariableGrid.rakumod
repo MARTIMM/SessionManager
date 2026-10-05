@@ -282,6 +282,11 @@ method variable-delete ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method variable-save ( ) {
+  SessionManager::Variables.new.save;
+}
+
+#-------------------------------------------------------------------------------
 method !button-row ( --> Box ) {
   my Button $button;
   with my Box $button-row .= new-box( GTK_ORIENTATION_HORIZONTAL, 4) {
@@ -310,6 +315,12 @@ method !button-row ( --> Box ) {
     with $button .= new-button {
       .set-label('Delete');
       .register-signal( self, 'variable-delete', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Save');
+      .register-signal( self, 'variable-save', 'clicked');
     }
     .append($button);
   }
