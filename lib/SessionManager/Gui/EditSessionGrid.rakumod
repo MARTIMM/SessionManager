@@ -90,6 +90,8 @@ submethod BUILD ( ) {
   $!actions .= new;
   $!variables .= new;
 
+  $!statusbar .= new;
+
   self.init-fields;
 
   my &addc =
@@ -99,7 +101,7 @@ submethod BUILD ( ) {
   addc( $row++, make-title('Sessions'));
   addc( $row++, make-vertical-space);
   addc( $row++, self!dialog-grid);
-  addc( $row++, $!statusbar .= new);
+  addc( $row++, $!statusbar);
   addc( $row++, self!button-row);
   addc( $row++, make-vertical-space);
   addc( $row++, $!actions-view);
@@ -401,7 +403,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
 #-------------------------------------------------------------------------------
 # Selecting from session dropdown must set the id and title text entry
 method trap-select-session ( ) {
-  $!statusbar.set-status('') if ?$!statusbar;
+  $!statusbar.set-status('');
 
   my Str $sid = $!sessions-dd.get-text;
   $!session-id.set-text($sid);
