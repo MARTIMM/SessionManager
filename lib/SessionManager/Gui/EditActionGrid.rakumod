@@ -405,6 +405,7 @@ note "$?LINE $raw-action.raku()";
       $!actions.add-action( $raw-action, :$id);
       $!statusbar.set-status("Added action '$id'");
       $!actions-view.splice( $original-pos, 0, $id);
+      $!actions-view.set-selection($original-pos + 1);
     }
 
     else {
@@ -453,6 +454,7 @@ method action-rename ( ) {
       # Change text in listbox row
       my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
       $!actions-view.splice( $original-pos, 1, $new-id);
+      $!actions-view.set-selection($original-pos);
     }
 
     else {
@@ -491,9 +493,10 @@ method action-modify ( ) {
   if $original-pos.defined {
     my SessionManager::Actions $actions .= new;
     my Str $id = $!action-id.get-text;
-    $!actions-view.splice( $original-pos, 1, $id);
-#note "\n$?LINE $original-pos, $id\n$raw-action.gist()";
     $actions.modify-action( $id, $raw-action);
+    $!actions-view.splice( $original-pos, 1, $id);
+    $!actions-view.set-selection($original-pos);
+#note "\n$?LINE $original-pos, $id\n$raw-action.gist()";
 
     $!statusbar.set-status("The action '$id' is succesfully modified");
   }
@@ -515,6 +518,7 @@ method action-delete ( ) {
     if $original-pos.defined {
       $!actions-view.splice( $original-pos, 1);
       $!actions.delete-action($id);
+      $!actions-view.set-selection(0);
       $!statusbar.set-status("Deleting '$id' successful");
     }
 
