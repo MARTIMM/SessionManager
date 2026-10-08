@@ -16,10 +16,10 @@ use GnomeTools::Gtk::ListView;
 use GnomeTools::Gtk::Statusbar;
 
 use SessionManager::Variables;
-use SessionManager::Actions;
+#use SessionManager::Actions;
 use SessionManager::Sessions;
 use SessionManager::Config;
-use SessionManager::Gui::Actions;
+#use SessionManager::Gui::Actions;
 
 use SessionManager::Gui::EditTools;
 use SessionManager::Config;
@@ -34,7 +34,7 @@ constant Label = Gnome::Gtk4::Label;
 constant Grid = Gnome::Gtk4::Grid;
 constant Button = Gnome::Gtk4::Button;
 constant Image = Gnome::Gtk4::Image;
-#constant Picture = Gnome::Gtk4::Picture;
+constant Box = Gnome::Gtk4::Box;
 constant Widget = Gnome::Gtk4::Widget;
 constant Frame = Gnome::Gtk4::Frame;
 constant Entry = Gnome::Gtk4::Entry;
@@ -66,16 +66,16 @@ has Label $!group-title-subst;
 #has @!session-ids;
 
 has SessionManager::Actions $!actions;
+}}
 has SessionManager::Variables $!variables;
 
-has ListView $!actions-view;
-}}
+has ListView $!sessions-view;
 has SessionManager::Sessions $!sessions;
 has Frame $!picture-frame;
 
-has Entry $!session-id;
-has Entry $!session-title;
-has Label $!session-title-subst;
+has Entry $!session-set-id;
+#has Entry $!session-title;
+#has Label $!session-title-subst;
 
 has Statusbar $!statusbar;
 
@@ -89,11 +89,34 @@ submethod BUILD ( ) {
   my SessionManager::Config $config .= instance;
   $config.theme.add-css-class( self, 'edit-grid');
 
-  $!sessions .= new;
-#  $!actions .= new;
-#  $!variables .= new;
-
   $!statusbar .= new;
+  $!sessions .= new;
+
+  with $!sessions-view .= new(:multi-select) {
+#NOTE with set-size-request() many warnings come;
+# (sessioneditor:20240): Gtk-WARNING **: 14:24:34.559: Trying to measure
+# GtkApplicationWindow 0x3faba110 for height of 1300, but it needs at least 1362
+#    .set-size-request( -1, 500);
+# The listview will stretch automatically because of the height of the
+# variables edit at the first column of the box
+
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+    .set-selection-changed( self, 'set-input-fields');
+
+    my @session-ids = $!sessions.get-session-ids.sort;
+    .append(@session-ids) if ?@session-ids;
+#    .append($!actions.get-action-idss[^2]);
+
+    # Select the first one
+    .set-selection(0);
+  }
+
+  $!session-set-id .= new-entry;
+#  $!variables .= new;
 
 #  self.init-fields;
 
@@ -102,13 +125,13 @@ submethod BUILD ( ) {
 
   my Int $row = 0;
   addc( $row++, make-title('Sessions Starter Config'));
-#`{{
   addc( $row++, make-vertical-space);
   addc( $row++, self!dialog-grid);
   addc( $row++, $!statusbar);
+  addc( $row++, $!sessions-view);
   addc( $row++, self!button-row);
+#`{{
   addc( $row++, make-vertical-space);
-  addc( $row++, $!actions-view);
   addc( $row++, make-vertical-space);
 
   my Entry $search = make-entry;
@@ -131,10 +154,52 @@ submethod BUILD ( ) {
 }}
 }
 
-=finish
+#-------------------------------------------------------------------------------
+method setup-item ( --> Widget ) {
+  my Label $session-id = make-label();
+  my Label $session-title = make-label();
+
+  with my Grid $grid .= new-grid {
+    .attach( $session-id, 2, 0, 1, 1);
+    .attach( $session-title, 2, 1, 1, 1);
+  }
+
+  $grid;
+}
+
+#-------------------------------------------------------------------------------
+method bind-item ( Grid() $grid, Str $name ) {
+#note $?LINE;
+  my Hash $session-object = $!sessions.get-session($name);
+  set-text-at( 2, 0, $name, $grid);
+  set-text-at(
+    2, 1, $!variables.substitute-vars($session-object<title>//''), $grid
+  );
+}
+
+#-------------------------------------------------------------------------------
+method check-action-inuse ( Str:D $name --> Bool ) {
+  # Check if action is used in the sessions store
+  $!sessions.is-action-in-use($name);
+}
+
+#-------------------------------------------------------------------------------
+#method unbind-item
+
+#-------------------------------------------------------------------------------
+method teardown-item ( Grid() $grid ) {
+  $grid.clear-object;
+}
+
+#-------------------------------------------------------------------------------
+method set-input-fields ( UInt $pos, @selections) {
+note "$?LINE @selections.raku()";
+  $!statusbar.set-status('');
+}
 
 #-------------------------------------------------------------------------------
 method !dialog-grid ( --> Grid ) {
+#`{{
   $!sessions-dd.set-selection-changed( self, 'trap-select-session');
 
   # Fill the session drop down with the session ids and select the first one
@@ -142,13 +207,14 @@ method !dialog-grid ( --> Grid ) {
   if @session-ids.elems {
     $!sessions-dd.append(@session-ids);
   }
-
+}}
   my Grid $dialog-grid .= new-grid;
   my &addc =
     $SessionManager::Gui::EditTools::add-content1.assuming( $dialog-grid, *);
 
   # Add entries and dropdown widgets in the dialog
   my Int $row = 0;
+#`{{
   addc( $row++, 'Session list', $!sessions-dd, :columns(2));
   addc( $row++, 'Session id', $!session-id, :columns(2));
   addc( $row++, 'Title', $!session-title, :columns(2));
@@ -171,6 +237,7 @@ method !dialog-grid ( --> Grid ) {
 #    .add-button( self, 'do-rename-session', 'Rename');
 #    .add-button( self, 'do-change-session', 'Change');
 #  .add-button( $!dialog, 'destroy-dialog', 'Done');
+}}
 
   $dialog-grid
 }
@@ -185,11 +252,17 @@ method !button-row ( --> Box ) {
 #    .append($hstrut);
 
     with $button .= new-button {
-      .set-label('Add');
-      .register-signal( self, 'session-add', 'clicked');
+      .set-label('Make Session Set');
+      .register-signal( self, 'make-session-set', 'clicked');
     }
     .append($button);
 
+    with $button .= new-button {
+      .set-label('Make Desktop Entry File');
+      .register-signal( self, 'make-desktop-entry', 'clicked');
+    }
+    .append($button);
+#`{{
     with $button .= new-button {
       .set-label('Rename');
       .register-signal( self, 'session-rename', 'clicked');
@@ -207,7 +280,7 @@ method !button-row ( --> Box ) {
       .register-signal( self, 'session-delete', 'clicked');
     }
     .append($button);
-#`{{
+
     with $button .= new-button {
       .set-label('Change Action Selection');
       .register-signal( self, 'change-action-selection', 'clicked');
@@ -215,9 +288,19 @@ method !button-row ( --> Box ) {
     .append($button);
 }}
   }
-
   $button-row
 }
+
+#-------------------------------------------------------------------------------
+method make-session-set ( ) {
+}
+
+#-------------------------------------------------------------------------------
+method make-desktop-entry ( ) {
+}
+
+
+=finish
 
 #-------------------------------------------------------------------------------
 method session-add ( ) {
