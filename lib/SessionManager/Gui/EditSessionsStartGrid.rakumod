@@ -1,4 +1,5 @@
 use v6.d;
+#use YAMLish;
 
 use Gnome::Gtk4::Grid:api<2>;
 use Gnome::Gtk4::Frame:api<2>;
@@ -22,7 +23,6 @@ use SessionManager::Config;
 #use SessionManager::Gui::Actions;
 
 use SessionManager::Gui::EditTools;
-use SessionManager::Config;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::EditSessionsStartGrid;
@@ -43,9 +43,9 @@ constant EDIT_WIDTH = 500;
 constant EDIT_HEIGHT = 1000;
 constant EDIT_WIDTH-CHARS = 80;
 
-#`{{
 constant DropDown = GnomeTools::Gtk::DropDown;
 
+#`{{
 constant Box = Gnome::Gtk4::Box;
 
 #has Entry $!session-overlay;
@@ -55,27 +55,25 @@ has Entry $!session-icon;
 has Label $!session-icon-subst;
 #has Label $!sessiontitle;
 
-# Setup the dropdown to show the session ids and groups
-has DropDown $!sessions-dd;
-has DropDown $!groups-dd;
-
-has Entry $!group-title;
-has Label $!group-title-subst;
-
 # Fill the session drop down with the session ids and select the first one
 #has @!session-ids;
 
 has SessionManager::Actions $!actions;
 }}
+
+has Hash $!manager-config;
 has SessionManager::Variables $!variables;
+has DropDown $!session-set-ids;
 
 has ListView $!sessions-view;
 has SessionManager::Sessions $!sessions;
+has Entry $!session-set-icon;
+has Label $!session-set-icon-subst;
 has Frame $!picture-frame;
 
 has Entry $!session-set-id;
-#has Entry $!session-title;
-#has Label $!session-title-subst;
+has Entry $!session-set-title;
+has Label $!session-set-title-subst;
 
 has Statusbar $!statusbar;
 
@@ -88,6 +86,7 @@ submethod new ( |c --> SessionManager::Gui::EditSessionsStartGrid ) {
 submethod BUILD ( ) {
   my SessionManager::Config $config .= instance;
   $config.theme.add-css-class( self, 'edit-grid');
+  
 
   $!statusbar .= new;
   $!sessions .= new;
@@ -114,8 +113,6 @@ submethod BUILD ( ) {
     # Select the first one
     .set-selection(0);
   }
-
-  $!session-set-id .= new-entry;
 #  $!variables .= new;
 
 #  self.init-fields;
@@ -130,6 +127,7 @@ submethod BUILD ( ) {
   addc( $row++, $!statusbar);
   addc( $row++, $!sessions-view);
   addc( $row++, self!button-row);
+
 #`{{
   addc( $row++, make-vertical-space);
   addc( $row++, make-vertical-space);
@@ -208,15 +206,40 @@ method !dialog-grid ( --> Grid ) {
     $!sessions-dd.append(@session-ids);
   }
 }}
+
+  $!session-set-id .= new-entry;
+  $!session-set-title .= new-entry;
+  $!session-set-icon .= new-entry;
+  $!session-set-title-subst = make-label;
+  $!session-set-icon-subst = make-label;
+  $!picture-frame = make-picture-frame;
+
+  with $!session-set-ids .= new {
+#    .set-events;
+  }
+
+  my SessionManager::Config $config .= instance;
+  my @sids = $config.get-sesion-set-ids;
+  for @sids -> $sid {
+    $!sesion-set-ids.append;
+  }
+
   my Grid $dialog-grid .= new-grid;
   my &addc =
     $SessionManager::Gui::EditTools::add-content1.assuming( $dialog-grid, *);
 
   # Add entries and dropdown widgets in the dialog
   my Int $row = 0;
+  addc( $row++, 'Session Set Id', $!session-set-id, :columns(2));
+  addc( $row++, 'Session Set Title', $!session-set-title, :columns(2));
+  addc( $row++, 'Session Set Title', $!session-set-title-subst, :columns(2));
+  addc( $row++, 'Session Set Picture', $!session-set-icon, :columns(2));
+
+  addc( $row, 'Picture', $!session-set-icon);
+  $dialog-grid.attach( $!picture-frame, 2, $row++, 1, 4);
+  addc( $row++, '', $!session-set-icon-subst);
+
 #`{{
-  addc( $row++, 'Session list', $!sessions-dd, :columns(2));
-  addc( $row++, 'Session id', $!session-id, :columns(2));
   addc( $row++, 'Title', $!session-title, :columns(2));
   addc( $row++, '', $!session-title-subst);
 #  .add-content( 'Icon', $!session-overlay, $!session-overlay-subst);
