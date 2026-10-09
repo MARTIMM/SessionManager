@@ -61,10 +61,10 @@ has Label $!session-icon-subst;
 
 # Setup the dropdown to show the session ids and groups
 has DropDown $!sessions-dd;
-has DropDown $!groups-dd;
+#has DropDown $!groups-dd;
 
-has Entry $!group-title;
-has Label $!group-title-subst;
+#has Entry $!group-title;
+#has Label $!group-title-subst;
 
 # Fill the session drop down with the session ids and select the first one
 #has @!session-ids;
@@ -368,17 +368,17 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
   }
 
   # Setup the dropdown to show groups in a session
-  with $!groups-dd .= new {
-    .set-events;
-  }
+  #with $!groups-dd .= new {
+  #  .set-events;
+  #}
 
-  with $!group-title .= new-entry {
-    .set-sensitive(!$id-only);
+  #with $!group-title .= new-entry {
+  #  .set-sensitive(!$id-only);
 #    .set-has-tooltip(True);
-  }
+  #}
 
-  $!group-title-subst .= new-label;
-  $!group-title-subst.set-halign(GTK_ALIGN_START);
+  #$!group-title-subst .= new-label;
+  #$!group-title-subst.set-halign(GTK_ALIGN_START);
 
   with $!actions-view .= new(:!multi-select) {
 #NOTE with set-size-request() many warnings come;
