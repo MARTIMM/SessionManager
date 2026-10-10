@@ -107,13 +107,23 @@ submethod BUILD ( ) {
     .set-selection-changed( self, 'set-input-fields');
 
     my @session-ids = $!sessions.get-session-ids.sort;
-    .append(@session-ids) if ?@session-ids;
+note "$?LINE @session-ids.raku()";
+    .append(@session-ids);
 #    .append($!actions.get-action-idss[^2]);
 
     # Select the first one
     .set-selection(0);
   }
 #  $!variables .= new;
+
+  with $!session-set-ids .= new {
+#    .set-events;
+  }
+
+  my @sids = $config.get-sesion-set-ids;
+  for @sids -> $sid {
+    $!session-set-ids.append;
+  }
 
 #  self.init-fields;
 
@@ -122,6 +132,7 @@ submethod BUILD ( ) {
 
   my Int $row = 0;
   addc( $row++, make-title('Sessions Starter Config'));
+  addc( $row++, $!session-set-ids);
   addc( $row++, make-vertical-space);
   addc( $row++, self!dialog-grid);
   addc( $row++, $!statusbar);
@@ -213,17 +224,6 @@ method !dialog-grid ( --> Grid ) {
   $!session-set-title-subst = make-label;
   $!session-set-icon-subst = make-label;
   $!picture-frame = make-picture-frame;
-
-  with $!session-set-ids .= new {
-#    .set-events;
-  }
-
-  my SessionManager::Config $config .= instance;
-note "$?LINE $config.raku()";
-  my @sids = $config.get-sesion-set-ids;
-  for @sids -> $sid {
-    $!session-set-ids.append;
-  }
 
   my Grid $dialog-grid .= new-grid;
   my &addc =
