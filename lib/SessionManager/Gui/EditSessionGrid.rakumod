@@ -22,8 +22,6 @@ use SessionManager::Config;
 use SessionManager::Gui::Actions;
 
 use SessionManager::Gui::EditTools;
-use SessionManager::Config;
-
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::EditSessionGrid;
 also is Gnome::Gtk4::Grid;
