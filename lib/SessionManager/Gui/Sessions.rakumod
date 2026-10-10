@@ -53,7 +53,6 @@ constant Image = Gnome::Gtk4::Image;
 constant Button = Gnome::Gtk4::Button;
 constant Box = Gnome::Gtk4::Box;
 
-
 has Entry $!session-id;
 has Entry $!session-title;
 has Entry $!session-overlay;
