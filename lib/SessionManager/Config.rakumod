@@ -153,6 +153,11 @@ method load-config ( ) {
 #  self.check-actions;
 }
 
+#-------------------------------------------------------------------------------
+method get-sesion-set-ids ( --> List ) {
+  $!dispatch-config<sessions>.keys.sort.List
+}
+
 #`{{
 #-------------------------------------------------------------------------------
 method check-actions ( ) {
