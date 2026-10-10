@@ -24,7 +24,7 @@ use SessionManager::Gui::Toolbar;
 use SessionManager::Gui::Actions;
 use SessionManager::Gui::Variables;
 use SessionManager::Gui::Sessions;
-use SessionManager::Gui::Config;
+#use SessionManager::Gui::Config;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::Application:auth<github:MARTIMM>;
@@ -181,10 +181,10 @@ method window-content ( --> Grid ) {
 #-------------------------------------------------------------------------------
 method menu ( --> GnomeTools::Gio::Menu ) {
 
-  my SessionManager::Gui::Actions $action-edit .= instance;
-  my SessionManager::Gui::Variables $variable-edit .= instance;
-  my SessionManager::Gui::Sessions $session-edit .= instance;
-  my SessionManager::Gui::Config $config-edit .= instance;
+#  my SessionManager::Gui::Actions $action-edit .= instance;
+#  my SessionManager::Gui::Variables $variable-edit .= instance;
+#  my SessionManager::Gui::Sessions $session-edit .= instance;
+#  my SessionManager::Gui::Config $config-edit .= instance;
 
   my GnomeTools::Gio::Menu $bar .= new;
   my GnomeTools::Gio::Menu $parent-menu = $bar;

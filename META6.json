@@ -15,7 +15,6 @@
   "provides": {
     "SessionManager::Gui::Actions": "lib/SessionManager/Gui/Actions.rakumod",
     "SessionManager::Gui::Application": "lib/SessionManager/Gui/Application.rakumod",
-    "SessionManager::Gui::Config": "lib/SessionManager/Gui/Config.rakumod",
     "SessionManager::Gui::Session": "lib/SessionManager/Gui/Session.rakumod",
     "SessionManager::Gui::Sessions": "lib/SessionManager/Gui/Sessions.rakumod",
     "SessionManager::Gui::Toolbar": "lib/SessionManager/Gui/Toolbar.rakumod",
