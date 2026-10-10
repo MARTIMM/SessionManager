@@ -219,9 +219,10 @@ method !dialog-grid ( --> Grid ) {
   }
 
   my SessionManager::Config $config .= instance;
+note "$?LINE $config.raku()";
   my @sids = $config.get-sesion-set-ids;
   for @sids -> $sid {
-    $!sesion-set-ids.append;
+    $!session-set-ids.append;
   }
 
   my Grid $dialog-grid .= new-grid;
