@@ -107,7 +107,7 @@ submethod BUILD ( ) {
     .set-selection-changed( self, 'set-input-fields');
 
     my @session-ids = $!sessions.get-session-ids.sort;
-note "$?LINE @session-ids.raku()";
+note "Session ids: @session-ids.raku()";
     .append(@session-ids);
 #    .append($!actions.get-action-idss[^2]);
 
@@ -116,14 +116,6 @@ note "$?LINE @session-ids.raku()";
   }
 #  $!variables .= new;
 
-  with $!session-set-ids .= new {
-#    .set-events;
-  }
-
-  my @sids = $config.get-sesion-set-ids;
-  for @sids -> $sid {
-    $!session-set-ids.append;
-  }
 
 #  self.init-fields;
 
@@ -132,7 +124,6 @@ note "$?LINE @session-ids.raku()";
 
   my Int $row = 0;
   addc( $row++, make-title('Sessions Starter Config'));
-  addc( $row++, $!session-set-ids);
   addc( $row++, make-vertical-space);
   addc( $row++, self!dialog-grid);
   addc( $row++, $!statusbar);
@@ -217,6 +208,14 @@ method !dialog-grid ( --> Grid ) {
     $!sessions-dd.append(@session-ids);
   }
 }}
+  with $!session-set-ids .= new {
+    .set-events;
+  }
+
+  my SessionManager::Config $config .= instance;
+  my @sids = $config.get-sesion-set-ids;
+note "Session set ids: @sids.raku()";
+  $!session-set-ids.append(@sids);
 
   $!session-set-id .= new-entry;
   $!session-set-title .= new-entry;
@@ -231,12 +230,13 @@ method !dialog-grid ( --> Grid ) {
 
   # Add entries and dropdown widgets in the dialog
   my Int $row = 0;
+
+  addc( $row++, 'Session Set Ids', $!session-set-ids);
   addc( $row++, 'Session Set Id', $!session-set-id, :columns(2));
   addc( $row++, 'Session Set Title', $!session-set-title, :columns(2));
-  addc( $row++, 'Session Set Title', $!session-set-title-subst, :columns(2));
-  addc( $row++, 'Session Set Picture', $!session-set-icon, :columns(2));
+  addc( $row++, ' ', $!session-set-title-subst, :columns(2));
 
-  addc( $row, 'Picture', $!session-set-icon);
+  addc( $row++, 'Session Set Picture', $!session-set-icon, :columns(2));
   $dialog-grid.attach( $!picture-frame, 2, $row++, 1, 4);
   addc( $row++, '', $!session-set-icon-subst);
 
