@@ -154,8 +154,48 @@ method load-config ( ) {
 }
 
 #-------------------------------------------------------------------------------
+method save-config ( ) {
+  "$*config-directory/$*manager".IO.spurt( save-yaml($!dispatch-config));
+}
+
+#-------------------------------------------------------------------------------
 method get-sesion-set-ids ( --> List ) {
   $!dispatch-config<sessions>.keys.sort.List
+}
+
+#-------------------------------------------------------------------------------
+method get-sesion-set ( Str:D $id where ?$id  --> Hash ) {
+  $!dispatch-config<sessions>{$id}
+}
+
+#-------------------------------------------------------------------------------
+method set-sesion-set ( Str:D $id where ?$id, Hash:D $set where ?$set ) {
+  $!dispatch-config<sessions>{$id} = $set;
+}
+
+#-------------------------------------------------------------------------------
+method toggle-session-set ( Str:D $set-id, Str:D $id --> Bool ) {
+  my Bool $inuse;
+  my $location = $!dispatch-config<sessions>{$set-id}<sids>.first( $id, :k);
+note "$?LINE $id, $set-id, $id, $location.defined()";
+  if $location.defined {
+    $!dispatch-config<sessions>{$set-id}<sids>.splice( $location, 1);
+    $inuse = False;
+  }
+
+  else {
+    $!dispatch-config<sessions>{$set-id}<sids>.push: $id;
+    $inuse = True;
+  }
+
+  $inuse
+}
+
+#-------------------------------------------------------------------------------
+method is-session-inuse ( Str:D $set-id, Str:D $id --> Bool ) {
+  my $location = $!dispatch-config<sessions>{$set-id}<sids>.first( $id, :k);
+note "$?LINE $id, $set-id, $id, $location.defined()";
+  $location.defined
 }
 
 #`{{
