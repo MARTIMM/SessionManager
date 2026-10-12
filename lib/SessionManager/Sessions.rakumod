@@ -36,6 +36,7 @@ method get-session ( Str:D $sid, Bool :$delete = False --> Hash ) {
 }
 
 #-------------------------------------------------------------------------------
+#TODO check used sessions in session sets
 method delete-session ( Str:D $sid --> Hash ) {
   $sessions{$sid}:delete
 }
