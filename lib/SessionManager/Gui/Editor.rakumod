@@ -183,13 +183,16 @@ method file-quit ( N-Object $parameter ) {
 
 #-------------------------------------------------------------------------------
 method save-config ( ) {
+
   # save changed config
   my SessionManager::Variables $variables .= new;
   my SessionManager::Actions $actions .= new;
   my SessionManager::Sessions $sessions .= new;
-  $actions.save;
+  my SessionManager::Config $config .= instance;
   $variables.save;
+  $actions.save;
   $sessions.save;
+  $config.save-config;
 }
 
 #-------------------------------------------------------------------------------
