@@ -174,6 +174,10 @@ method set-sesion-set ( Str:D $id where ?$id, Hash:D $set where ?$set ) {
 }
 
 #-------------------------------------------------------------------------------
+method remove-sesion-set ( Str:D $id where ?$id ) {
+}
+
+#-------------------------------------------------------------------------------
 method toggle-session-set ( Str:D $set-id, Str:D $id --> Bool ) {
   my Bool $inuse;
   my $location = $!dispatch-config<sessions>{$set-id}<sids>.first( $id, :k);
