@@ -63,7 +63,7 @@ has SessionManager::Actions $!actions;
 
 has Hash $!manager-config;
 has SessionManager::Variables $!variables;
-has DropDown $!session-set-ids;
+has DropDown $!set-ids-dd;
 
 has ListView $!sessions-view;
 has SessionManager::Sessions $!sessions;
@@ -90,30 +90,8 @@ submethod BUILD ( ) {
 
   $!statusbar .= new;
   $!sessions .= new;
+  $!sessions-view .= new(:!multi-select);
 
-  with $!sessions-view .= new(:multi-select) {
-#NOTE with set-size-request() many warnings come;
-# (sessioneditor:20240): Gtk-WARNING **: 14:24:34.559: Trying to measure
-# GtkApplicationWindow 0x3faba110 for height of 1300, but it needs at least 1362
-#    .set-size-request( -1, 500);
-# The listview will stretch automatically because of the height of the
-# variables edit at the first column of the box
-
-    .set-setup( self, 'setup-item');
-    .set-bind( self, 'bind-item');
-#    .set-unbind( self, 'unbind-item');
-    .set-teardown( self, 'teardown-item');
-
-    .set-selection-changed( self, 'set-input-fields');
-
-    my @session-ids = $!sessions.get-session-ids.sort;
-note "Session ids: @session-ids.raku()";
-    .append(@session-ids);
-#    .append($!actions.get-action-idss[^2]);
-
-    # Select the first one
-    .set-selection(0);
-  }
 #  $!variables .= new;
 
 
@@ -127,8 +105,33 @@ note "Session ids: @session-ids.raku()";
   addc( $row++, make-vertical-space);
   addc( $row++, self!dialog-grid);
   addc( $row++, $!statusbar);
-  addc( $row++, $!sessions-view);
   addc( $row++, self!button-row);
+  addc( $row++, make-vertical-space);
+  addc( $row++, $!sessions-view);
+
+  with $!sessions-view {
+#NOTE with set-size-request() many warnings come;
+# (sessioneditor:20240): Gtk-WARNING **: 14:24:34.559: Trying to measure
+# GtkApplicationWindow 0x3faba110 for height of 1300, but it needs at least 1362
+#    .set-size-request( -1, 500);
+# The listview will stretch automatically because of the height of the
+# variables edit at the first column of the box
+
+    .set-setup( self, 'setup-item');
+    .set-bind( self, 'bind-item');
+#    .set-unbind( self, 'unbind-item');
+    .set-teardown( self, 'teardown-item');
+
+    .set-selection-changed( self, 'change-session-selection');
+
+    my @session-ids = $!sessions.get-session-ids.sort;
+note "Session ids: @session-ids.raku()";
+    .append(@session-ids);
+#    .append($!actions.get-action-idss[^2]);
+
+    # Select the first one
+    .set-selection(0);
+  }
 
 #`{{
   addc( $row++, make-vertical-space);
@@ -155,11 +158,21 @@ note "Session ids: @session-ids.raku()";
 }
 
 #-------------------------------------------------------------------------------
+method change-session-selection ( UInt $position, @selections ) {
+  my Str $sid = $!session-set-id.get-text;
+  my SessionManager::Config $config .= instance;
+  $config.toggle-session-set( $sid, @selections[0]);
+  $!sessions-view.splice( $position, 1, @selections[0]);
+}
+
+#-------------------------------------------------------------------------------
 method setup-item ( --> Widget ) {
   my Label $session-id = make-label();
   my Label $session-title = make-label();
+  my Image $used = make-image;
 
   with my Grid $grid .= new-grid {
+    .attach( $used, 0, 0, 2, 2);
     .attach( $session-id, 2, 0, 1, 1);
     .attach( $session-title, 2, 1, 1, 1);
   }
@@ -175,13 +188,20 @@ method bind-item ( Grid() $grid, Str $name ) {
   set-text-at(
     2, 1, $!variables.substitute-vars($session-object<title>//''), $grid
   );
+
+  my SessionManager::Config $config .= instance;
+  my Str $session-set-id = $!set-ids-dd.get-text;
+  my Bool $name-inuse = $config.is-session-inuse( $session-set-id, $name);
+  set-image-at( 0, 0, 'green', $name-inuse, $grid);
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method check-action-inuse ( Str:D $name --> Bool ) {
   # Check if action is used in the sessions store
   $!sessions.is-action-in-use($name);
 }
+}}
 
 #-------------------------------------------------------------------------------
 #method unbind-item
@@ -189,12 +209,6 @@ method check-action-inuse ( Str:D $name --> Bool ) {
 #-------------------------------------------------------------------------------
 method teardown-item ( Grid() $grid ) {
   $grid.clear-object;
-}
-
-#-------------------------------------------------------------------------------
-method set-input-fields ( UInt $pos, @selections) {
-note "$?LINE @selections.raku()";
-  $!statusbar.set-status('');
 }
 
 #-------------------------------------------------------------------------------
@@ -208,14 +222,7 @@ method !dialog-grid ( --> Grid ) {
     $!sessions-dd.append(@session-ids);
   }
 }}
-  with $!session-set-ids .= new {
-    .set-events;
-  }
-
   my SessionManager::Config $config .= instance;
-  my @sids = $config.get-sesion-set-ids;
-note "Session set ids: @sids.raku()";
-  $!session-set-ids.append(@sids);
 
   $!session-set-id .= new-entry;
   $!session-set-title .= new-entry;
@@ -224,6 +231,14 @@ note "Session set ids: @sids.raku()";
   $!session-set-icon-subst = make-label;
   $!picture-frame = make-picture-frame;
 
+  with $!set-ids-dd .= new {
+    .set-events;
+    .set-selection-changed( self, 'trap-select-session');
+    my @sids = $config.get-sesion-set-ids;
+  note "Session set ids: @sids.raku()";
+    .append(@sids);
+  }
+
   my Grid $dialog-grid .= new-grid;
   my &addc =
     $SessionManager::Gui::EditTools::add-content1.assuming( $dialog-grid, *);
@@ -231,7 +246,7 @@ note "Session set ids: @sids.raku()";
   # Add entries and dropdown widgets in the dialog
   my Int $row = 0;
 
-  addc( $row++, 'Session Set Ids', $!session-set-ids);
+  addc( $row++, 'Session Set Ids', $!set-ids-dd, :columns(2));
   addc( $row++, 'Session Set Id', $!session-set-id, :columns(2));
   addc( $row++, 'Session Set Title', $!session-set-title, :columns(2));
   addc( $row++, ' ', $!session-set-title-subst, :columns(2));
@@ -323,6 +338,30 @@ method make-session-set ( ) {
 method make-desktop-entry ( ) {
 }
 
+#-------------------------------------------------------------------------------
+# Selecting from session dropdown must set the id and title text entry
+method trap-select-session ( ) {
+  $!statusbar.set-status('');
+note $?LINE;
+
+  my SessionManager::Config $config .= instance;
+  my Str $set-id = $!set-ids-dd.get-text;
+  my Hash $session-set = $config.get-sesion-set($set-id);
+
+  $!session-set-id.set-text($set-id);
+
+  my Str $t = $session-set<theme><title>;
+  $!session-set-title.set-text($t);
+  $!session-set-title-subst.set-text($!variables.substitute-vars($t));
+
+  $t = $session-set<theme><icon>;
+  $!session-set-icon.set-text($t);
+  $!session-set-icon-subst.set-text($!variables.substitute-vars($t));
+
+  my Str $pic = $!session-set-icon-subst.get-text;
+  my Str $message = set-picture-in-frame( $pic, $!picture-frame);
+  $!statusbar.set-status($message) if ?$message;
+}
 
 =finish
 
