@@ -60,6 +60,7 @@ has Label $!session-icon-subst;
 
 has SessionManager::Actions $!actions;
 }}
+has SessionManager::Config $!config;
 
 has Hash $!manager-config;
 has SessionManager::Variables $!variables;
@@ -84,8 +85,8 @@ submethod new ( |c --> SessionManager::Gui::EditSessionsStartGrid ) {
 
 #-------------------------------------------------------------------------------
 submethod BUILD ( ) {
-  my SessionManager::Config $config .= instance;
-  $config.theme.add-css-class( self, 'edit-grid');
+  $!config .= instance;
+  $!config.theme.add-css-class( self, 'edit-grid');
   
 
   $!statusbar .= new;
@@ -130,7 +131,7 @@ note "Session ids: @session-ids.raku()";
 #    .append($!actions.get-action-idss[^2]);
 
     # Select the first one
-    .set-selection(0);
+    #.set-selection(0);
   }
 
 #`{{
@@ -160,8 +161,7 @@ note "Session ids: @session-ids.raku()";
 #-------------------------------------------------------------------------------
 method change-session-selection ( UInt $position, @selections ) {
   my Str $sid = $!session-set-id.get-text;
-  my SessionManager::Config $config .= instance;
-  $config.toggle-session-set( $sid, @selections[0]);
+  $!config.toggle-session-set( $sid, @selections[0]);
   $!sessions-view.splice( $position, 1, @selections[0]);
 }
 
@@ -189,9 +189,8 @@ method bind-item ( Grid() $grid, Str $name ) {
     2, 1, $!variables.substitute-vars($session-object<title>//''), $grid
   );
 
-  my SessionManager::Config $config .= instance;
   my Str $session-set-id = $!set-ids-dd.get-text;
-  my Bool $name-inuse = $config.is-session-inuse( $session-set-id, $name);
+  my Bool $name-inuse = $!config.is-session-inuse( $session-set-id, $name);
   set-image-at( 0, 0, 'green', $name-inuse, $grid);
 }
 
@@ -222,8 +221,6 @@ method !dialog-grid ( --> Grid ) {
     $!sessions-dd.append(@session-ids);
   }
 }}
-  my SessionManager::Config $config .= instance;
-
   $!session-set-id .= new-entry;
   $!session-set-title .= new-entry;
   $!session-set-icon .= new-entry;
@@ -234,7 +231,7 @@ method !dialog-grid ( --> Grid ) {
   with $!set-ids-dd .= new {
     .set-events;
     .set-selection-changed( self, 'trap-select-session');
-    my @sids = $config.get-sesion-set-ids;
+    my @sids = $!config.get-sesion-set-ids;
   note "Session set ids: @sids.raku()";
     .append(@sids);
   }
@@ -251,9 +248,16 @@ method !dialog-grid ( --> Grid ) {
   addc( $row++, 'Session Set Title', $!session-set-title, :columns(2));
   addc( $row++, ' ', $!session-set-title-subst, :columns(2));
 
-  addc( $row++, 'Session Set Picture', $!session-set-icon, :columns(2));
+  addc( $row, 'Session Set Picture', $!session-set-icon);
   $dialog-grid.attach( $!picture-frame, 2, $row++, 1, 4);
   addc( $row++, '', $!session-set-icon-subst);
+
+  # Add 2 empty rows to make above lines smaller, note the size
+  # of 4 rows for the image.
+  my &addc2 =
+    $SessionManager::Gui::EditTools::add-content2.assuming( $dialog-grid, *);
+  addc2( $row++, make-vertical-space);
+  addc2( $row++, make-vertical-space);
 
 #`{{
   addc( $row++, 'Title', $!session-title, :columns(2));
@@ -291,8 +295,26 @@ method !button-row ( --> Box ) {
 #    .append($hstrut);
 
     with $button .= new-button {
-      .set-label('Make Session Set');
-      .register-signal( self, 'make-session-set', 'clicked');
+      .set-label('Add Session Set');
+      .register-signal( self, 'add-session-set', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Rename Session Set');
+      .register-signal( self, 'rename-session-set', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Modify Session Set');
+      .register-signal( self, 'modify-session-set', 'clicked');
+    }
+    .append($button);
+
+    with $button .= new-button {
+      .set-label('Delete Session Set');
+      .register-signal( self, 'delete-session-set', 'clicked');
     }
     .append($button);
 
@@ -331,7 +353,24 @@ method !button-row ( --> Box ) {
 }
 
 #-------------------------------------------------------------------------------
-method make-session-set ( ) {
+method add-session-set ( ) {
+  my $id = $!session-set-id.set-text;
+  my Hash $set = %(
+
+  );
+  my Bool $ok = $!config.add-sesion-set ( $id, $set);
+}
+
+#-------------------------------------------------------------------------------
+method modify-session-set ( ) {
+}
+
+#-------------------------------------------------------------------------------
+method rename-session-set ( ) {
+}
+
+#-------------------------------------------------------------------------------
+method delete-session-set ( ) {
 }
 
 #-------------------------------------------------------------------------------
@@ -344,9 +383,8 @@ method trap-select-session ( ) {
   $!statusbar.set-status('');
 note $?LINE;
 
-  my SessionManager::Config $config .= instance;
   my Str $set-id = $!set-ids-dd.get-text;
-  my Hash $session-set = $config.get-sesion-set($set-id);
+  my Hash $session-set = $!config.get-sesion-set($set-id);
 
   $!session-set-id.set-text($set-id);
 
