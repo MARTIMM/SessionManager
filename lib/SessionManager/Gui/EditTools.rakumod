@@ -21,6 +21,8 @@ use Gnome::Glib::T-error:api<2>;
 
 use Gnome::Pango::T-layout:api<2>;
 
+use Gnome::N::N-Object:api<2>;
+
 use GnomeTools::Gtk::DropDown;
 
 #-------------------------------------------------------------------------------
@@ -157,7 +159,8 @@ sub set-picture-in-frame (
   } else {
     my Texture $texture .= new-for-pixbuf($pixbuf);
     $picture.set-paintable($texture);
-    $picture.set-size-request( $w, $h);
+#    $picture.allocate( $w, $h, -1, N-Object);
+    $picture.set-size-request( -1, $h);
     $texture.clear-object;
   }
   
