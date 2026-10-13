@@ -6,7 +6,7 @@ use Gnome::Gtk4::T-enums:api<2>;
 use SessionManager::Gui::EditVariableGrid;
 use SessionManager::Gui::EditActionGrid;
 use SessionManager::Gui::EditSessionGrid;
-use SessionManager::Gui::EditSessionsStartGrid;
+use SessionManager::Gui::EditSessionsSetGrid;
 
 use SessionManager::Config;
 
@@ -34,8 +34,8 @@ submethod BUILD ( ) {
     my SessionManager::Gui::EditSessionGrid $sessions .= new;
     .append($sessions);
 
-    my SessionManager::Gui::EditSessionsStartGrid $sessions-start .= new;
-    .append($sessions-start);
+    my SessionManager::Gui::EditSessionsSetGrid $sessions-set .= new;
+    .append($sessions-set);
   }
 }
 

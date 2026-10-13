@@ -189,7 +189,7 @@ method rename-sesion-set ( Str:D $id, Str:D $new-id --> Bool ) {
 #-------------------------------------------------------------------------------
 method delete-sesion-set ( Str:D $id where ?$id --> Bool ) {
   if $!dispatch-config<sessions>{$id}:exists {
-    $!dispatch-config<sessions>{$id}:delete
+    $!dispatch-config<sessions>{$id}:delete;
     True
   }
 

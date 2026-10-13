@@ -25,7 +25,7 @@ use SessionManager::Config;
 use SessionManager::Gui::EditTools;
 
 #-------------------------------------------------------------------------------
-unit class SessionManager::Gui::EditSessionsStartGrid;
+unit class SessionManager::Gui::EditSessionsSetGrid;
 also is Gnome::Gtk4::Grid;
 
 constant ListView = GnomeTools::Gtk::ListView;
@@ -79,7 +79,7 @@ has Label $!session-set-title-subst;
 has Statusbar $!statusbar;
 
 #-------------------------------------------------------------------------------
-submethod new ( |c --> SessionManager::Gui::EditSessionsStartGrid ) {
+submethod new ( |c --> SessionManager::Gui::EditSessionsSetGrid ) {
   self.new-grid(|c);
 }
 
@@ -102,7 +102,7 @@ submethod BUILD ( ) {
     $SessionManager::Gui::EditTools::add-content2.assuming( self, *);
 
   my Int $row = 0;
-  addc( $row++, make-title('Sessions Starter Config'));
+  addc( $row++, make-title('Session Sets Config'));
   addc( $row++, make-vertical-space);
   addc( $row++, self!dialog-grid);
   addc( $row++, $!statusbar);
@@ -232,7 +232,7 @@ method !dialog-grid ( --> Grid ) {
     .set-events;
     .set-selection-changed( self, 'trap-select-session');
     my @sids = $!config.get-sesion-set-ids;
-  note "Session set ids: @sids.raku()";
+note "Session set ids: @sids.raku()";
     .append(@sids);
   }
 
@@ -354,11 +354,18 @@ method !button-row ( --> Box ) {
 
 #-------------------------------------------------------------------------------
 method add-session-set ( ) {
-  my $id = $!session-set-id.set-text;
-  my Hash $set = %(
+  my $set-id = $!session-set-id.get-text;
 
-  );
-  my Bool $ok = $!config.add-sesion-set ( $id, $set);
+  my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
+  my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
+
+  my @sids = ();
+  for $!sessions.get-session-ids.sort -> $sid {
+    @sids.push: $sid if $!config.is-session-inuse( $set-id, $sid);
+  }
+
+  my Hash $set = %( :$title, :$icon, :@sids);
+  my Bool $ok = $!config.add-sesion-set( $set-id, $set);
 }
 
 #-------------------------------------------------------------------------------
