@@ -164,17 +164,38 @@ method get-sesion-set-ids ( --> List ) {
 }
 
 #-------------------------------------------------------------------------------
-method get-sesion-set ( Str:D $id where ?$id  --> Hash ) {
+method get-sesion-set ( Str:D $id --> Hash ) {
   $!dispatch-config<sessions>{$id}
 }
 
 #-------------------------------------------------------------------------------
-method set-sesion-set ( Str:D $id where ?$id, Hash:D $set where ?$set ) {
-  $!dispatch-config<sessions>{$id} = $set;
+method add-sesion-set ( Str:D $id, Hash:D $set --> Bool ) {
+  if $!dispatch-config<sessions>{$id}:exists {
+    False
+  }
+
+  else {
+    $!dispatch-config<sessions>{$id} = $set;
+    True
+  }
 }
 
 #-------------------------------------------------------------------------------
-method remove-sesion-set ( Str:D $id where ?$id ) {
+method rename-sesion-set ( Str:D $id, Str:D $new-id --> Bool ) {
+  $!dispatch-config<sessions>{$new-id} =
+    $!dispatch-config<sessions>{$id}:delete;
+}
+
+#-------------------------------------------------------------------------------
+method delete-sesion-set ( Str:D $id where ?$id --> Bool ) {
+  if $!dispatch-config<sessions>{$id}:exists {
+    $!dispatch-config<sessions>{$id}:delete
+    True
+  }
+
+  else {
+    False
+  }
 }
 
 #-------------------------------------------------------------------------------
