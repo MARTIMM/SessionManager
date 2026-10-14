@@ -2,6 +2,10 @@
 
 ---
 # Progress
+
+* 2026 10 14 0.9.0
+  * Classes added to META
+
 * 2026 04 21 0.8.0
   * Application is not unique anymore.
   * Possible to specify session selections in the main config file.
