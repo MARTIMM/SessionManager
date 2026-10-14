@@ -6,7 +6,7 @@
   "author": "Marcel Timmerman",
   "auth": "fez:MARTIMM",
 
-  "version": "0.8.0",
+  "version": "0.9.0",
   "tags": [ "desktop", "kde", "gnome", "gtk", "tool" ],
   
   "license": "Artistic-2.0",
@@ -15,6 +15,13 @@
   "provides": {
     "SessionManager::Gui::Actions": "lib/SessionManager/Gui/Actions.rakumod",
     "SessionManager::Gui::Application": "lib/SessionManager/Gui/Application.rakumod",
+    "SessionManager::Gui::EditActionGrid":  "lib/SessionManager/Gui/EditActionGrid.rakumod",
+    "SessionManager::Gui::EditGrid":  "lib/SessionManager/Gui/EditGrid.rakumod",
+    "SessionManager::Gui::Editor":  "lib/SessionManager/Gui/Editor.rakumod",
+    "SessionManager::Gui::EditSessionGrid":  "lib/SessionManager/Gui/EditSessionGrid.rakumod",
+    "SessionManager::Gui::EditSessionsSetGrid":  "lib/SessionManager/Gui/EditSessionsSetGrid.rakumod",
+    "SessionManager::Gui::EditTools":  "lib/SessionManager/Gui/EditTools.rakumod",
+    "SessionManager::Gui::EditVariableGrid":  "lib/SessionManager/Gui/EditVariableGrid.rakumod",
     "SessionManager::Gui::Session": "lib/SessionManager/Gui/Session.rakumod",
     "SessionManager::Gui::Sessions": "lib/SessionManager/Gui/Sessions.rakumod",
     "SessionManager::Gui::Toolbar": "lib/SessionManager/Gui/Toolbar.rakumod",
