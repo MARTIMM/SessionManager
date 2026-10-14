@@ -253,7 +253,7 @@ note "Session set ids: @sids.raku()";
   addc( $row++, 'Session Set Title', $!session-set-title, :columns(2));
   addc( $row++, ' ', $!session-set-title-subst, :columns(2));
 
-  addc( $row++, 'Picture sizes w x h', $!icon-width, $!icon-height);
+  addc( $row++, 'Picture size w x h', $!icon-width, $!icon-height);
   addc( $row, 'Session Set Picture', $!session-set-icon);
   $dialog-grid.attach( $!picture-frame, 2, $row++, 1, 4);
   addc( $row++, '', $!session-set-icon-subst);
@@ -369,14 +369,59 @@ method add-session-set ( ) {
   for $!sessions.get-session-ids.sort -> $sid {
     @sids.push: $sid if $!config.is-session-inuse( $set-id, $sid);
   }
+  my $icon-width = $!icon-width.get-text;
+  my $icon-height = $!icon-height.get-text;
+  my Hash $set = %(
+    :theme(%(
+      :$title, :$icon,
+      :icon-size(
+        ?$icon-width ?? $icon-width !! 200,
+        ?$icon-height ?? $icon-height !! 200,
+      )
+    )),
+    :@sids,
+  );
 
-  my Hash $set = %( :$title, :$icon, :@sids);
   my Bool $ok = $!config.add-sesion-set( $set-id, $set);
+  if $ok {
+    $!set-ids-dd.append($set-id);
+    $!set-ids-dd.select($set-id);
+  }
+
+  else {
+  }
 }
 
 #-------------------------------------------------------------------------------
 method modify-session-set ( ) {
+    my $set-id = $!set-ids-dd.get-text;
 
+  my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
+  my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
+
+  my @sids = ();
+  for $!sessions.get-session-ids.sort -> $sid {
+    @sids.push: $sid if $!config.is-session-inuse( $set-id, $sid);
+  }
+  my $icon-width = $!icon-width.get-text;
+  my $icon-height = $!icon-height.get-text;
+  my Hash $set = %(
+    :theme(%(
+      :$title, :$icon,
+      :icon-size(
+        ?$icon-width ?? $icon-width !! 200,
+        ?$icon-height ?? $icon-height !! 200,
+      )
+    )),
+    :@sids,
+  );
+
+  my Bool $ok = $!config.modify-sesion-set( $set-id, $set);
+  if $ok {
+  }
+
+  else {
+  }
 }
 
 #-------------------------------------------------------------------------------
