@@ -76,6 +76,9 @@ has Entry $!session-set-id;
 has Entry $!session-set-title;
 has Label $!session-set-title-subst;
 
+has Entry $!icon-width;
+has Entry $!icon-height;
+
 has Statusbar $!statusbar;
 
 #-------------------------------------------------------------------------------
@@ -224,6 +227,8 @@ method !dialog-grid ( --> Grid ) {
   $!session-set-id .= new-entry;
   $!session-set-title .= new-entry;
   $!session-set-icon .= new-entry;
+  $!icon-width .= new-entry;
+  $!icon-height .= new-entry;
   $!session-set-title-subst = make-label;
   $!session-set-icon-subst = make-label;
   $!picture-frame = make-picture-frame;
@@ -248,6 +253,7 @@ note "Session set ids: @sids.raku()";
   addc( $row++, 'Session Set Title', $!session-set-title, :columns(2));
   addc( $row++, ' ', $!session-set-title-subst, :columns(2));
 
+  addc( $row++, 'Picture sizes w x h', $!icon-width, $!icon-height);
   addc( $row, 'Session Set Picture', $!session-set-icon);
   $dialog-grid.attach( $!picture-frame, 2, $row++, 1, 4);
   addc( $row++, '', $!session-set-icon-subst);
@@ -370,6 +376,7 @@ method add-session-set ( ) {
 
 #-------------------------------------------------------------------------------
 method modify-session-set ( ) {
+
 }
 
 #-------------------------------------------------------------------------------
@@ -388,22 +395,21 @@ method make-desktop-entry ( ) {
 # Selecting from session dropdown must set the id and title text entry
 method trap-select-session ( ) {
   $!statusbar.set-status('');
-note $?LINE;
 
   my Str $set-id = $!set-ids-dd.get-text;
   my Hash $session-set = $!config.get-sesion-set($set-id);
 
   $!session-set-id.set-text($set-id);
 
-  my Str $t = $session-set<theme><title>;
+  my Str $t = $session-set<theme><title> // '';
   $!session-set-title.set-text($t);
   $!session-set-title-subst.set-text($!variables.substitute-vars($t));
 
-  $t = $session-set<theme><icon>;
+  $t = $session-set<theme><icon> // '';
   $!session-set-icon.set-text($t);
   $!session-set-icon-subst.set-text($!variables.substitute-vars($t));
 
-  my Str $pic = $!session-set-icon-subst.get-text;
+  my Str $pic = $!session-set-icon-subst.get-text // '';
   my Str $message = set-picture-in-frame( $pic, $!picture-frame);
   $!statusbar.set-status($message) if ?$message;
 }
