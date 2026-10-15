@@ -403,8 +403,8 @@ method modify-session-set ( ) {
   for $!sessions.get-session-ids.sort -> $sid {
     @sids.push: $sid if $!config.is-session-inuse( $set-id, $sid);
   }
-  my $icon-width = $!icon-width.get-text;
-  my $icon-height = $!icon-height.get-text;
+  my $icon-width = $!icon-width.get-text.Int;
+  my $icon-height = $!icon-height.get-text.Int;
   my Hash $set = %(
     :theme(%(
       :$title, :$icon,
@@ -449,6 +449,11 @@ method trap-select-session ( ) {
   my Str $t = $session-set<theme><title> // '';
   $!session-set-title.set-text($t);
   $!session-set-title-subst.set-text($!variables.substitute-vars($t));
+
+  my Int $w = ($session-set<theme><icon-size> // [])[0].Int;
+  my Int $h = ($session-set<theme><icon-size> // [])[1].Int;
+  $!icon-width.set-text($w);
+  $!icon-height.set-text($h);
 
   $t = $session-set<theme><icon> // '';
   $!session-set-icon.set-text($t);
