@@ -386,16 +386,21 @@ method add-session-set ( ) {
   if $ok {
     $!set-ids-dd.append($set-id);
     $!set-ids-dd.select($set-id);
+    $!statusbar.set-status("Session set added");
   }
 
   else {
+    $!statusbar.set-status("Failed to add session set, duplicate");
   }
 }
 
 #-------------------------------------------------------------------------------
+#| modify-session-set() is called from a button 'Modify Session Set' event.
 method modify-session-set ( ) {
-    my $set-id = $!set-ids-dd.get-text;
+  #| Get the session id from the session ids dropdown
+  my $set-id = $!set-ids-dd.get-text;
 
+  #| Get the changed values to store in the Hash $set
   my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
   my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
 
@@ -405,6 +410,8 @@ method modify-session-set ( ) {
   }
   my $icon-width = $!icon-width.get-text.Int;
   my $icon-height = $!icon-height.get-text.Int;
+
+  #| Set the Hash with new values
   my Hash $set = %(
     :theme(%(
       :$title, :$icon,
@@ -416,16 +423,20 @@ method modify-session-set ( ) {
     :@sids,
   );
 
+  #| Call the method to set the new values
   my Bool $ok = $!config.modify-sesion-set( $set-id, $set);
   if $ok {
+    $!statusbar.set-status("Session set modified");
   }
 
   else {
+    $!statusbar.set-status("Failed to modify session set");
   }
 }
 
 #-------------------------------------------------------------------------------
 method rename-session-set ( ) {
+  my $set-id = $!set-ids-dd.get-text;
 }
 
 #-------------------------------------------------------------------------------
