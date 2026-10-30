@@ -475,6 +475,30 @@ method delete-session-set ( ) {
 
 #-------------------------------------------------------------------------------
 method make-desktop-entry ( ) {
+  my Str $set-id = $!set-ids-dd.get-text;
+  my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
+  my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
+
+  my Str $desktop-entry-content = Q:qq:to/EOCONTENT/;
+    [Desktop Entry]
+    Comment=$title
+    Exec=/home/marcel/Languages/Raku/Projects/SessionManager/bin/sessionmanager --session '$set-id' '/home/marcel/Sessions-Starter'
+    GenericName[en_US]=Session Manager
+    GenericName=Session Manager
+    # Icon is also visible when starting
+    Icon=$icon
+    MimeType=application/x-sessionmanager;
+    Name=sessionmanager
+    NoDisplay=true
+    Path=/home/marcel/Languages/Raku/Projects/SessionManager
+    PrefersNonDefaultGPU=false
+    StartupNotify=true
+    Terminal=false
+    TerminalOptions=
+    Type=Application
+    X-KDE-SubstituteUID=false
+    X-KDE-Username=
+    EOCONTENT
 }
 
 #-------------------------------------------------------------------------------
