@@ -194,8 +194,15 @@ method modify-sesion-set ( Str:D $id, Hash:D $set --> Bool ) {
 
 #-------------------------------------------------------------------------------
 method rename-sesion-set ( Str:D $id, Str:D $new-id --> Bool ) {
-  $!dispatch-config<sessions>{$new-id} =
-    $!dispatch-config<sessions>{$id}:delete;
+  if $!dispatch-config<sessions>{$id}:exists {
+    $!dispatch-config<sessions>{$new-id} =
+      $!dispatch-config<sessions>{$id}:delete;
+    True
+  }
+
+  else {
+    False
+  }
 }
 
 #-------------------------------------------------------------------------------
