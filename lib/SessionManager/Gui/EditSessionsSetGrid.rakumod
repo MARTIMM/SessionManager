@@ -384,7 +384,9 @@ method add-session-set ( ) {
 
   my Bool $ok = $!config.add-sesion-set( $set-id, $set);
   if $ok {
-    $!set-ids-dd.append($set-id);
+    #$!set-ids-dd.append($set-id);
+    my UInt $original-pos = $!set-ids-dd.get-selected;
+    $!set-ids-dd.splice( $original-pos, 0, $set-id);
     $!set-ids-dd.select($set-id);
     $!statusbar.set-status("Session set added");
   }
@@ -397,10 +399,10 @@ method add-session-set ( ) {
 #-------------------------------------------------------------------------------
 #| modify-session-set() is called from a button 'Modify Session Set' event.
 method modify-session-set ( ) {
-  #| Get the session id from the session ids dropdown
+  # Get the session id from the session ids dropdown
   my $set-id = $!set-ids-dd.get-text;
 
-  #| Get the changed values to store in the Hash $set
+  # Get the changed values to store in the Hash $set
   my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
   my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
 
@@ -411,7 +413,7 @@ method modify-session-set ( ) {
   my $icon-width = $!icon-width.get-text.Int;
   my $icon-height = $!icon-height.get-text.Int;
 
-  #| Set the Hash with new values
+  # Set the Hash with new values
   my Hash $set = %(
     :theme(%(
       :$title, :$icon,
@@ -423,7 +425,7 @@ method modify-session-set ( ) {
     :@sids,
   );
 
-  #| Call the method to set the new values
+  # Call the method to set the new values
   my Bool $ok = $!config.modify-sesion-set( $set-id, $set);
   if $ok {
     $!statusbar.set-status("Session set modified");
@@ -436,11 +438,39 @@ method modify-session-set ( ) {
 
 #-------------------------------------------------------------------------------
 method rename-session-set ( ) {
-  my $set-id = $!set-ids-dd.get-text;
+  # Get the old session id from the session ids dropdown
+  my $old-set-id = $!set-ids-dd.get-text;
+
+  # Get the new session id from the session text entry
+  my $new-set-id = $!session-set-id.get-text;
+
+  my Bool $ok = $!config.rename-sesion-set( $old-set-id, $new-set-id);
+  if $ok {
+    my UInt $original-pos = $!set-ids-dd.get-selected;
+    $!set-ids-dd.splice( $original-pos, 1, $new-set-id);
+    $!set-ids-dd.select($new-set-id);
+    $!statusbar.set-status("Session set renamed");
+  }
+
+  else {
+    $!statusbar.set-status("Failed to rename session set");
+  }
 }
 
 #-------------------------------------------------------------------------------
 method delete-session-set ( ) {
+  # Get the session id from the session ids dropdown
+  my $set-id = $!set-ids-dd.get-text;
+  my Bool $ok = $!config.delete-sesion-set($set-id);
+  if $ok {
+    my UInt $original-pos = $!set-ids-dd.get-selected;
+    $!set-ids-dd.splice( $original-pos, 1);
+    $!statusbar.set-status("Session set deleted");
+  }
+
+  else {
+    $!statusbar.set-status("Failed to delete session set");
+  }
 }
 
 #-------------------------------------------------------------------------------
