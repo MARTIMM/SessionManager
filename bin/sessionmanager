@@ -34,8 +34,6 @@ sub usage ( ) {
     music. In all those sessions, it might need an editor, start tests,
     servers, or browsers and file managers.
 
-    The program will only start one instance per user.
-
     Usage;
       sessionmanager [options] <config directory>
     
@@ -49,12 +47,3 @@ sub usage ( ) {
       config directory    Directory where configuration is found.
   EOUSAGE
 }
-
-=finish
-      --load-manual-build-config -m
-                          Load the manually build confgurations. Only the
-                          saved configurations are loaded by default. With
-                          this option, the saved configurations of a
-                          previous run, are loaded after loading the
-                          manual created/edited configurations.
-
