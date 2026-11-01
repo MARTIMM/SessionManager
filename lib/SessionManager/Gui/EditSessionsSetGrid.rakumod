@@ -478,12 +478,15 @@ method make-desktop-entry ( ) {
   my Str $set-id = $!set-ids-dd.get-text;
   my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
   my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
+note "$?LINE $set-id, $title, $icon.IO.basename()";
+note "$?LINE ", $*REPO.gist;
+
+#TODO must also make MimeType=application/x-sessionmanager;
 
   my Str $desktop-entry-content = Q:qq:to/EOCONTENT/;
     [Desktop Entry]
     Comment=$title
-    Exec=/home/marcel/Languages/Raku/Projects/SessionManager/bin/sessionmanager --session '$set-id' '/home/marcel/Sessions-Starter'
-    GenericName[en_US]=Session Manager
+    Exec=sessionmanager --session '$set-id' '$*config-directory'
     GenericName=Session Manager
     # Icon is also visible when starting
     Icon=$icon
@@ -499,6 +502,12 @@ method make-desktop-entry ( ) {
     X-KDE-SubstituteUID=false
     X-KDE-Username=
     EOCONTENT
+
+  my Str $desktop-dir = $*config-directory ~ 'desktops';
+  mkdir $desktop-dir, 0o750 unless $desktop-dir.IO.e;
+  "$desktop-dir/$set-id.desktop".IO.spurt($desktop-entry-content);
+
+note "$?LINE\n", $desktop-entry-content;
 }
 
 #-------------------------------------------------------------------------------
