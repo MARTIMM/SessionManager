@@ -3,6 +3,10 @@
 ---
 # Progress
 
+* 2026 11 01 0.10.0
+  * Session sets editor.
+  * Save session sets desktop icon.
+
 * 2026 10 14 0.9.0
   * Classes added to META
 
