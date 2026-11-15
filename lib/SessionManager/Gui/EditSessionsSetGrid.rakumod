@@ -481,7 +481,7 @@ method make-desktop-entry ( ) {
 note "$?LINE $set-id, $title, $icon.IO.basename()";
 note "$?LINE ", $*REPO.gist;
 
-#TODO must also make MimeType=application/x-sessionmanager;
+#TODO make MimeType=application/x-sessionmanager;
 
   my Str $desktop-entry-content = Q:qq:to/EOCONTENT/;
     [Desktop Entry]
