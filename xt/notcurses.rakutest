@@ -1,0 +1,21 @@
+use v6.d
+use NativeCall;
+
+use Notcurses::Native;
+use Notcurses::Native::Types;
+use Notcurses::Native::Plane;
+
+# Initialize notcurses
+my $nc = notcurses_init(NotcursesOptions.new, Pointer);
+my $std = notcurses_stdplane($nc);
+
+# Write colored text
+ncplane_set_fg_rgb8($std, 0, 255, 128);
+ncplane_putstr_yx($std, 0, 0, 'Hello from notcurses!');
+notcurses_render($nc);
+
+# Wait for input
+my $ni = Ncinput.new;
+notcurses_get_blocking($nc, $ni);
+
+notcurses_stop($nc);
