@@ -129,7 +129,7 @@ submethod BUILD ( ) {
     .set-selection-changed( self, 'change-session-selection');
 
     my @session-ids = $!sessions.get-session-ids.sort;
-note "Session ids: @session-ids.raku()";
+note "$?LINE Session ids: @session-ids.raku()";
     .append(@session-ids);
 #    .append($!actions.get-action-idss[^2]);
 
@@ -166,6 +166,7 @@ method change-session-selection ( UInt $position, @selections ) {
   my Str $sid = $!session-set-id.get-text;
   $!config.toggle-session-set( $sid, @selections[0]);
   $!sessions-view.splice( $position, 1, @selections[0]);
+#  $!sessions-view.set-selection($position);
 }
 
 #-------------------------------------------------------------------------------
@@ -235,10 +236,10 @@ method !dialog-grid ( --> Grid ) {
 
   with $!set-ids-dd .= new {
     .set-events;
-    .set-selection-changed( self, 'trap-select-session');
-    my @sids = $!config.get-sesion-set-ids;
-note "Session set ids: @sids.raku()";
+    my @sids = $!config.get-session-set-ids;
+note "$?LINE Session set ids: @sids.raku()";
     .append(@sids);
+    .set-selection-changed( self, 'trap-select-session');
   }
 
   my Grid $dialog-grid .= new-grid;

@@ -159,7 +159,7 @@ method save-config ( ) {
 }
 
 #-------------------------------------------------------------------------------
-method get-sesion-set-ids ( --> List ) {
+method get-session-set-ids ( --> List ) {
   $!dispatch-config<sessions>.keys.sort.List
 }
 

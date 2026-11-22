@@ -150,9 +150,7 @@ method get-actions ( Str:D $sid --> Array ) {
 }
 
 #-------------------------------------------------------------------------------
-method set-actions (
-  Str:D $sid, Array $actions = []
-) {
+method set-actions ( Str:D $sid, Array $actions = [] ) {
   $sessions{$sid}<actions> = $actions;
 }
 

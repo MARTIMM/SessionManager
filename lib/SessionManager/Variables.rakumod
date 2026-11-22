@@ -103,7 +103,7 @@ method get-variable ( Str:D $name --> Str ) {
 }
 
 #-------------------------------------------------------------------------------
-method set-variable ( Str:D $name, Str:D $value --> Str ) {
+method set-variable ( Str:D $name, Str:D $value ) {
   $variables{$name} = $value;
 }
 
