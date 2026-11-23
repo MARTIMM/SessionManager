@@ -221,7 +221,6 @@ method delete-sesion-set ( Str:D $id where ?$id --> Bool ) {
 method toggle-session-set ( Str:D $set-id, Str:D $id --> Bool ) {
   my Bool $inuse;
   my $location = $!dispatch-config<sessions>{$set-id}<sids>.first( $id, :k);
-note "$?LINE $id, $set-id, $id, $location.defined()";
   if $location.defined {
     $!dispatch-config<sessions>{$set-id}<sids>.splice( $location, 1);
     $inuse = False;
