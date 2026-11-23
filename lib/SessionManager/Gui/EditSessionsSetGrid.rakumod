@@ -164,9 +164,9 @@ note "$?LINE Session ids: @session-ids.raku()";
 #-------------------------------------------------------------------------------
 method change-session-selection ( UInt $position, @selections ) {
   my Str $sid = $!session-set-id.get-text;
+note "$?LINE $position, $sid, @selections.raku()";
   $!config.toggle-session-set( $sid, @selections[0]);
   $!sessions-view.splice( $position, 1, @selections[0]);
-#  $!sessions-view.set-selection($position);
 }
 
 #-------------------------------------------------------------------------------
@@ -237,10 +237,11 @@ method !dialog-grid ( --> Grid ) {
   with $!set-ids-dd .= new {
     .set-events;
     my @sids = $!config.get-session-set-ids;
-note "$?LINE Session set ids: @sids.raku()";
     .append(@sids);
     .set-selection-changed( self, 'trap-select-session');
   }
+
+  self.trap-select-session;
 
   my Grid $dialog-grid .= new-grid;
   my &addc =
