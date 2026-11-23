@@ -549,6 +549,12 @@ method trap-select-session ( ) {
   my Str $pic = $!session-set-icon-subst.get-text // '';
   my Str $message = set-picture-in-frame( $pic, $!picture-frame);
   $!statusbar.set-status($message) if ?$message;
+
+  my UInt $n-items = $!sessions-view.get-n-items;
+  for ^$n-items -> $item-pos {
+    my Str $item = $!sessions-view.get-string($item-pos);
+    $!sessions-view.splice( $item-pos, 1, $item);
+  }
 }
 
 =finish
