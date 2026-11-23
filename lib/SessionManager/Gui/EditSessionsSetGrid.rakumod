@@ -107,7 +107,7 @@ submethod BUILD ( ) {
     $SessionManager::Gui::EditTools::add-content2.assuming( self, *);
 
   my Int $row = 0;
-  addc( $row++, make-title('Session Sets Config'));
+  addc( $row++, make-title('Session Sets'));
   addc( $row++, make-vertical-space);
   addc( $row++, self!dialog-grid);
   addc( $row++, $!statusbar);
@@ -237,13 +237,21 @@ method !dialog-grid ( --> Grid ) {
   $!session-set-icon-subst = make-label;
   $!picture-frame = make-picture-frame;
 
+  # Create and fill the dropdown with the session set ids
   with $!set-ids-dd .= new {
+    # Enable all default event processing 
     .set-events;
+
+    # Get the ids and add to dropdown
     my @sids = $!config.get-session-set-ids;
     .append(@sids);
+
+    # Set select event
     .set-selection-changed( self, 'trap-select-session');
   }
 
+  # Call routine to explicitly select the current entry. Calling
+  # .select(@sids[0]) does not work because it is already selected
   self.trap-select-session;
 
   my Grid $dialog-grid .= new-grid;
