@@ -302,7 +302,7 @@ method check-variable-inuse ( Str:D $name --> Bool ) {
       $name-inuse = $sessions.is-var-in-use($name);
     }
   }
-  
+
   $name-inuse
 }
 
