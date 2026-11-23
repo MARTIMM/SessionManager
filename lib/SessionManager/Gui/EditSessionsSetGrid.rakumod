@@ -12,6 +12,8 @@ use Gnome::Gtk4::T-enums:api<2>;
 use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
 
+use Gnome::N::N-Object:api<2>;
+
 use GnomeTools::Gtk::DropDown;
 use GnomeTools::Gtk::ListView;
 use GnomeTools::Gtk::Statusbar;
@@ -167,6 +169,7 @@ method change-session-selection ( UInt $position, @selections ) {
 note "$?LINE $position, $sid, @selections.raku()";
   $!config.toggle-session-set( $sid, @selections[0]);
   $!sessions-view.splice( $position, 1, @selections[0]);
+  $!sessions-view.scroll-to( $position, GTK_LIST_SCROLL_FOCUS, N-Object);
 }
 
 #-------------------------------------------------------------------------------
