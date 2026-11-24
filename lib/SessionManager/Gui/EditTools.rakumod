@@ -15,9 +15,13 @@ use Gnome::Gtk4::Frame:api<2>;
 
 use Gnome::GdkPixbuf::Pixbuf:api<2>;
 
+use Gnome::Glib::T-error:api<2>;
+
 use Gnome::Gdk4::Texture:api<2>;
 
 use Gnome::N::N-Object:api<2>;
+
+use Gnome::Pango::T-layout:api<2>;
 
 use GnomeTools::Gtk::DropDown;
 

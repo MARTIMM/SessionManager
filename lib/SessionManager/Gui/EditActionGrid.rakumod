@@ -31,7 +31,7 @@ use Gnome::Gtk4::TextBuffer:api<2>;
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
 
-use Gnome::Pango::T-layout:api<2>;
+#use Gnome::Pango::T-layout:api<2>;
 
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::EditActionGrid;

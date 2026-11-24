@@ -23,7 +23,7 @@ use Gnome::Gtk4::Box:api<2>;
 use Gnome::N::GlibToRakuTypes:api<2>;
 use Gnome::N::N-Object:api<2>;
 
-use Gnome::Pango::T-layout:api<2>;
+#use Gnome::Pango::T-layout:api<2>;
 
 #use YAMLish;
 
@@ -375,7 +375,7 @@ method check-variable-inuse ( Str:D $name --> Bool ) {
       $name-inuse = $sessions.is-var-in-use($name);
     }
   }
-  
+
   $name-inuse
 }
 
