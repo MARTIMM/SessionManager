@@ -375,8 +375,11 @@ method !button-row ( --> Box ) {
 method add-session-set ( ) {
   my $set-id = $!session-set-id.get-text;
 
-  my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
-  my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
+  my Str $title = $!session-set-title.get-text;
+  $!session-set-title-subst.set-text($!variables.substitute-vars($title));
+
+  my Str $icon = $!config.set-picture($!session-set-icon.get-text);
+  $!session-set-icon-subst.set-text($!variables.substitute-vars($icon));
 
   my @sids = ();
   for $!sessions.get-session-ids.sort -> $sid {
@@ -416,8 +419,11 @@ method modify-session-set ( ) {
   my $set-id = $!set-ids-dd.get-text;
 
   # Get the changed values to store in the Hash $set
-  my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
-  my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
+  my Str $title = $!session-set-title.get-text;
+  $!session-set-title-subst.set-text($!variables.substitute-vars($title));
+
+  my Str $icon = $!config.set-picture($!session-set-icon.get-text);
+  $!session-set-icon-subst.set-text($!variables.substitute-vars($icon));
 
   my @sids = ();
   for $!sessions.get-session-ids.sort -> $sid {
@@ -490,7 +496,9 @@ method delete-session-set ( ) {
 method make-desktop-entry ( ) {
   my Str $set-id = $!set-ids-dd.get-text;
   my Str $title = $!variables.substitute-vars($!session-set-title.get-text);
-  my Str $icon = $!variables.substitute-vars($!session-set-icon.get-text);
+  my Str $icon = $!variables.substitute-vars(
+    $!config.set-picture($!session-set-icon.get-text)
+  );
 note "$?LINE $set-id, $title, $icon.IO.basename()";
 note "$?LINE ", $*REPO.gist;
 
@@ -555,6 +563,11 @@ method trap-select-session ( ) {
     my Str $item = $!sessions-view.get-string($item-pos);
     $!sessions-view.splice( $item-pos, 1, $item);
   }
+}
+
+#-------------------------------------------------------------------------------
+method process-sessions (|c) {
+  $!config.emit-data( :code(PROCESS_SESSIONS), |c);
 }
 
 =finish
