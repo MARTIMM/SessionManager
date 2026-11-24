@@ -17,10 +17,6 @@ use Gnome::GdkPixbuf::Pixbuf:api<2>;
 
 use Gnome::Gdk4::Texture:api<2>;
 
-use Gnome::Glib::T-error:api<2>;
-
-use Gnome::Pango::T-layout:api<2>;
-
 use Gnome::N::N-Object:api<2>;
 
 use GnomeTools::Gtk::DropDown;
@@ -163,7 +159,7 @@ sub set-picture-in-frame (
     $picture.set-size-request( -1, $h);
     $texture.clear-object;
   }
-  
+
   $message
 }
 
@@ -229,7 +225,7 @@ our $add-content2 = multi sub add-content (
     $widget.set-hexpand(True);
     $grid.attach( $widget, $column, $row, $c, $rows);
     $column += $columns;
-    
+
     $c = $columns;
   }
 }
