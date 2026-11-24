@@ -516,7 +516,7 @@ note "$?LINE ", $*REPO.gist;
     X-KDE-Username=
     EOCONTENT
 
-  my Str $desktop-dir = $*config-directory ~ 'desktops';
+  my Str $desktop-dir = $*config-directory ~ 'Desktops';
   mkdir $desktop-dir, 0o750 unless $desktop-dir.IO.e;
   "$desktop-dir/$set-id.desktop".IO.spurt($desktop-entry-content);
 
