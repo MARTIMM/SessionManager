@@ -230,9 +230,12 @@ sessions:
   @startyaml
   root directory:
     - session-manager.yaml
+    - Desktops:
+      - application.desktop
+      - ...
     - Pictures:
       '- overlay or picture
-      - picture
+      - picture.png
       - ...
     - Config:
       - variables.yaml
