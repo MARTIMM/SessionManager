@@ -141,6 +141,22 @@ submethod BUILD ( ) {
   $bt-box.append($reset-button);
   addc( $row++, $bt-box);
 
+  # Setup a tap to listen for notifications
+  $config.get-supply.tap(
+    -> Hash $command {
+
+      # It's for us only when the code is PROCESS_ACTIONS
+      next unless $command<code> ~~ PROCESS_ACTIONS;
+
+      # With it, there are other keys at the same level for the operations.
+      with $command {
+        when .<update-listview>:exists {
+          self!update-listview;
+        }
+      }
+    }
+  );
+
 #`{{
 
     $!statusbar .= new;
@@ -150,6 +166,21 @@ submethod BUILD ( ) {
   }}
 #    $!variables-view = self!list-view;
 #    .attach( $!variables-view,  0, $row++, 1, 1);
+}
+
+#-------------------------------------------------------------------------------
+method !update-listview () {
+  my UInt $n-items = $!actions-view.get-n-items;
+  for ^$n-items -> $item-pos {
+    my Str $item = $!actions-view.get-string($item-pos);
+    $!actions-view.splice( $item-pos, 1, $item);
+  }
+}
+
+#-------------------------------------------------------------------------------
+method !process-action-changes (|c) {
+  my SessionManager::Config $config .= instance;
+  $config.emit-data( :code(PROCESS_ACTION_CHANGES), |c);
 }
 
 #-------------------------------------------------------------------------------
@@ -412,12 +443,14 @@ note "$?LINE $raw-action.raku()";
       $!statusbar.set-status("Added action '$id'");
       $!actions-view.splice( $original-pos, 0, $id);
       $!actions-view.set-selection($original-pos + 1);
+
+      # Notify other for any changes in the actions list
+      self!process-action-changes(:update-listview);
     }
 
     else {
       $!statusbar.set-status('No selection from list, please select first');
     }
-
   }
 }
 
@@ -461,6 +494,9 @@ method action-rename ( ) {
       my UInt $original-pos = $!actions-view.get-selection(:rows)[0];
       $!actions-view.splice( $original-pos, 1, $new-id);
       $!actions-view.set-selection($original-pos);
+
+      # Notify other for any changes in the actions list
+      self!process-action-changes(:update-listview);
     }
 
     else {
@@ -505,6 +541,9 @@ method action-modify ( ) {
 #note "\n$?LINE $original-pos, $id\n$raw-action.gist()";
 
     $!statusbar.set-status("The action '$id' is succesfully modified");
+
+    # Notify other for any changes in the actions list
+    self!process-action-changes(:update-listview);
   }
 
   else {
@@ -526,6 +565,9 @@ method action-delete ( ) {
       $!actions.delete-action($id);
       $!actions-view.set-selection(0);
       $!statusbar.set-status("Deleting '$id' successful");
+
+      # Notify other for any changes in the actions list
+      self!process-action-changes(:update-listview);
     }
 
     else {

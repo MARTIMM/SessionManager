@@ -122,6 +122,34 @@ submethod BUILD ( ) {
   $bt-box.append($reset-button);
   addc( $row++, $bt-box);
   addc( $row++, make-vertical-space);
+
+  # Setup a tap to listen for notifications
+  $config.get-supply.tap(
+    -> Hash $command {
+
+      # It's for us only when the code is PROCESS_ACTION_CHANGES
+      next unless $command<code> ~~ PROCESS_ACTION_CHANGES;
+
+      # With it, there are other keys at the same level for the operations.
+      with $command {
+        when .<update-listview>:exists {
+          self!update-listview;
+        }
+      }
+    }
+  );
+}
+
+#-------------------------------------------------------------------------------
+method !process-actions (|c) {
+  my SessionManager::Config $config .= instance;
+  $config.emit-data( :code(PROCESS_ACTIONS), |c);
+}
+
+#-------------------------------------------------------------------------------
+method !update-listview () {
+  # Must rewrite the list because entries can be removed or added
+  self.reset-list;
 }
 
 #-------------------------------------------------------------------------------
@@ -233,6 +261,9 @@ method session-add ( ) {
 
     # Success
     $!statusbar.set-status("$sid successfully added");
+
+    # Notify EditActionGrid for any changes in the actions list
+    self!process-actions(:update-listview);
   }
 }
 
@@ -274,6 +305,9 @@ method session-modify ( ) {
   # Success
   $!sessions-dd.select($sid);
   $!statusbar.set-status("$sid successfully modified");
+
+  # Notify EditActionGrid for any changes in the actions list
+  self!process-actions(:update-listview);
 }
 
 #-------------------------------------------------------------------------------
@@ -291,6 +325,9 @@ method session-delete ( ) {
 #    $!sessions-dd.splice( $original-pos, 1);
   refill-dropdown( $!sessions-dd, $!sessions.get-session-ids.sort);
   $!statusbar.set-status("Session '$sid' deleted");
+
+  # Notify EditActionGrid for any changes in the actions list
+  self!process-actions(:update-listview);
 }
 
 #-------------------------------------------------------------------------------
@@ -319,7 +356,7 @@ method select-from-list ( Entry :$search ) {
 method reset-list ( Entry :$search ) {
   $!actions-view.remove(^$!actions-view.get-n-items);
   $!actions-view.append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
-  $search.set-text('');# if $search.defined;
+  $search.set-text('') if $search.defined;
 }
 
 #-------------------------------------------------------------------------------
@@ -421,6 +458,8 @@ method trap-select-session ( ) {
   my Str $pic = $!session-icon-subst.get-text;
   my Str $message = set-picture-in-frame( $pic, $!picture-frame);
   $!statusbar.set-status($message) if ?$message;
+
+  self!update-listview
 }
 
 #-------------------------------------------------------------------------------
@@ -441,20 +480,26 @@ method setup-item ( ) {
 #-------------------------------------------------------------------------------
 method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
   my Hash $action-object = $!actions.get-raw-action($name);
-  set-text-at( 2, 0, $name, $grid);
-  set-text-at( 2, 1, $action-object<t>//'', $grid);
+  if ?$action-object {
+    set-text-at( 2, 0, $name, $grid);
+    set-text-at( 2, 1, $action-object<t>//'', $grid);
 
-  my Str $sessionid = $!sessions-dd.get-text;
-  my Bool $name-inuse = $!sessions.is-action-in-use-in-session(
-    $sessionid, $name
-  );
+    my Str $sessionid = $!sessions-dd.get-text;
+    my Bool $name-inuse = $!sessions.is-action-in-use-in-session(
+      $sessionid, $name
+    );
 
-  # Select the items found in this group
-#  my @group-actions = $!sessions.get-actions($sessionid);
-#  @group-actions.push: $!actions-view.find($ga);
-#  $!actions-view.set-selection(@group-actions);
+    # Select the items found in this group
+  #  my @group-actions = $!sessions.get-actions($sessionid);
+  #  @group-actions.push: $!actions-view.find($ga);
+  #  $!actions-view.set-selection(@group-actions);
 
-  set-image-at( 0, 0, 'green', $name-inuse, $grid);
+    set-image-at( 0, 0, 'green', $name-inuse, $grid);
+  }
+
+  else {
+
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -470,3 +515,6 @@ method check-action-inuse ( Str:D $name --> Bool ) {
 method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
   $grid.clear-object;
 }
+
+=finish
+

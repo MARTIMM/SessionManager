@@ -93,7 +93,6 @@ submethod BUILD ( ) {
   $!config .= instance;
   $!config.theme.add-css-class( self, 'edit-grid');
   
-
   $!statusbar .= new;
   $!sessions .= new;
   $!sessions-view .= new(:!multi-select);
@@ -563,11 +562,6 @@ method trap-select-session ( ) {
     my Str $item = $!sessions-view.get-string($item-pos);
     $!sessions-view.splice( $item-pos, 1, $item);
   }
-}
-
-#-------------------------------------------------------------------------------
-method process-sessions (|c) {
-  $!config.emit-data( :code(PROCESS_SESSIONS), |c);
 }
 
 =finish
