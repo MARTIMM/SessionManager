@@ -21,6 +21,12 @@ use Digest::SHA256::Native;
 #-------------------------------------------------------------------------------
 unit class SessionManager::Config;
 
+# A Supply is read by several clients. These are codes the clients must
+# test to check the rest of the data in a given hash.
+enum SupplyCode is export <
+  PROCESS_SESSIONS
+  >;
+
 #-------------------------------------------------------------------------------
 my $instance;
 
@@ -29,9 +35,14 @@ has Hash $!dispatch-config;
 
 has GnomeTools::Gtk::Theming $.theme;
 
+has Supplier $!supplier;
+has Supply $!supply;
+
 #-------------------------------------------------------------------------------
 #submethod BUILD ( Bool :$load-manual-build-config = False ) {
 submethod BUILD ( ) {
+  $!supplier .= new;
+  $!supply = $!supplier.Supply;
 
   mkdir $*config-directory ~ '/Config', 0o700
         unless ($*config-directory ~ '/Config').IO.e;
@@ -65,6 +76,39 @@ method instance ( Bool :$reinit = False --> SessionManager::Config ) {
   $instance //= self.bless;
 
   $instance
+}
+
+#-------------------------------------------------------------------------------
+method get-supplier ( --> Supplier ) {
+  $!supplier
+}
+
+#-------------------------------------------------------------------------------
+method get-supply ( --> Supply ) {
+  $!supply
+}
+
+#-------------------------------------------------------------------------------
+method emit-data (
+  SupplyCode:D :$code, Bool :$receive = False, *%data --> Mu
+) {
+  my Mu $v;
+
+  if $receive {
+    my Channel $channel;
+
+    $channel .= new;
+    $!supplier.emit( %( :$code, |%data, :$channel));
+
+    $v = $channel.receive;
+    $channel.close;
+  }
+
+  else {
+    $!supplier.emit( %( :$code, |%data));
+  }
+
+  $v
 }
 
 #-------------------------------------------------------------------------------
