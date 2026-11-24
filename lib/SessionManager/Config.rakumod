@@ -24,7 +24,7 @@ unit class SessionManager::Config;
 # A Supply is read by several clients. These are codes the clients must
 # test to check the rest of the data in a given hash.
 enum SupplyCode is export <
-  PROCESS_SESSIONS
+  PROCESS_ACTIONS PROCESS_ACTION_CHANGES
   >;
 
 #-------------------------------------------------------------------------------
