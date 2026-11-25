@@ -12,22 +12,24 @@ use Gnome::Gtk4::Box:api<2>;
 use Gnome::Gtk4::Widget:api<2>;
 
 use GnomeTools::Gtk::DropDown;
-use GnomeTools::Gtk::ListView;
+#use GnomeTools::Gtk::ListView;
 use GnomeTools::Gtk::Statusbar;
 
 use SessionManager::Variables;
 use SessionManager::Actions;
 use SessionManager::Sessions;
 use SessionManager::Config;
-use SessionManager::Gui::Actions;
 
+use SessionManager::Gui::Actions;
+use SessionManager::Gui::ActionsView;
 use SessionManager::Gui::EditTools;
+
 #-------------------------------------------------------------------------------
 unit class SessionManager::Gui::EditSessionGrid;
 also is Gnome::Gtk4::Grid;
 
 constant DropDown = GnomeTools::Gtk::DropDown;
-constant ListView = GnomeTools::Gtk::ListView;
+#constant ListView = GnomeTools::Gtk::ListView;
 constant Statusbar = GnomeTools::Gtk::Statusbar;
 
 constant Entry = Gnome::Gtk4::Entry;
@@ -44,7 +46,6 @@ constant EDIT_WIDTH = 500;
 constant EDIT_HEIGHT = 1000;
 constant EDIT_WIDTH-CHARS = 80;
 
-has SessionManager::Sessions $!sessions;
 
 has Entry $!session-id;
 has Entry $!session-title;
@@ -60,6 +61,7 @@ has Label $!session-icon-subst;
 # Setup the dropdown to show the session ids and groups
 has DropDown $!sessions-dd;
 #has DropDown $!groups-dd;
+has Statusbar $!statusbar;
 
 #has Entry $!group-title;
 #has Label $!group-title-subst;
@@ -67,12 +69,11 @@ has DropDown $!sessions-dd;
 # Fill the session drop down with the session ids and select the first one
 #has @!session-ids;
 
+has SessionManager::Sessions $!sessions;
 has SessionManager::Actions $!actions;
 has SessionManager::Variables $!variables;
 
-has Statusbar $!statusbar;
-
-has ListView $!actions-view;
+has SessionManager::Gui::ActionsView $!actions-view;
 
 #-------------------------------------------------------------------------------
 submethod new ( |c --> SessionManager::Gui::EditSessionGrid ) {
@@ -87,7 +88,6 @@ submethod BUILD ( ) {
   $!sessions .= new;
   $!actions .= new;
   $!variables .= new;
-
   $!statusbar .= new;
 
   self.init-fields;
@@ -123,6 +123,8 @@ submethod BUILD ( ) {
   addc( $row++, $bt-box);
   addc( $row++, make-vertical-space);
 
+
+#`{{
   # Setup a tap to listen for notifications
   $config.get-supply.tap(
     -> Hash $command {
@@ -138,29 +140,33 @@ submethod BUILD ( ) {
       }
     }
   );
+}}
 }
 
 #-------------------------------------------------------------------------------
-method !process-actions (|c) {
+method !do-actions-view (|c) {
   my SessionManager::Config $config .= instance;
-  $config.emit-data( :code(PROCESS_ACTIONS), |c);
+  $config.emit-data( :code(ACTIONS_USE_VIEW), |c);
 }
-
+#`{{
 #-------------------------------------------------------------------------------
 method !update-listview () {
   # Must rewrite the list because entries can be removed or added
   self.reset-list;
 }
+}}
 
 #-------------------------------------------------------------------------------
 method !dialog-grid ( --> Grid ) {
-  $!sessions-dd.set-selection-changed( self, 'trap-select-session');
 
   # Fill the session drop down with the session ids and select the first one
   my @session-ids = $!sessions.get-session-ids.sort;
-  if @session-ids.elems {
-    $!sessions-dd.append(@session-ids);
-  }
+  $!sessions-dd.append(@session-ids) if @session-ids.elems;
+  $!sessions-dd.set-selection-changed( self, 'trap-select-session');
+
+  # Call routine to explicitly select the current entry. Calling
+  # .select(@sids[0]) does not work because it is already selected
+  self.trap-select-session;
 
   my Grid $dialog-grid .= new-grid;
   my &addc =
@@ -262,8 +268,8 @@ method session-add ( ) {
     # Success
     $!statusbar.set-status("$sid successfully added");
 
-    # Notify EditActionGrid for any changes in the actions list
-    self!process-actions(:update-listview);
+    # Notify the actions listview for any changes in the actions list
+    self.reset-list;
   }
 }
 
@@ -307,7 +313,7 @@ method session-modify ( ) {
   $!statusbar.set-status("$sid successfully modified");
 
   # Notify EditActionGrid for any changes in the actions list
-  self!process-actions(:update-listview);
+  self.reset-list;
 }
 
 #-------------------------------------------------------------------------------
@@ -327,7 +333,7 @@ method session-delete ( ) {
   $!statusbar.set-status("Session '$sid' deleted");
 
   # Notify EditActionGrid for any changes in the actions list
-  self!process-actions(:update-listview);
+  self.reset-list;
 }
 
 #-------------------------------------------------------------------------------
@@ -354,8 +360,14 @@ method select-from-list ( Entry :$search ) {
 
 #-------------------------------------------------------------------------------
 method reset-list ( Entry :$search ) {
-  $!actions-view.remove(^$!actions-view.get-n-items);
-  $!actions-view.append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+#  $!actions-view.remove(^$!actions-view.get-n-items);
+#  $!actions-view.append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
+
+  my Str $sessionid = $!sessions-dd.get-text;
+  self!do-actions-view(
+    :fill, :$sessionid,
+    :items($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc})
+  );
   $search.set-text('') if $search.defined;
 }
 
@@ -415,6 +427,7 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
   #$!group-title-subst .= new-label;
   #$!group-title-subst.set-halign(GTK_ALIGN_START);
 
+#`{{
   with $!actions-view .= new(:!multi-select) {
 #NOTE with set-size-request() many warnings come;
 # (sessioneditor:20240): Gtk-WARNING **: 14:24:34.559: Trying to measure
@@ -431,12 +444,14 @@ method init-fields ( Bool :$id-is-sensitive = True, :$id-only = False ) {
     .set-selection-changed( self, 'change-action-selection');
 
     .append($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc});
-#    .append($!actions.get-action-idss[^2]);
 
     # Select the first one
     #NOTE select changes are for adding/removing actions to session.
     #set-selection(0);
   }
+}}
+
+  $!actions-view .= new( :!multi-select, :supply-code(ACTIONS_USE_VIEW));
 }
 
 #-------------------------------------------------------------------------------
@@ -446,6 +461,11 @@ method trap-select-session ( ) {
 
   my Str $sid = $!sessions-dd.get-text;
   $!session-id.set-text($sid);
+
+#  self!do-actions-view(
+#    :fill, :sessionid($sid),
+#    :items($!actions.get-action-ids.sort: {$^a.lc leg $^b.lc})
+#  );
 
   my Str $t = $!sessions.get-session-title($sid);
   $!session-title.set-text($t);
@@ -459,9 +479,11 @@ method trap-select-session ( ) {
   my Str $message = set-picture-in-frame( $pic, $!picture-frame);
   $!statusbar.set-status($message) if ?$message;
 
-  self!update-listview
+  self!do-actions-view( :splice, :nremove(1), :replace($sid,));
+#  self!update-listview
 }
 
+#`{{
 #-------------------------------------------------------------------------------
 method setup-item ( ) {
   my Label $action-id = make-label;
@@ -503,18 +525,19 @@ method bind-item ( Gnome::Gtk4::Grid() $grid, Str $name ) {
 }
 
 #-------------------------------------------------------------------------------
-method check-action-inuse ( Str:D $name --> Bool ) {
-  # Check if action is used in the sessions store
-  $!sessions.is-action-in-use($name);
-}
-
-#-------------------------------------------------------------------------------
 #method unbind-item
 
 #-------------------------------------------------------------------------------
 method teardown-item ( Gnome::Gtk4::Grid() $grid ) {
   $grid.clear-object;
 }
+}}
 
 =finish
+
+#-------------------------------------------------------------------------------
+method check-action-inuse ( Str:D $name --> Bool ) {
+  # Check if action is used in the sessions store
+  $!sessions.is-action-in-use($name);
+}
 
