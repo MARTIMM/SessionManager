@@ -3,6 +3,9 @@
 ---
 # Progress
 
+* 2026 25 01 0.11.0
+  * New module to control listviews. First experiments using **Supply** worked. Now refactoring the actions listview into a module **SessionManager::Gui::ActionsView**.
+
 * 2026 11 01 0.10.0
   * Session sets editor.
   * Save session sets desktop icon.
